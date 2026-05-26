@@ -1,0 +1,42 @@
+Package: nhanesR
+Type: Package
+Title: Download, Parse, and Analyze NHANES Data with Mortality Linkage
+Version: 0.1.0
+Authors@R: person("David", "Winsemius", email = "dwinsemius@comcast.net",
+    role = c("aut", "cre"),
+    comment = c(credentials = "MD, MPH"))
+Description: Provides tools for downloading and organizing National Health and
+    Nutrition Examination Survey (NHANES) public-use data files and the NCHS
+    Public-Use Linked Mortality Files (LMF). Supports structured local caching,
+    codebook access, survey-aware merging, and preparation of survival analysis
+    datasets using NHANES-NDI linked mortality data (follow-up through
+    December 31, 2019).
+    Developed with assistance from Claude Code (Anthropic).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+LazyDataCompression: xz
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends:
+    R (>= 4.1.0)
+Imports:
+    httr2 (>= 1.0.0),
+    haven (>= 2.5.0),
+    readr (>= 2.1.0),
+    dplyr (>= 1.1.0),
+    rlang (>= 1.1.0),
+    cli (>= 3.6.0),
+    tools
+Suggests:
+    survey,
+    survival,
+    ggsurvfit,
+    rvest,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/dwinsemius/nhanesR
+BugReports: https://github.com/dwinsemius/nhanesR/issues

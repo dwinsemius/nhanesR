@@ -17,18 +17,23 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-This vignette walks through the complete `nhanesR` workflow:
+This vignette walks through the complete `nhanesR` workflow using a concrete
+example: the association between serum total cholesterol and cardiovascular
+mortality across four NHANES cycles (2011–2018).
+
+**None of the code chunks run automatically** — copy and paste each one into
+your R console and run it interactively. Downloaded files are cached locally,
+so re-running any step is fast after the first time.
+
+The workflow has seven steps:
 
 1. Browse available files with `nhanes_manifest()`
-2. Download and cache component XPT files with `nhanes_download()`
+2. Download and cache data files with `nhanes_download()`
 3. Stack data across cycles with `nhanes_stack()`
-4. Merge components by SEQN with `nhanes_merge()`
+4. Merge components by participant with `nhanes_merge()`
 5. Link mortality follow-up with `nhanes_mortality_link()`
 6. Prepare a survival dataset with `nhanes_survival_prep()`
-7. Run a survey-weighted Cox model
-
-All download steps hit the CDC servers and are marked `eval=FALSE` — run them
-interactively. Results are cached locally so subsequent calls are fast.
+7. Run a survey-weighted Cox proportional hazards model
 
 ```{r load}
 library(nhanesR)
@@ -38,107 +43,162 @@ library(survey)
 
 ---
 
+## Background: NHANES structure
+
+NHANES (National Health and Nutrition Examination Survey) is conducted in
+two-year **cycles** (e.g. 1999–2000, 2001–2002, ..., 2017–2018). Within each
+cycle, data are organized into five **components**:
+
+| Component | What it contains |
+|-----------|-----------------|
+| Demographics | Age, sex, race/ethnicity, income, survey weights and design variables |
+| Laboratory | Blood and urine measurements |
+| Examination | Physical exam, blood pressure, anthropometry |
+| Questionnaire | Self-reported health history, medications, behaviors |
+| Dietary | 24-hour dietary recall interviews |
+
+Each participant has a unique identifier, **SEQN**, that is used to link files
+within a cycle. SEQNs are not reused across cycles, so when pooling multiple
+cycles it is essential to keep track of which cycle each SEQN came from.
+
+The **continuous NHANES** (1999–present) uses a consistent file structure and
+naming convention. **NHANES III** (1988–1994) predates this and uses a
+different structure; `nhanesR` supports it but it requires extra care.
+
+---
+
 ## 1. What cycles and files are available?
 
 ```{r cycles}
-# All continuous NHANES cycles
+# All continuous NHANES cycles known to nhanesR
 nhanes_cycles()
 
-# Include NHANES III
+# Add NHANES III (different structure — see ?nhanes_cycles)
 nhanes_cycles(include_iii = TRUE)
 ```
 
-`nhanes_manifest()` scrapes the CDC data catalog and returns a table of
-available files for a given cycle and component:
+To see what files are available for a specific cycle and component, use
+`nhanes_manifest()`. It queries the CDC data catalog and returns a table of
+file codes, descriptions, and download URLs.
 
 ```{r manifest}
 # What laboratory files exist for 2015-2016?
 nhanes_manifest("2015-2016", "Laboratory")
 
-# Demographics for 2013-2014
+# Demographics files for 2013-2014
 nhanes_manifest("2013-2014", "Demographics")
 ```
+
+The `file_name` column (e.g. `TCHOL_I`, `DEMO_H`) gives the file code you
+pass to `nhanes_download()`. The letter suffix (`_I`, `_H`, etc.) identifies
+the cycle; `nhanesR` handles this automatically — you only need the stem
+(e.g. `"TCHOL"`, `"DEMO"`).
 
 ---
 
 ## 2. Download data
 
-We will examine the association between serum total cholesterol and
-cardiovascular mortality across four NHANES cycles (2011-2018).
+We need two files per cycle:
 
-The relevant files are:
+| Component | File code | Key variables |
+|-----------|-----------|---------------|
+| Demographics | `DEMO` | Age (`RIDAGEYR`), sex (`RIAGENDR`), survey weights (`WTMEC2YR`), design variables (`SDMVPSU`, `SDMVSTRA`) |
+| Laboratory | `TCHOL` | Serum total cholesterol (`LBXTC`, in mg/dL) |
 
-| Component | File code | Contents |
-|-----------|-----------|----------|
-| Demographics | `DEMO` | Age, sex, race, survey weights, design variables |
-| Laboratory | `TCHOL` | Serum total cholesterol |
+`RIAGENDR` is coded 1 = male, 2 = female. `SDMVPSU` and `SDMVSTRA` are the
+pseudo-PSU and pseudo-stratum variables required for variance estimation under
+NHANES's complex multi-stage sampling design — they must come from the
+Demographics file and be included in any survey-weighted analysis.
 
 ```{r download}
 cycles <- c("2011-2012", "2013-2014", "2015-2016", "2017-2018")
 
-# nhanes_download() returns a list when multiple cycles are requested.
-# Each element is a data frame with a 'cycle' column added automatically.
+# When multiple cycles are requested, nhanes_download() returns a named list.
+# Each element is a data frame; a 'cycle' column is added automatically.
 demo_list  <- nhanes_download("DEMO",  cycles)
 tchol_list <- nhanes_download("TCHOL", cycles)
 ```
 
-Downloaded files are parsed from SAS transport (XPT) format via `haven` and
-cached as RDS files locally. Re-running the above is instant on subsequent
-calls.
+Files are downloaded from the CDC in SAS transport (XPT) format, parsed into
+R data frames, and saved to a local cache. If you run these lines again, the
+cached versions are loaded instead of re-downloading.
+
+To see where the cache lives:
+
+```{r cache}
+nhanes_cache_dir()
+```
 
 ---
 
 ## 3. Stack across cycles
 
-`nhanes_stack()` row-binds the per-cycle data frames. Columns present in some
-but not all cycles are filled with `NA` by default (`fill = TRUE`), preserving
-all variables across cycles where variable names changed.
+`nhanes_stack()` row-binds the per-cycle data frames into a single data frame.
+If a variable was renamed or added between cycles, columns present in some
+cycles but not others are filled with `NA` rather than dropped.
 
 ```{r stack}
 demo  <- nhanes_stack(demo_list)
 tchol <- nhanes_stack(tchol_list)
 
-nrow(demo)   # ~40,000 participants across four cycles
-nrow(tchol)
+nrow(demo)    # approximately 40,000 participants across four cycles
+nrow(tchol)   # smaller — not all participants attended the lab exam
 ```
 
 ---
 
 ## 4. Merge components
 
-`nhanes_merge()` joins on `SEQN` (respondent sequence number). For pooled
-multi-cycle data, always include `"cycle"` in the `by` argument to prevent
-cross-cycle SEQN collisions.
+`nhanes_merge()` joins data frames on SEQN. Because SEQNs are unique only
+within a cycle, always include `"cycle"` in the join key when working with
+pooled multi-cycle data. An inner join (the default) retains only participants
+present in both files — those who completed both the interview and the lab
+examination.
 
 ```{r merge}
 analytic <- nhanes_merge(demo, tchol, by = c("SEQN", "cycle"))
 
-# Survey design variables should now be present
+# Confirm that the survey design variables came through from DEMO
 c("SDMVPSU", "SDMVSTRA", "WTMEC2YR") %in% names(analytic)
 
-# Cholesterol variable
-summary(analytic$LBXTC)   # mg/dL; NA where not examined
+# Check the cholesterol distribution
+summary(analytic$LBXTC)   # mg/dL; should have relatively few NAs after inner join
 ```
 
 ---
 
 ## 5. Link mortality
 
-`nhanes_mortality_link()` downloads the CDC Public-Use Linked Mortality Files
-(LMF) for the relevant cycles, parses the fixed-width `.dat` files, and
-left-joins onto your analytic dataset.
+`nhanes_mortality_link()` downloads the CDC National Center for Health
+Statistics (NCHS) Public-Use Linked Mortality Files (LMF) for the relevant
+cycles, and left-joins them onto your analytic dataset by SEQN.
 
-Mortality follow-up runs through **December 31, 2019** for all public-use
-files (released April 2022).
+Mortality follow-up in these files runs through **December 31, 2019** for all
+cycles. The files were released in April 2022 and will not be updated — more
+recent follow-up (to December 31, 2022) is available only through the NCHS
+Research Data Center (RDC) as a restricted-use file.
 
 ```{r mortality}
 analytic_mort <- nhanes_mortality_link(analytic)
 
-# Key variables added:
-# ELIGSTAT  - eligibility for follow-up (1 = eligible)
-# MORTSTAT  - vital status (0 = assumed alive, 1 = deceased)
-# UCOD_LEADING - underlying cause of death (ICD-10 recode)
-# PERMTH_EXM   - months of follow-up from examination date
+# Key variables added by the LMF:
+#
+#   ELIGSTAT     - Eligibility for mortality follow-up:
+#                    1 = eligible
+#                    2 = under 18 at time of survey (not followed)
+#                    3 = insufficient identifying data for linkage
+#
+#   MORTSTAT     - Final vital status:
+#                    0 = assumed alive as of December 31, 2019
+#                    1 = assumed deceased
+#
+#   UCOD_LEADING - Underlying cause of death (11-category ICD-10 recode);
+#                    NA if alive or ineligible
+#
+#   PERMTH_EXM   - Months of follow-up from examination date to death or
+#                    December 31, 2019, whichever came first
+#
+#   PERMTH_INT   - Same, but from interview date
 
 table(analytic_mort$MORTSTAT, useNA = "always")
 ```
@@ -147,16 +207,24 @@ table(analytic_mort$MORTSTAT, useNA = "always")
 
 ## 6. Prepare for survival analysis
 
-`nhanes_survival_prep()` handles the steps that are easy to get wrong:
+`nhanes_survival_prep()` handles several steps that are easy to get wrong:
 
-- Removes ineligible participants (`ELIGSTAT != 1`) with a warning and count
-- Creates `time` (from `PERMTH_EXM` or `PERMTH_INT`) and `event` columns
-- Warns about asymmetric follow-up across cycles (later cycles have shorter
-  maximum follow-up since all censor at the same date)
-- Optionally creates a cause-specific `event_cause` indicator
+- **Removes ineligible participants** (`ELIGSTAT != 1`) — those under 18 and
+  those with insufficient identifying data cannot be used in survival analyses
+  with the public-use LMF. The number dropped is reported.
+- **Creates `time` and `event` columns** ready for `survival::Surv()`.
+- **Warns about asymmetric follow-up** — because all cycles censor at the same
+  date (December 31, 2019), participants enrolled in later cycles have much
+  shorter maximum follow-up than those enrolled in earlier cycles. This must be
+  kept in mind when interpreting pooled analyses.
+
+**Choosing `origin`**: follow-up time can be measured from the **interview
+date** (`origin = "interview"`, using `PERMTH_INT`) or the **examination date**
+(`origin = "exam"`, using `PERMTH_EXM`). When your analysis includes laboratory
+or physical examination measurements — as this one does — use `origin = "exam"`,
+since those measurements were obtained at the examination visit.
 
 ```{r survprep}
-# All-cause mortality, follow-up from examination date
 surv_data <- nhanes_survival_prep(
   analytic_mort,
   origin     = "exam",
@@ -164,19 +232,34 @@ surv_data <- nhanes_survival_prep(
   weight_var = "WTMEC2YR"
 )
 
-# How does follow-up look per cycle?
+# Summarise follow-up time and event rates by cycle.
+# Note the shorter maximum follow-up for later cycles.
 nhanes_followup_summary(surv_data)
 ```
 
-For a cardiovascular-specific analysis, supply a cause code. Use
-`nhanes_ucod_labels()` to look up codes:
+You should see something like:
+
+```
+      cycle     n n_events event_rate_pct median_followup max_followup time_unit
+1 2011-2012  8xxx      xxx           x.xx            x.x         ~8.x     years
+2 2013-2014  8xxx      xxx           x.xx            x.x         ~6.x     years
+3 2015-2016  8xxx      xxx           x.xx            x.x         ~4.x     years
+4 2017-2018  8xxx      xxx           x.xx            x.x         ~2.x     years
+```
+
+The shrinking maximum follow-up across cycles is expected and is a consequence
+of the fixed December 31, 2019 censor date.
+
+For a **cause-specific** analysis, use `nhanes_ucod_labels()` to look up the
+available cause-of-death codes, then pass the code to `nhanes_survival_prep()`:
 
 ```{r ucod}
+# 11-category ICD-10 recode used in the public-use LMF
 nhanes_ucod_labels()
 ```
 
 ```{r survprep-cvd}
-# Cardiovascular mortality (code "001": Diseases of heart)
+# Cardiovascular mortality only (code "001": Diseases of heart)
 surv_cvd <- nhanes_survival_prep(
   analytic_mort,
   origin     = "exam",
@@ -185,24 +268,35 @@ surv_cvd <- nhanes_survival_prep(
   weight_var = "WTMEC2YR"
 )
 
-# event_cause = 1 only when UCOD_LEADING == "001" AND MORTSTAT == 1
-table(surv_cvd$event, surv_cvd$event_cause)
+# event       = 1 for all-cause death
+# event_cause = 1 only for cardiovascular death
+# All event_cause == 1 rows should also have event == 1
+table(event = surv_cvd$event, cvd_death = surv_cvd$event_cause)
 ```
 
 ---
 
 ## 7. Survey-weighted Cox model
 
-NHANES uses a complex multi-stage probability sample. Ignoring the survey
-design produces incorrect standard errors. The `survey` package handles this
-via `svydesign()` + `svycoxph()`.
+NHANES uses a complex multi-stage probability sample. Standard errors computed
+without accounting for the sampling design will be wrong — typically
+anti-conservative. The `survey` package corrects for this.
 
-**Weight adjustment for pooled cycles**: when combining more than two years of
-data, divide the 2-year MEC weight by the number of cycles pooled. Here we
-pool four cycles (8 years), so divide `WTMEC2YR` by 4.
+**Weight adjustment for pooled cycles**: the MEC exam weight `WTMEC2YR` is
+designed for a single two-year cycle. When pooling multiple cycles, the NHANES
+analytic guidelines specify dividing the 2-year weight by the number of cycles
+combined. Here we pool four cycles (8 years), so divide by 4.
+
+`nest = TRUE` tells `svydesign()` that PSU identifiers (SDMVPSU) are nested
+within strata and may repeat across strata — this is the correct specification
+for NHANES.
 
 ```{r survey-design}
 surv_data$wt_pooled <- surv_data$survey_weight / 4
+
+# Standardise cholesterol to per-SD units so the hazard ratio is interpretable
+# as the risk associated with a one-standard-deviation higher cholesterol level
+surv_data$tchol_sd <- scale(surv_data$LBXTC)[, 1]
 
 design <- svydesign(
   id      = ~SDMVPSU,
@@ -213,47 +307,46 @@ design <- svydesign(
 )
 ```
 
-Fit a Cox proportional hazards model for total cholesterol and all-cause
-mortality, adjusting for age and sex:
+Fit a Cox model for all-cause mortality, adjusting for age and sex:
 
 ```{r cox}
-# Standardise cholesterol to per-SD units for interpretability
-surv_data$tchol_sd <- scale(surv_data$LBXTC)[, 1]
-
-# Re-create design with standardised variable
-design <- svydesign(
-  id      = ~SDMVPSU,
-  strata  = ~SDMVSTRA,
-  weights = ~wt_pooled,
-  nest    = TRUE,
-  data    = surv_data
-)
-
 fit <- svycoxph(
   Surv(time, event) ~ tchol_sd + RIDAGEYR + RIAGENDR,
   design = design
 )
 
 summary(fit)
-exp(coef(fit))          # hazard ratios
-exp(confint(fit))       # 95% confidence intervals
+exp(coef(fit))     # hazard ratios
+exp(confint(fit))  # 95% confidence intervals
 ```
+
+The hazard ratio for `tchol_sd` estimates the mortality risk associated with a
+one-SD higher total cholesterol, adjusted for age and sex, in the U.S.
+non-institutionalized civilian population (the population NHANES represents).
+
+`RIAGENDR` is coded 1 = male, 2 = female, so its hazard ratio compares females
+to males.
 
 ---
 
 ## Notes on the public-use LMF
 
-- Follow-up is through **December 31, 2019** for all cycles. Participants from
-  later cycles (e.g. 2017-2018) have substantially shorter maximum follow-up
-  (~1-2 years) compared to 1999-2000 participants (~20 years). This asymmetry
-  must be accounted for in pooled analyses.
+- **Asymmetric follow-up**: all public-use LMF files censor at December 31,
+  2019 regardless of cycle. Participants from 2017–2018 have at most ~2 years
+  of follow-up; those from 1999–2000 have up to ~20 years. This must be
+  accounted for — or at minimum acknowledged — in any pooled analysis.
 
-- `PERMTH_EXM`, `PERMTH_INT`, and `UCOD_LEADING` contain **synthetic
-  (perturbed) values** for select records, introduced by CDC to reduce
-  re-identification risk. `MORTSTAT` and `ELIGSTAT` are not perturbed.
+- **Data perturbation**: `PERMTH_EXM`, `PERMTH_INT`, and `UCOD_LEADING`
+  contain synthetic (perturbed) values for select records, introduced by CDC
+  to reduce re-identification risk. `MORTSTAT` and `ELIGSTAT` are not
+  perturbed. Cause-specific analyses using `UCOD_LEADING` should be
+  interpreted with this in mind.
 
-- The 2022-linked restricted-use files extend follow-up to December 31, 2022
-  and are available only through NCHS Research Data Centers (RDC).
+- **Restricted-use files**: the 2022-linked files extend follow-up to
+  December 31, 2022 and include additional cause-of-death detail. They require
+  an approved project and on-site or virtual RDC access.
 
-- See the CDC documentation:
-  <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+- **Further reading**:
+  - CDC mortality linkage: <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+  - NHANES analytic guidelines: <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
+  - `survey` package documentation: <https://r-survey.r-forge.r-project.org/survey/>

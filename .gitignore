@@ -4,5 +4,3 @@
 .Ruserdata
 *.Rproj
 /R/sysdata.rda
-/man/
-NAMESPACE

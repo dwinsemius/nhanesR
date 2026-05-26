@@ -509,6 +509,7 @@ nhanes_ucod_labels <- function() {
 #' surv_data <- nhanes_survival_prep(linked_data, origin = "exam")
 #' nhanes_followup_summary(surv_data)
 #' }
+#' @importFrom stats median
 nhanes_followup_summary <- function(data) {
   if (!("cycle" %in% names(data))) {
     cli::cli_abort("{.arg data} must have a {.val cycle} column.")

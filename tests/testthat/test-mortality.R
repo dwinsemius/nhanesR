@@ -135,9 +135,7 @@ test_that("invalid cause code triggers error", {
 test_that("multi-cycle asymmetric follow-up warning is emitted", {
   dat <- make_linked_data(200)
   expect_warning(
-    suppressWarnings(
-      nhanes_survival_prep(dat, origin = "exam")
-    ),
+    nhanes_survival_prep(dat, origin = "exam"),
     regexp = "asym|censor|cycle",
     ignore.case = TRUE
   )

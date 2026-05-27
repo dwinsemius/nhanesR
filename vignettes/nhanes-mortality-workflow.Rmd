@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 This vignette walks through the complete `nhanesR` workflow using a concrete
 example: the association between serum total cholesterol and cardiovascular
-mortality across eight NHANES cycles (2001–2016).
+mortality across ten NHANES cycles (1999–2018).
 
 **None of the code chunks run automatically** — copy and paste each one into
 your R console and run it interactively. Downloaded files are cached locally,
@@ -114,9 +114,7 @@ NHANES's complex multi-stage sampling design — they must come from the
 Demographics file and be included in any survey-weighted analysis.
 
 ```{r download}
-cycles <- nhanes_cycles()[2:9, "cycle"]   # 2001-2016
-# Note: the 1999-2000 cycle XPT files use a format not supported by either
-# haven or foreign and are skipped here. Use later cycles for analysis.
+cycles <- nhanes_cycles()[1:10, "cycle"]  # 1999-2018
 
 # When multiple cycles are requested, nhanes_download() returns a named list.
 # Each element is a data frame; a 'cycle' column is added automatically.
@@ -146,7 +144,7 @@ cycles but not others are filled with `NA` rather than dropped.
 demo  <- nhanes_stack(demo_list)
 tchol <- nhanes_stack(tchol_list)
 
-nrow(demo)    # approximately 80,000 participants across eight cycles
+nrow(demo)    # approximately 100,000 participants across ten cycles
 nrow(tchol)   # smaller — not all participants attended the lab exam
 ```
 
@@ -290,14 +288,14 @@ anti-conservative. The `survey` package corrects for this.
 **Weight adjustment for pooled cycles**: the MEC exam weight `WTMEC2YR` is
 designed for a single two-year cycle. When pooling multiple cycles, the NHANES
 analytic guidelines specify dividing the 2-year weight by the number of cycles
-combined. Here we pool eight cycles (16 years), so divide by 8.
+combined. Here we pool ten cycles (20 years), so divide by 10.
 
 `nest = TRUE` tells `svydesign()` that PSU identifiers (SDMVPSU) are nested
 within strata and may repeat across strata — this is the correct specification
 for NHANES.
 
 ```{r survey-design}
-surv_data$wt_pooled <- surv_data$survey_weight / 8
+surv_data$wt_pooled <- surv_data$survey_weight / 10
 
 # Standardise cholesterol to per-SD units so the hazard ratio is interpretable
 # as the risk associated with a one-standard-deviation higher cholesterol level

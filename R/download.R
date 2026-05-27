@@ -67,12 +67,12 @@ nhanes_download <- function(file_code,
 .nhanes_download_one <- function(file_code, cycle, refresh, add_cycle_col) {
   rds_path <- .nhanes_xpt_rds_path(file_code, cycle)
 
-  # Return cached parse if valid
   if (!refresh && .nhanes_cache_valid(rds_path)) {
     if (getOption("nhanesR.verbose")) {
       cli::cli_inform("Loading cached {file_code} for {cycle}")
     }
     df <- readRDS(rds_path)
+    if ("SEQN" %in% names(df)) df$SEQN <- as.character(df$SEQN)
     return(df)
   }
 
@@ -119,12 +119,9 @@ nhanes_download <- function(file_code,
     }
   )
 
-  # Add cycle column
-  if (add_cycle_col) {
-    df$cycle <- cycle
-  }
+  if ("SEQN" %in% names(df)) df$SEQN <- as.character(df$SEQN)
+  if (add_cycle_col) df$cycle <- cycle
 
-  # Cache
   dir.create(dirname(rds_path), recursive = TRUE, showWarnings = FALSE)
   saveRDS(df, rds_path)
   .nhanes_write_hash(rds_path)
@@ -218,7 +215,9 @@ nhanes_download_analyte <- function(term,
     if (isTRUE(getOption("nhanesR.verbose"))) {
       cli::cli_inform("Loading cached {filename} for {cycle}")
     }
-    return(readRDS(rds_path))
+    df <- readRDS(rds_path)
+    if ("SEQN" %in% names(df)) df$SEQN <- as.character(df$SEQN)
+    return(df)
   }
 
   begin_year <- .nhanes_cycle_field(cycle, "begin_year")
@@ -261,6 +260,7 @@ nhanes_download_analyte <- function(term,
     }
   )
 
+  if ("SEQN" %in% names(df)) df$SEQN <- as.character(df$SEQN)
   if (add_cycle_col) df$cycle <- cycle
 
   dir.create(dirname(rds_path), recursive = TRUE, showWarnings = FALSE)

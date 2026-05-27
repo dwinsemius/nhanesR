@@ -17,9 +17,11 @@
   if (is.null(suffix)) {
     suffix <- .nhanes_cycle_field(cycle, "suffix")
   }
-  base     <- "https://wwwn.cdc.gov/Nchs/Nhanes"
-  url_path <- .nhanes_cycle_field(cycle, "url_path")
-  sprintf("%s/%s/%s%s.XPT", base, url_path, toupper(file_code), suffix)
+  begin_year <- .nhanes_cycle_field(cycle, "begin_year")
+  sprintf(
+    "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/%s/DataFiles/%s%s.xpt",
+    begin_year, toupper(file_code), suffix
+  )
 }
 
 #' Build the CDC URL for an NHANES component documentation page
@@ -28,9 +30,11 @@
   if (is.null(suffix)) {
     suffix <- .nhanes_cycle_field(cycle, "suffix")
   }
-  base     <- "https://wwwn.cdc.gov/Nchs/Nhanes"
-  url_path <- .nhanes_cycle_field(cycle, "url_path")
-  sprintf("%s/%s/%s%s.htm", base, url_path, toupper(file_code), suffix)
+  begin_year <- .nhanes_cycle_field(cycle, "begin_year")
+  sprintf(
+    "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/%s/DataFiles/%s%s.htm",
+    begin_year, toupper(file_code), suffix
+  )
 }
 
 #' Build the CDC FTP URL for a public-use LMF .dat file
@@ -91,6 +95,16 @@
   if (status != 200L) {
     if (file.exists(dest_path)) file.remove(dest_path)
     cli::cli_abort("HTTP {status} downloading {.url {url}}")
+  }
+
+  ct <- httr2::resp_content_type(resp)
+  if (grepl("text/html", ct, fixed = TRUE)) {
+    if (file.exists(dest_path)) file.remove(dest_path)
+    cli::cli_abort(
+      "CDC returned an HTML page instead of a data file for {.url {url}}.\\n
+       The file may have been moved or renamed. \\
+       Check {.fn nhanes_manifest} for the current URL."
+    )
   }
 
   if (verbose) cli::cli_progress_done()

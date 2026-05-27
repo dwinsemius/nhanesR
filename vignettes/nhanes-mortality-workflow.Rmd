@@ -389,9 +389,19 @@ round(exp(cbind(HR = coef(fit), confint(fit))), 3)
 - `RIAGENDR`: coded 1 = male, 2 = female; HR compares females to males.
 - `MI_history`: coded 1 = prior MI, 0 = none; HR estimates excess mortality
   risk in those with a history of heart attack.
-- `chol_med`: coded 1 = currently on cholesterol-lowering medication, 0 = no;
-  interpret with caution — those on medication likely had higher pre-treatment
-  cholesterol (confounding by indication).
+- `chol_med`: coded 1 = currently on cholesterol-lowering medication, 0 = no.
+  Two distinct biases apply simultaneously:
+    - *Confounding by indication*: participants prescribed a statin typically
+      had higher pre-treatment cholesterol and greater cardiovascular risk,
+      so statin users are sicker on average than their measured TC suggests.
+    - *Exposure mismeasurement*: statins lower TC by approximately 30–40 mg/dL,
+      so the measured TC in treated individuals systematically underestimates
+      their underlying lipid burden. Including `chol_med` as a covariate
+      adjusts for the group difference but does not recover the pre-treatment
+      value. Common analytic responses include restricting the analysis to
+      untreated participants, imputing pre-treatment TC by adding back an
+      estimated treatment effect, or stratifying by medication status and
+      reporting separate associations.
 
 ---
 

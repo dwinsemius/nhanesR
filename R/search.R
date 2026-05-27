@@ -19,22 +19,30 @@
 #'   all components.
 #' @param refresh Logical. Re-fetch the variable catalog from CDC even if
 #'   cached? Default `FALSE`.
+#' @param summarize Logical. If `TRUE` (default), collapse results to one row
+#'   per unique variable name, with cycles and file names shown as
+#'   comma-separated lists. Set to `FALSE` to return one row per
+#'   variable-per-cycle.
 #'
-#' @return A data frame with columns:
+#' @return When `summarize = TRUE` (default), a data frame with columns:
 #'   \describe{
 #'     \item{variable_name}{CDC variable code (e.g. `LBXTC`).}
 #'     \item{variable_desc}{Plain-language description.}
-#'     \item{file_name}{Data file code to pass to [nhanes_download()].}
-#'     \item{file_desc}{Description of the data file.}
-#'     \item{cycle}{Two-year cycle label (e.g. `"2015-2016"`).}
-#'     \item{component}{NHANES component.}
+#'     \item{file_names}{Comma-separated file codes across cycles.}
+#'     \item{cycles}{Comma-separated cycle labels.}
+#'     \item{n_cycles}{Number of cycles in which this variable appears.}
 #'   }
+#'   When `summarize = FALSE`, one row per variable per cycle with an
+#'   additional `file_name` and `component` column.
 #'
 #' @export
 #' @examples
 #' \dontrun{
-#' # Find total cholesterol across all cycles
+#' # Find total cholesterol across all cycles (summarized)
 #' nhanes_search_variables("total cholesterol")
+#'
+#' # Raw one-row-per-cycle output
+#' nhanes_search_variables("total cholesterol", summarize = FALSE)
 #'
 #' # Restrict to laboratory component
 #' nhanes_search_variables("alanine", component = "Laboratory")
@@ -44,7 +52,8 @@
 #' }
 nhanes_search_variables <- function(term,
                                     component = NULL,
-                                    refresh   = FALSE) {
+                                    refresh   = FALSE,
+                                    summarize = TRUE) {
   .nhanes_check_pkg("rvest")
 
   components <- if (!is.null(component)) {
@@ -74,12 +83,35 @@ nhanes_search_variables <- function(term,
 
   if (nrow(out) == 0L) {
     cli::cli_inform("No variables matched {.val {term}}. Try a broader term.")
-  } else {
-    cli::cli_inform(
-      "Found {nrow(out)} match{?es} for {.val {term}} across \\
-       {length(unique(out$cycle))} cycle{?s}."
-    )
+    return(if (summarize) .nhanes_empty_variable_summary() else
+                          .nhanes_empty_variable_list())
   }
+
+  if (summarize) {
+    # Collapse to one row per unique variable name
+    keys <- unique(out$variable_name)
+    summ <- lapply(keys, function(vn) {
+      rows <- out[out$variable_name == vn, , drop = FALSE]
+      # Sort cycles chronologically
+      rows <- rows[order(rows$cycle), ]
+      data.frame(
+        variable_name = vn,
+        variable_desc = rows$variable_desc[1L],
+        file_names    = paste(unique(rows$file_name), collapse = ", "),
+        cycles        = paste(unique(rows$cycle),     collapse = ", "),
+        n_cycles      = length(unique(rows$cycle)),
+        stringsAsFactors = FALSE
+      )
+    })
+    out <- do.call(rbind, summ)
+    out <- out[order(-out$n_cycles, out$variable_name), ]
+    rownames(out) <- NULL
+  }
+
+  cli::cli_inform(
+    "Found {length(unique(out$variable_name))} unique variable{?s} matching \\
+     {.val {term}}."
+  )
 
   out
 }
@@ -160,6 +192,17 @@ nhanes_search_variables <- function(term,
     file_desc     = character(),
     cycle         = character(),
     component     = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+.nhanes_empty_variable_summary <- function() {
+  data.frame(
+    variable_name = character(),
+    variable_desc = character(),
+    file_names    = character(),
+    cycles        = character(),
+    n_cycles      = integer(),
     stringsAsFactors = FALSE
   )
 }

@@ -4,7 +4,12 @@
 \alias{nhanes_search_variables}
 \title{Search NHANES variables by keyword}
 \usage{
-nhanes_search_variables(term, component = NULL, refresh = FALSE)
+nhanes_search_variables(
+  term,
+  component = NULL,
+  refresh = FALSE,
+  summarize = TRUE
+)
 }
 \arguments{
 \item{term}{Character. A keyword or phrase to search for. Matched
@@ -17,17 +22,23 @@ all components.}
 
 \item{refresh}{Logical. Re-fetch the variable catalog from CDC even if
 cached? Default \code{FALSE}.}
+
+\item{summarize}{Logical. If \code{TRUE} (default), collapse results to one row
+per unique variable name, with cycles and file names shown as
+comma-separated lists. Set to \code{FALSE} to return one row per
+variable-per-cycle.}
 }
 \value{
-A data frame with columns:
+When \code{summarize = TRUE} (default), a data frame with columns:
 \describe{
 \item{variable_name}{CDC variable code (e.g. \code{LBXTC}).}
 \item{variable_desc}{Plain-language description.}
-\item{file_name}{Data file code to pass to \code{\link[=nhanes_download]{nhanes_download()}}.}
-\item{file_desc}{Description of the data file.}
-\item{cycle}{Two-year cycle label (e.g. \code{"2015-2016"}).}
-\item{component}{NHANES component.}
+\item{file_names}{Comma-separated file codes across cycles.}
+\item{cycles}{Comma-separated cycle labels.}
+\item{n_cycles}{Number of cycles in which this variable appears.}
 }
+When \code{summarize = FALSE}, one row per variable per cycle with an
+additional \code{file_name} and \code{component} column.
 }
 \description{
 Searches the CDC NHANES variable catalog for variables whose name or
@@ -42,8 +53,11 @@ was stored in \code{LAB13} (1999-2000), \code{L13_B} (2001-2002), \code{L13_C}
 }
 \examples{
 \dontrun{
-# Find total cholesterol across all cycles
+# Find total cholesterol across all cycles (summarized)
 nhanes_search_variables("total cholesterol")
+
+# Raw one-row-per-cycle output
+nhanes_search_variables("total cholesterol", summarize = FALSE)
 
 # Restrict to laboratory component
 nhanes_search_variables("alanine", component = "Laboratory")

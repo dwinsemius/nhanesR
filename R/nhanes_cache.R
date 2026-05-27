@@ -36,7 +36,7 @@ nhanes_cache_dir <- function(path = NULL, create = TRUE) {
       cli::cli_inform("Created nhanesR cache directory: {.path {dir}}")
     }
   }
-  invisible(dir)
+  dir
 }
 
 #' Return a cache subdirectory path, creating it if needed

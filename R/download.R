@@ -88,13 +88,34 @@ nhanes_download <- function(file_code,
 
   .nhanes_download_file(url, tmp, desc = paste(file_code, cycle))
 
-  # Parse XPT
+  # Parse XPT — haven handles modern files; fall back to foreign for older
+  # V5 transport files (e.g. 1999-2000) that haven/ReadStat cannot parse.
   df <- tryCatch(
     haven::read_xpt(tmp),
     error = function(e) {
-      cli::cli_abort(
-        "Failed to parse XPT file for {file_code} / {cycle}: {conditionMessage(e)}"
-      )
+      if (requireNamespace("foreign", quietly = TRUE)) {
+        if (isTRUE(getOption("nhanesR.verbose"))) {
+          cli::cli_inform(
+            "haven could not parse {file_code} / {cycle}; retrying with foreign."
+          )
+        }
+        tryCatch(
+          as.data.frame(foreign::read.xport(tmp)),
+          error = function(e2) {
+            cli::cli_abort(
+              "Failed to parse XPT file for {file_code} / {cycle}: \\
+               {conditionMessage(e2)}"
+            )
+          }
+        )
+      } else {
+        cli::cli_abort(
+          "Failed to parse XPT file for {file_code} / {cycle}: \\
+           {conditionMessage(e)}\\n\\
+           Install {.pkg foreign} to enable fallback parsing of older XPT files: \\
+           {.code install.packages('foreign')}"
+        )
+      }
     }
   )
 

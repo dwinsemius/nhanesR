@@ -28,6 +28,7 @@ Imports:
     cli (>= 3.6.0),
     tools
 Suggests:
+    foreign,
     survey,
     survival,
     ggsurvfit,

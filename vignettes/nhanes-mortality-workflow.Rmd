@@ -116,10 +116,13 @@ Demographics file and be included in any survey-weighted analysis.
 ```{r download}
 cycles <- nhanes_cycles()[1:10, "cycle"]  # 1999-2018
 
-# When multiple cycles are requested, nhanes_download() returns a named list.
-# Each element is a data frame; a 'cycle' column is added automatically.
-demo_list  <- nhanes_download("DEMO",  cycles)
-tchol_list <- nhanes_download("TCHOL", cycles)
+# DEMO has a consistent file name across all cycles; nhanes_download() works fine.
+demo_list <- nhanes_download("DEMO", cycles)
+
+# Total cholesterol changed file names across early cycles:
+#   1999-2000 → LAB13,  2001-2002 → L13_B,  2003-2004 → L13_C,  2005+ → TCHOL_D …
+# nhanes_download_analyte() looks up the correct file name per cycle automatically.
+tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
 ```
 
 Files are downloaded from the CDC in SAS transport (XPT) format, parsed into

@@ -184,6 +184,94 @@ nhanes_search_variables <- function(term,
   out
 }
 
+# ── nhanes_variable_map ────────────────────────────────────────────────────────
+
+#' Build a per-cycle variable map for an analyte
+#'
+#' Wraps [nhanes_search_variables()] to return a single-row-per-cycle lookup
+#' table showing which variable name and file to use for a given analyte across
+#' NHANES cycles. Useful for analytes whose variable names changed between
+#' cycles (e.g. HDL cholesterol: `LBDHDL` → `LBXHDD` → `LBDHDD`).
+#'
+#' When multiple variables match within a cycle (e.g. mg/dL and mmol/L
+#' versions), the function prefers the non-SI variable. Comment-code variables
+#' (suffix `LC`/`LCN` or "comment" in description) are always dropped.
+#'
+#' @param term Character. Search term passed to [nhanes_search_variables()].
+#' @param component Character or `NULL`. NHANES component to search.
+#'   Default `"Laboratory"`.
+#' @param keep_vars Character vector or `NULL`. If provided, only variables
+#'   whose names appear in this vector are retained before the per-cycle
+#'   deduplication step. Useful for disambiguating serum vs. urine forms of
+#'   the same analyte (e.g. serum vs. urinary creatinine).
+#' @param refresh Logical. Re-fetch the variable catalog? Default `FALSE`.
+#'
+#' @return A data frame with columns `cycle`, `variable_name`, and `file_name`,
+#'   one row per cycle in which the analyte was measured. Returns zero rows if
+#'   nothing matches.
+#' @export
+#' @examples
+#' \dontrun{
+#' # HDL cholesterol across all cycles
+#' nhanes_variable_map("HDL")
+#'
+#' # Serum creatinine only (exclude urine variables)
+#' nhanes_variable_map("creatinine", keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
+#'
+#' # Urinary albumin only
+#' nhanes_variable_map("albumin", keep_vars = c("URXUMA", "UR2UMA", "UR1MA"))
+#' }
+nhanes_variable_map <- function(term,
+                                component = "Laboratory",
+                                keep_vars = NULL,
+                                refresh   = FALSE) {
+  raw <- nhanes_search_variables(term,
+                                 component = component,
+                                 refresh   = refresh,
+                                 summarize = FALSE)
+
+  if (nrow(raw) == 0L) return(.nhanes_empty_variable_map())
+
+  # Drop comment-code variables
+  is_comment <- grepl("(LC|LCN)$", raw$variable_name, ignore.case = TRUE) |
+                grepl("comment",    raw$variable_desc,  ignore.case = TRUE)
+  raw <- raw[!is_comment, , drop = FALSE]
+
+  if (!is.null(keep_vars)) {
+    raw <- raw[raw$variable_name %in% keep_vars, , drop = FALSE]
+  }
+
+  if (nrow(raw) == 0L) return(.nhanes_empty_variable_map())
+
+  # Count cycles per variable for tie-breaking
+  counts <- table(raw$variable_name)
+
+  out_rows <- lapply(unique(raw$cycle), function(cy) {
+    sub <- raw[raw$cycle == cy, , drop = FALSE]
+    if (nrow(sub) == 1L) return(sub[1L, ])
+    # Prefer non-SI variable when both exist in the same cycle
+    non_si <- sub[!grepl("SI$", sub$variable_name), , drop = FALSE]
+    if (nrow(non_si) >= 1L) sub <- non_si
+    # Break remaining ties by choosing the variable present in most cycles
+    sub[which.max(counts[sub$variable_name]), , drop = FALSE]
+  })
+
+  out <- do.call(rbind, out_rows)
+  out <- out[order(out$cycle), c("cycle", "variable_name", "file_name"),
+             drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+.nhanes_empty_variable_map <- function() {
+  data.frame(
+    cycle         = character(),
+    variable_name = character(),
+    file_name     = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
 .nhanes_empty_variable_list <- function() {
   data.frame(
     variable_name = character(),

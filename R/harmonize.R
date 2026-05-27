@@ -107,8 +107,14 @@ nhanes_harmonize <- function(data_list,
          Example: {.code c(LBDHDL = \"HDL_mgdl\", LBDHDD = \"HDL_mgdl\")}"
       )
     }
+    target_names <- unique(unname(mapping))
     result <- lapply(data_list, function(df) {
-      .nhanes_harmonize_by_mapping(df, mapping)
+      df <- .nhanes_harmonize_by_mapping(df, mapping)
+      if (isTRUE(trim)) {
+        keep <- intersect(c("SEQN", "cycle", target_names), names(df))
+        df   <- df[, keep, drop = FALSE]
+      }
+      df
     })
   } else {
     cli::cli_abort(

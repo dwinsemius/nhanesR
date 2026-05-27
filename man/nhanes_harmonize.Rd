@@ -4,7 +4,15 @@
 \alias{nhanes_harmonize}
 \title{Harmonize variable names across NHANES cycles and stack into one data frame}
 \usage{
-nhanes_harmonize(data_list, mapping, stack = TRUE)
+nhanes_harmonize(
+  data_list,
+  mapping = NULL,
+  unit = NULL,
+  name = NULL,
+  label_pattern = NULL,
+  prefer_mgdl = TRUE,
+  stack = TRUE
+)
 }
 \arguments{
 \item{data_list}{A named list of per-cycle data frames, as returned by
@@ -12,43 +20,74 @@ nhanes_harmonize(data_list, mapping, stack = TRUE)
 
 \item{mapping}{A named character vector where \strong{names} are the old
 (per-cycle) variable names and \strong{values} are the single common name to
-use across all cycles. Multiple old names can map to the same new name.
-Example: \code{c(LBDHDL = "HDL_mgdL", LBXHDD = "HDL_mgdL", LBDHDD = "HDL_mgdL")}.}
+use across all cycles. Multiple old names may map to the same new name.
+Example: \code{c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl", LBDHDD = "HDL_mgdl")}. Ignored when \code{unit} is provided.}
 
-\item{stack}{Logical. If \code{TRUE} (default), row-bind the renamed data frames
-into a single data frame using \code{\link[=nhanes_stack]{nhanes_stack()}}. Set to \code{FALSE} to return
-the renamed list without stacking.}
+\item{unit}{Character or \code{NULL}. A unit string to match against column
+label attributes (case-insensitive). Common values: \code{"mg/dL"}, \code{"g/dL"},
+\code{"U/L"}, \code{"umol/L"}. When supplied, \code{name} must also be provided.}
+
+\item{name}{Character or \code{NULL}. The output column name to use when
+\code{unit} is supplied (e.g. \code{"HDL_mgdl"}).}
+
+\item{label_pattern}{Character or \code{NULL}. An additional regex matched
+against column labels when \code{unit} is used. Use this to disambiguate when
+a file contains multiple columns in the same unit (e.g. \code{"HDL"} to
+select only the HDL column from a file that also contains total
+cholesterol in mg/dL).}
+
+\item{prefer_mgdl}{Logical. If \code{TRUE} (default), drop SI-unit columns
+(mmol/L, g/L, etc.) when a conventional-unit counterpart (mg/dL, g/dL,
+U/L) exists in the same data frame. Detection uses label attributes:
+the unit token is stripped from each label and SI columns whose base
+description matches a conventional-unit column are removed. Applied
+before any renaming step.}
+
+\item{stack}{Logical. If \code{TRUE} (default), row-bind the renamed data
+frames into a single data frame using \code{\link[=nhanes_stack]{nhanes_stack()}}. Set to \code{FALSE}
+to return the renamed list without stacking.}
 }
 \value{
-If \code{stack = TRUE} (default), a single data frame with all cycles
-row-bound and the harmonized variable names present. If \code{stack = FALSE},
-a named list of data frames with renamed variables.
+If \code{stack = TRUE} (default), a single stacked data frame with the
+harmonized variable name present. If \code{stack = FALSE}, a named list of
+data frames with renamed variables.
 }
 \description{
 NHANES analytes are sometimes stored under different variable names in
-different cycles (e.g. HDL cholesterol: \code{LBDHDL} in 1999-2002, \code{LBXHDD} in
-2003-2004, \code{LBDHDD} from 2005 onward). \code{nhanes_harmonize()} renames these
-per-cycle variables to a single common name before stacking.
+different cycles (e.g. HDL cholesterol: \code{LBDHDL} in 1999-2002, \code{LBXHDD}
+in 2003-2004, \code{LBDHDD} from 2005 onward). \code{nhanes_harmonize()} offers two
+ways to resolve this:
 }
 \details{
-Use \code{\link[=nhanes_variable_map]{nhanes_variable_map()}} to discover which variable names appear in which
-cycles, then pass the rename mapping here.
+\itemize{
+\item \strong{Unit-based} (\code{unit} + \code{name}): scans column label attributes for the
+specified unit string (e.g. \code{"mg/dL"}) and renames the matching column.
+No need to know the CDC variable codes in advance. Use \code{label_pattern} to
+disambiguate when a file contains multiple columns in the same unit
+(e.g. early cycles that bundled total cholesterol and HDL together).
+\item \strong{Explicit mapping} (\code{mapping}): a named character vector of old -> new
+variable names. More verbose but unambiguous.
+}
 }
 \examples{
 \dontrun{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# HDL cholesterol: three different variable names across ten cycles
+# Unit-based: no need to know variable codes
 hdl_list <- nhanes_download_analyte("HDL", cycles)
+hdl <- nhanes_harmonize(hdl_list, unit = "mg/dL", name = "HDL_mgdl",
+                         label_pattern = "HDL")
+
+# Explicit mapping (requires knowing the variable codes)
 hdl <- nhanes_harmonize(
   hdl_list,
-  mapping = c(LBDHDL = "HDL_mgdL", LBXHDD = "HDL_mgdL", LBDHDD = "HDL_mgdL")
+  mapping = c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl",
+              LBDHDD = "HDL_mgdl")
 )
-table(hdl$cycle, is.na(hdl$HDL_mgdL))
 
-# Total cholesterol needs no harmonization (LBXTC throughout), but you can
-# still rename for clarity:
+# Total cholesterol — rename for clarity
 tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
-tchol <- nhanes_harmonize(tchol_list, mapping = c(LBXTC = "TC_mgdL"))
+tchol <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
+                           label_pattern = "total cholesterol")
 }
 }

@@ -11,6 +11,7 @@ nhanes_harmonize(
   name = NULL,
   label_pattern = NULL,
   prefer_mgdl = TRUE,
+  trim = TRUE,
   stack = TRUE
 )
 }
@@ -43,14 +44,20 @@ the unit token is stripped from each label and SI columns whose base
 description matches a conventional-unit column are removed. Applied
 before any renaming step.}
 
+\item{trim}{Logical. Only applies when \code{unit} is used. If \code{TRUE} (default),
+the returned data frame contains only \code{SEQN}, \code{cycle}, and the column
+named by \code{name}. Set to \code{FALSE} to retain all columns (useful when the
+source file contains other variables you want to keep).}
+
 \item{stack}{Logical. If \code{TRUE} (default), row-bind the renamed data
 frames into a single data frame using \code{\link[=nhanes_stack]{nhanes_stack()}}. Set to \code{FALSE}
 to return the renamed list without stacking.}
 }
 \value{
-If \code{stack = TRUE} (default), a single stacked data frame with the
-harmonized variable name present. If \code{stack = FALSE}, a named list of
-data frames with renamed variables.
+If \code{stack = TRUE} (default), a single stacked data frame. When
+\code{unit} is used with \code{trim = TRUE} (the default), only \code{SEQN}, \code{cycle},
+and the harmonized column are returned — ready for merging. If
+\code{stack = FALSE}, a named list of data frames.
 }
 \description{
 NHANES analytes are sometimes stored under different variable names in
@@ -73,21 +80,22 @@ variable names. More verbose but unambiguous.
 \dontrun{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# Unit-based: no need to know variable codes
+# Unit-based: trim = TRUE (default) returns SEQN + cycle + HDL_mgdl only
 hdl_list <- nhanes_download_analyte("HDL", cycles)
 hdl <- nhanes_harmonize(hdl_list, unit = "mg/dL", name = "HDL_mgdl",
                          label_pattern = "HDL")
 
-# Explicit mapping (requires knowing the variable codes)
+# Merge two analytes cleanly
+tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
+TC  <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
+                         label_pattern = "total cholesterol")
+lipids <- merge(hdl, TC, by = c("SEQN", "cycle"))
+
+# Explicit mapping (trim does not apply)
 hdl <- nhanes_harmonize(
   hdl_list,
   mapping = c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl",
               LBDHDD = "HDL_mgdl")
 )
-
-# Total cholesterol — rename for clarity
-tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
-tchol <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
-                           label_pattern = "total cholesterol")
 }
 }

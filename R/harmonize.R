@@ -37,34 +37,40 @@
 #'   the unit token is stripped from each label and SI columns whose base
 #'   description matches a conventional-unit column are removed. Applied
 #'   before any renaming step.
+#' @param trim Logical. Only applies when `unit` is used. If `TRUE` (default),
+#'   the returned data frame contains only `SEQN`, `cycle`, and the column
+#'   named by `name`. Set to `FALSE` to retain all columns (useful when the
+#'   source file contains other variables you want to keep).
 #' @param stack Logical. If `TRUE` (default), row-bind the renamed data
 #'   frames into a single data frame using [nhanes_stack()]. Set to `FALSE`
 #'   to return the renamed list without stacking.
 #'
-#' @return If `stack = TRUE` (default), a single stacked data frame with the
-#'   harmonized variable name present. If `stack = FALSE`, a named list of
-#'   data frames with renamed variables.
+#' @return If `stack = TRUE` (default), a single stacked data frame. When
+#'   `unit` is used with `trim = TRUE` (the default), only `SEQN`, `cycle`,
+#'   and the harmonized column are returned — ready for merging. If
+#'   `stack = FALSE`, a named list of data frames.
 #' @export
 #' @examples
 #' \dontrun{
 #' cycles <- nhanes_cycles()[1:10, "cycle"]
 #'
-#' # Unit-based: no need to know variable codes
+#' # Unit-based: trim = TRUE (default) returns SEQN + cycle + HDL_mgdl only
 #' hdl_list <- nhanes_download_analyte("HDL", cycles)
 #' hdl <- nhanes_harmonize(hdl_list, unit = "mg/dL", name = "HDL_mgdl",
 #'                          label_pattern = "HDL")
 #'
-#' # Explicit mapping (requires knowing the variable codes)
+#' # Merge two analytes cleanly
+#' tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
+#' TC  <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
+#'                          label_pattern = "total cholesterol")
+#' lipids <- merge(hdl, TC, by = c("SEQN", "cycle"))
+#'
+#' # Explicit mapping (trim does not apply)
 #' hdl <- nhanes_harmonize(
 #'   hdl_list,
 #'   mapping = c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl",
 #'               LBDHDD = "HDL_mgdl")
 #' )
-#'
-#' # Total cholesterol — rename for clarity
-#' tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
-#' tchol <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
-#'                            label_pattern = "total cholesterol")
 #' }
 nhanes_harmonize <- function(data_list,
                               mapping       = NULL,
@@ -72,6 +78,7 @@ nhanes_harmonize <- function(data_list,
                               name          = NULL,
                               label_pattern = NULL,
                               prefer_mgdl   = TRUE,
+                              trim          = TRUE,
                               stack         = TRUE) {
   if (isTRUE(prefer_mgdl)) {
     data_list <- lapply(data_list, .nhanes_drop_si_duplicates)
@@ -86,7 +93,12 @@ nhanes_harmonize <- function(data_list,
       )
     }
     result <- lapply(data_list, function(df) {
-      .nhanes_harmonize_by_unit(df, unit, name, label_pattern)
+      df <- .nhanes_harmonize_by_unit(df, unit, name, label_pattern)
+      if (isTRUE(trim)) {
+        keep <- intersect(c("SEQN", "cycle", name), names(df))
+        df   <- df[, keep, drop = FALSE]
+      }
+      df
     })
   } else if (!is.null(mapping)) {
     if (!is.character(mapping) || is.null(names(mapping))) {

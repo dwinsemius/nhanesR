@@ -56,7 +56,7 @@ to return the renamed list without stacking.}
 \value{
 If \code{stack = TRUE} (default), a single stacked data frame. When
 \code{unit} is used with \code{trim = TRUE} (the default), only \code{SEQN}, \code{cycle},
-and the harmonized column are returned — ready for merging. If
+and the harmonized column are returned -- ready for merging. If
 \code{stack = FALSE}, a named list of data frames.
 }
 \description{

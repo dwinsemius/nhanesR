@@ -2,7 +2,7 @@
 % Please edit documentation in R/mortality.R
 \name{nhanes_followup_summary}
 \alias{nhanes_followup_summary}
-\title{Summarise mortality follow-up by cycle}
+\title{Summarize mortality follow-up by cycle}
 \usage{
 nhanes_followup_summary(data)
 }

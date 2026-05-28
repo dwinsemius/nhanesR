@@ -14,7 +14,7 @@
 #'
 #' ## Package options
 #'
-#' Three options control nhanesR behaviour. Set any of them in your `.Rprofile`
+#' Three options control nhanesR behavior. Set any of them in your `.Rprofile`
 #' to make the change permanent across sessions; changes made during a session
 #' (via `nhanes_cache_dir()` or `options()` directly) last only until the
 #' session ends.
@@ -56,7 +56,7 @@
 #'
 #' @return The current (or newly set) cache directory path, invisibly.
 #' @seealso [nhanes_download()] and [nhanes_download_analyte()], whose caching
-#'   behaviour is controlled by the options described above.
+#'   behavior is controlled by the options described above.
 #' @export
 #' @examples
 #' # View current cache location

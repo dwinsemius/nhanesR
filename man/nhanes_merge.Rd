@@ -36,10 +36,10 @@ variables.
 
 The appropriate weight depends on which components are merged:
 \itemize{
-\item \strong{Demographics only} → \code{WTINT2YR} (interview weight)
-\item \strong{Any exam/lab component} → \code{WTMEC2YR} (MEC exam weight)
-\item \strong{Dietary 24-hr recall} → \code{WTDRD1} or \code{WTDR2D}
-\item \strong{Multi-cycle pooled} → divide the 2-year weight by the number of cycles,
+\item \strong{Demographics only} -> \code{WTINT2YR} (interview weight)
+\item \strong{Any exam/lab component} -> \code{WTMEC2YR} (MEC exam weight)
+\item \strong{Dietary 24-hr recall} -> \code{WTDRD1} or \code{WTDR2D}
+\item \strong{Multi-cycle pooled} -> divide the 2-year weight by the number of cycles,
 or use the 4-year combined weight where available
 }
 

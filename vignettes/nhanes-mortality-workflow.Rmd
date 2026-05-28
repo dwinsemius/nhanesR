@@ -48,7 +48,7 @@ library(survey)
 
 ## Package options
 
-Three options control nhanesR behaviour. The package sets defaults at load
+Three options control nhanesR behavior. The package sets defaults at load
 time, but any option defined in your `.Rprofile` before loading takes
 precedence.
 

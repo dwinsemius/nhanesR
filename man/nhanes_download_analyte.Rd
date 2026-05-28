@@ -36,15 +36,15 @@ are requested, a named list of data frames keyed by cycle label.
 }
 \description{
 A smarter alternative to \code{\link[=nhanes_download]{nhanes_download()}} for analytes whose file name
-changed across cycles (e.g. total cholesterol: \code{LAB13} → \code{L13_B} → \code{L13_C}
-→ \code{TCHOL_D} onward). Uses \code{\link[=nhanes_variable_map]{nhanes_variable_map()}} to look up the correct
+changed across cycles (e.g. total cholesterol: \code{LAB13} -> \code{L13_B} -> \code{L13_C}
+-> \code{TCHOL_D} onward). Uses \code{\link[=nhanes_variable_map]{nhanes_variable_map()}} to look up the correct
 CDC file name for each cycle, then downloads using the exact catalog name.
 }
 \examples{
 \dontrun{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# Total cholesterol — file name changed in 1999-2004; this handles it
+# Total cholesterol -- file name changed in 1999-2004; this handles it
 tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
 
 # Serum creatinine (keep_vars excludes urine creatinine)

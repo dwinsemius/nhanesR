@@ -41,7 +41,7 @@ nothing matches.
 Wraps \code{\link[=nhanes_search_variables]{nhanes_search_variables()}} to return a single-row-per-cycle lookup
 table showing which variable name and file to use for a given analyte across
 NHANES cycles. Useful for analytes whose variable names changed between
-cycles (e.g. HDL cholesterol: \code{LBDHDL} → \code{LBXHDD} → \code{LBDHDD}).
+cycles (e.g. HDL cholesterol: \code{LBDHDL} -> \code{LBXHDD} -> \code{LBDHDD}).
 }
 \details{
 When multiple variables match within a cycle (e.g. mg/dL and mmol/L

@@ -14,6 +14,7 @@ Description: Provides tools for downloading and organizing National Health and
     Developed with assistance from Claude Code (Anthropic).
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en-US
 LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)

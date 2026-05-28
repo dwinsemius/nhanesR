@@ -507,7 +507,7 @@ nhanes_ucod_labels <- function() {
   .ucod_labels
 }
 
-#' Summarise mortality follow-up by cycle
+#' Summarize mortality follow-up by cycle
 #'
 #' Diagnostic helper that reports median follow-up time, event rate, and
 #' maximum possible follow-up per cycle. Useful for assessing the asymmetric

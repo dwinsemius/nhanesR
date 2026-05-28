@@ -51,7 +51,7 @@ sub("_[A-Z]$", "", m$file_name)
 }\if{html}{\out{</div>}}
 
 Note that some analyte file names changed across cycles (e.g. total
-cholesterol: \code{LAB13} → \code{L13_B} → \code{TCHOL_D} onward). For those cases,
+cholesterol: \code{LAB13} -> \code{L13_B} -> \code{TCHOL_D} onward). For those cases,
 use \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}} instead, which looks up the correct CDC
 filename for each cycle automatically via the variable catalog.
 }

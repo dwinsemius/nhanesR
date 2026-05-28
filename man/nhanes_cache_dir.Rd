@@ -27,7 +27,7 @@ in your \code{.Rprofile}.
 \details{
 \subsection{Package options}{
 
-Three options control nhanesR behaviour. Set any of them in your \code{.Rprofile}
+Three options control nhanesR behavior. Set any of them in your \code{.Rprofile}
 to make the change permanent across sessions; changes made during a session
 (via \code{nhanes_cache_dir()} or \code{options()} directly) last only until the
 session ends.\tabular{lll}{
@@ -78,5 +78,5 @@ Filter(function(x) startsWith(x, "nhanesR."), names(options()))
 }
 \seealso{
 \code{\link[=nhanes_download]{nhanes_download()}} and \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}}, whose caching
-behaviour is controlled by the options described above.
+behavior is controlled by the options described above.
 }

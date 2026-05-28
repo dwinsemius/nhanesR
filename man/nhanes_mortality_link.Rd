@@ -28,7 +28,7 @@ all: \code{c("ELIGSTAT", "MORTSTAT", "UCOD_LEADING", "DIABETES", "HYPERTEN", "PE
 \value{
 \code{nhanes_data} with LMF columns appended. Rows with no mortality
 record (i.e., SEQNs not present in the LMF) will have \code{NA} for all LMF
-columns — this should not occur for continuous NHANES 1999-2018.
+columns -- this should not occur for continuous NHANES 1999-2018.
 }
 \description{
 Performs a left join of the parsed LMF onto a data frame containing NHANES

@@ -75,7 +75,7 @@ surv_data <- nhanes_survival_prep(analytic_mort,
 
 ## Configuration
 
-Downloaded files are cached locally. Three options control behaviour — set
+Downloaded files are cached locally. Three options control behavior — set
 them in `~/.Rprofile` to make changes permanent:
 
 ```r

@@ -49,7 +49,7 @@ library(nhanesR)
 
 ## Setup and options
 
-Three options control nhanesR behaviour. The package sets defaults at load
+Three options control nhanesR behavior. The package sets defaults at load
 time, but any option already defined in your `.Rprofile` takes precedence —
 nhanesR only sets an option if it is not already defined.
 
@@ -164,7 +164,7 @@ mi_list <- nhanes_download_analyte(
 )
 ```
 
-**Invalid file codes:** if an unrecognised code is passed to
+**Invalid file codes:** if an unrecognized code is passed to
 `nhanes_download()`, CDC returns HTTP 200 with an HTML error page rather than
 a 404. nhanesR detects this via the `Content-Type` header and aborts with a
 message directing you to `nhanes_manifest()` to confirm the correct name.
@@ -223,7 +223,7 @@ analytic_mort <- nhanes_mortality_link(analytic)
 
 | Function | Purpose | Leads to |
 |----------|---------|----------|
-| `nhanes_survival_prep()` | Remove ineligible participants (`ELIGSTAT != 1`), create `time` and `event` columns, optionally create `event_cause` for cause-specific mortality | Downstream `survival`/`survey` modelling |
+| `nhanes_survival_prep()` | Remove ineligible participants (`ELIGSTAT != 1`), create `time` and `event` columns, optionally create `event_cause` for cause-specific mortality | Downstream `survival`/`survey` modeling |
 | `nhanes_followup_summary()` | Report median follow-up, event rate, and maximum follow-up by cycle — useful for assessing asymmetric censoring | (diagnostic) |
 | `nhanes_ucod_labels()` | Lookup table of ICD-10 recode codes and labels accepted by the `cause` argument of `nhanes_survival_prep()` | `nhanes_survival_prep()` |
 
@@ -253,7 +253,7 @@ surv_cvd <- nhanes_survival_prep(analytic_mort,
 
 | Function | Purpose |
 |----------|---------|
-| `nhanes_cache_dir()` | View or change the local cache directory; see the **Setup** section above for the options that govern caching behaviour |
+| `nhanes_cache_dir()` | View or change the local cache directory; see the **Setup** section above for the options that govern caching behavior |
 
 ---
 

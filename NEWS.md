@@ -30,7 +30,7 @@ Initial release.
   creates `time` and `event` columns, optionally creates `event_cause` for
   cause-specific mortality, and warns about asymmetric follow-up across cycles.
 
-* `nhanes_followup_summary()` — summarise follow-up time and event rates by
+* `nhanes_followup_summary()` — summarize follow-up time and event rates by
   cycle.
 
 * `nhanes_ucod_labels()` — return the 11-category ICD-10 underlying cause-of-
@@ -71,5 +71,5 @@ Initial release.
 
 * Added "NHANES Mortality Linkage: A Complete Workflow" vignette illustrating
   the full pipeline from file discovery through survey-weighted Cox proportional
-  hazards modelling, using serum total cholesterol and cardiovascular mortality
+  hazards modeling, using serum total cholesterol and cardiovascular mortality
   across ten cycles (1999–2018) as a worked example.

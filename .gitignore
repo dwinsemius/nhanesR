@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *.Rproj
+.DS_Store
+transcript_export.R
+session_transcript.md

@@ -23,10 +23,17 @@
 #'     \item{censor_date}{Character. Mortality follow-up censor date.}
 #'   }
 #'
+#' @seealso [nhanes_manifest()] to see what files are available within a cycle;
+#'   [nhanes_download()] to download files; [nhanes_lmf_cycles()] for cycles
+#'   that have public-use mortality linkage.
 #' @export
 #' @examples
 #' nhanes_cycles()
 #' nhanes_cycles(include_iii = TRUE)
+#'
+#' # Extract cycle labels as a character vector for use in download functions
+#' cycles <- nhanes_cycles()[["cycle"]]
+#' cycles[1:10]  # first ten continuous cycles (1999-2018)
 nhanes_cycles <- function(include_iii = FALSE) {
   out <- .nhanes_cycles
   if (include_iii) {
@@ -62,6 +69,9 @@ nhanes_cycles <- function(include_iii = FALSE) {
 #'     \item{date_published}{Date published, if available.}
 #'   }
 #'
+#' @seealso [nhanes_cycles()] for valid cycle labels; [nhanes_download()] to
+#'   download a file by its base code; [nhanes_search_variables()] to search
+#'   the variable catalog by keyword.
 #' @export
 #' @examples
 #' \dontrun{

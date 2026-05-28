@@ -35,6 +35,9 @@
 #'   When `summarize = FALSE`, one row per variable per cycle with an
 #'   additional `file_name` and `component` column.
 #'
+#' @seealso [nhanes_variable_map()] for a per-cycle file/variable lookup table
+#'   ready for use with [nhanes_download_analyte()]; [nhanes_manifest()] to
+#'   browse files rather than variables.
 #' @export
 #' @examples
 #' \dontrun{
@@ -209,6 +212,9 @@ nhanes_search_variables <- function(term,
 #' @return A data frame with columns `cycle`, `variable_name`, and `file_name`,
 #'   one row per cycle in which the analyte was measured. Returns zero rows if
 #'   nothing matches.
+#' @seealso [nhanes_search_variables()] for the underlying keyword search;
+#'   [nhanes_download_analyte()] which uses this map to resolve filenames
+#'   automatically.
 #' @export
 #' @examples
 #' \dontrun{

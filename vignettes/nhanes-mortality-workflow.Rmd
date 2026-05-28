@@ -46,6 +46,51 @@ library(survey)
 
 ---
 
+## Package options
+
+Three options control nhanesR behaviour. The package sets defaults at load
+time, but any option defined in your `.Rprofile` before loading takes
+precedence.
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `nhanesR.cache_dir` | OS user-data directory | Root path for all cached RDS files |
+| `nhanesR.verbose` | `TRUE` | Print progress messages during downloads |
+| `nhanesR.timeout` | `120L` | HTTP timeout in seconds |
+
+Default cache locations by platform:
+
+| Platform | Path |
+|----------|------|
+| macOS | `~/Library/Application Support/nhanesR` |
+| Linux | `~/.local/share/nhanesR` (or `$XDG_DATA_HOME/nhanesR`) |
+| Windows | `%APPDATA%/nhanesR` |
+
+To make changes permanent, add lines like these to your `~/.Rprofile`:
+
+```r
+options(
+  nhanesR.cache_dir = "/data/nhanes_cache",  # e.g. a shared server path
+  nhanesR.verbose   = FALSE,
+  nhanesR.timeout   = 300L
+)
+```
+
+To check or change settings interactively during a session:
+
+```{r options-interactive}
+# View current cache location
+nhanes_cache_dir()
+
+# Change for this session only
+nhanes_cache_dir("~/my_nhanes_cache")
+
+# Suppress download messages for this session
+options(nhanesR.verbose = FALSE)
+```
+
+---
+
 ## Background: NHANES structure
 
 NHANES (National Health and Nutrition Examination Survey) is conducted in

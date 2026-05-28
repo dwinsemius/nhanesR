@@ -33,6 +33,9 @@
 #' This function warns but does not enforce weight selection. Use
 #' [nhanes_cycles()] to look up available weight variable names per cycle.
 #'
+#' @seealso [nhanes_stack()] to row-bind per-cycle lists before merging;
+#'   [nhanes_download()] to obtain the component data frames;
+#'   [nhanes_mortality_link()] to append mortality follow-up after merging.
 #' @export
 #' @examples
 #' \dontrun{
@@ -141,6 +144,9 @@ nhanes_merge <- function(...,
 #' @return A single data frame with all cycles stacked. A `cycle` column is
 #'   always included.
 #'
+#' @seealso [nhanes_harmonize()] which calls this internally and also renames
+#'   variables across cycles; [nhanes_merge()] to join components by SEQN;
+#'   [nhanes_mortality_link()] which expects a stacked data frame as input.
 #' @export
 #' @examples
 #' \dontrun{

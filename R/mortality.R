@@ -78,6 +78,7 @@ nhanes_mortality_download <- function(cycles = NULL,
 #' List NHANES cycles with a public-use LMF
 #'
 #' @return Character vector of cycle labels.
+#' @seealso [nhanes_mortality_link()], [nhanes_mortality_download()]
 #' @export
 nhanes_lmf_cycles <- function() {
   .lmf_registry$cycle
@@ -113,6 +114,9 @@ nhanes_lmf_cycles <- function() {
 #'   contain **synthetic (perturbed) values** introduced by CDC to reduce
 #'   re-identification risk. `MORTSTAT` and `ELIGSTAT` are not perturbed.
 #'
+#' @seealso [nhanes_mortality_download()] to download the raw `.dat` files;
+#'   [nhanes_mortality_link()] to join parsed mortality data onto an analytic
+#'   dataset.
 #' @export
 #' @examples
 #' \dontrun{
@@ -187,6 +191,9 @@ nhanes_mortality_parse <- function(cycles  = NULL,
 #'   record (i.e., SEQNs not present in the LMF) will have `NA` for all LMF
 #'   columns — this should not occur for continuous NHANES 1999-2018.
 #'
+#' @seealso [nhanes_survival_prep()] to convert the linked data into a survival
+#'   dataset; [nhanes_lmf_cycles()] for the cycles with public-use LMF;
+#'   [nhanes_stack()] to row-bind multi-cycle data before linking.
 #' @export
 #' @examples
 #' \dontrun{
@@ -300,6 +307,9 @@ nhanes_mortality_link <- function(nhanes_data,
 #'   `MORTSTAT` is not perturbed. Cause-specific analyses using `UCOD_LEADING`
 #'   should be interpreted with this in mind.
 #'
+#' @seealso [nhanes_mortality_link()] which produces the input for this
+#'   function; [nhanes_followup_summary()] to check follow-up time by cycle;
+#'   [nhanes_ucod_labels()] for cause-of-death codes accepted by `cause`.
 #' @export
 #' @examples
 #' \dontrun{
@@ -488,6 +498,8 @@ nhanes_survival_prep <- function(data,
 #' variable, including code, plain-language label, and ICD-10 chapter ranges.
 #'
 #' @return A data frame with columns `code`, `label`, `icd10_range`.
+#' @seealso [nhanes_survival_prep()] where the `cause` argument accepts these
+#'   codes.
 #' @export
 #' @examples
 #' nhanes_ucod_labels()
@@ -503,6 +515,7 @@ nhanes_ucod_labels <- function() {
 #'
 #' @param data A data frame from [nhanes_survival_prep()].
 #' @return A data frame with one row per cycle.
+#' @seealso [nhanes_survival_prep()] which produces the required input.
 #' @export
 #' @examples
 #' \dontrun{

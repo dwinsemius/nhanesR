@@ -49,6 +49,10 @@
 #'   `unit` is used with `trim = TRUE` (the default), only `SEQN`, `cycle`,
 #'   and the harmonized column are returned — ready for merging. If
 #'   `stack = FALSE`, a named list of data frames.
+#' @seealso [nhanes_download_analyte()] which produces the per-cycle list
+#'   consumed by this function; [nhanes_stack()] for row-binding without
+#'   renaming; [nhanes_variable_map()] to inspect variable names per cycle
+#'   before choosing a mapping.
 #' @export
 #' @examples
 #' \dontrun{

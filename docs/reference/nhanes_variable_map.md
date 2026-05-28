@@ -54,6 +54,13 @@ versions), the function prefers the non-SI variable. Comment-code
 variables (suffix `LC`/`LCN` or "comment" in description) are always
 dropped.
 
+## See also
+
+[`nhanes_search_variables()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)
+for the underlying keyword search;
+[`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)
+which uses this map to resolve filenames automatically.
+
 ## Examples
 
 ``` r

@@ -45,3 +45,8 @@ lmf <- nhanes_mortality_parse(c("2015-2016", "2017-2018"))
 lmf[["2015-2016"]]
 }
 }
+\seealso{
+\code{\link[=nhanes_mortality_download]{nhanes_mortality_download()}} to download the raw \code{.dat} files;
+\code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}} to join parsed mortality data onto an analytic
+dataset.
+}

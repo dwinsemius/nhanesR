@@ -14,6 +14,11 @@ nhanes_ucod_labels()
 
 A data frame with columns `code`, `label`, `icd10_range`.
 
+## See also
+
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+where the `cause` argument accepts these codes.
+
 ## Examples
 
 ``` r

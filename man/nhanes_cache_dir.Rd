@@ -7,8 +7,9 @@
 nhanes_cache_dir(path = NULL, create = TRUE)
 }
 \arguments{
-\item{path}{Optional character. New path to use as the cache directory.
-If \code{NULL}, returns the current setting without changing it.}
+\item{path}{Optional character. New path to use as the cache directory for
+the current session. If \code{NULL}, returns the current setting without
+changing it.}
 
 \item{create}{Logical. If \code{TRUE} (default), create the directory if it
 does not exist.}
@@ -19,13 +20,63 @@ The current (or newly set) cache directory path, invisibly.
 \description{
 nhanesR stores downloaded and parsed NHANES files in a local cache to avoid
 redundant downloads. By default the cache is placed in the standard user
-data directory for your operating system. Use this function to view or
-change the location.
+data directory for your operating system (see below). Use this function to
+view or change the location for the current session, or set it permanently
+in your \code{.Rprofile}.
+}
+\details{
+\subsection{Package options}{
+
+Three options control nhanesR behaviour. Set any of them in your \code{.Rprofile}
+to make the change permanent across sessions; changes made during a session
+(via \code{nhanes_cache_dir()} or \code{options()} directly) last only until the
+session ends.\tabular{lll}{
+   Option \tab Default \tab Purpose \cr
+   \code{nhanesR.cache_dir} \tab OS user-data dir (see below) \tab Root directory for all cached files \cr
+   \code{nhanesR.verbose} \tab \code{TRUE} \tab Print progress messages during downloads \cr
+   \code{nhanesR.timeout} \tab \code{120L} \tab HTTP request timeout in seconds \cr
+}
+
+\subsection{Default cache locations by platform}{\tabular{ll}{
+   Platform \tab Default path \cr
+   macOS \tab \verb{~/Library/Application Support/nhanesR} \cr
+   Linux \tab \verb{~/.local/share/nhanesR} (or \verb{$XDG_DATA_HOME/nhanesR}) \cr
+   Windows \tab \verb{\%APPDATA\%/nhanesR} \cr
+}
+
+}
+
+\subsection{Setting options permanently}{
+
+Add lines like these to your \verb{~/.Rprofile}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{options(
+  nhanesR.cache_dir = "/data/nhanes_cache",  # shared lab server path
+  nhanesR.verbose   = FALSE,                  # suppress progress messages
+  nhanesR.timeout   = 300L                    # 5-minute timeout for slow connections
+)
+}\if{html}{\out{</div>}}
+
+Options set in \code{.Rprofile} take precedence over package defaults: nhanesR
+only sets an option at load time if it is not already defined.
+}
+
+}
 }
 \examples{
 # View current cache location
 nhanes_cache_dir()
 
-# Change to a custom location
+# Change for this session only
 nhanes_cache_dir("~/my_nhanes_cache")
+
+# Suppress download messages for this session
+options(nhanesR.verbose = FALSE)
+
+# View all current nhanesR option values
+Filter(function(x) startsWith(x, "nhanesR."), names(options()))
+}
+\seealso{
+\code{\link[=nhanes_download]{nhanes_download()}} and \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}}, whose caching
+behaviour is controlled by the options described above.
 }

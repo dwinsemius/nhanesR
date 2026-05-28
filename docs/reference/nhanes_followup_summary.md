@@ -21,6 +21,11 @@ nhanes_followup_summary(data)
 
 A data frame with one row per cycle.
 
+## See also
+
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+which produces the required input.
+
 ## Examples
 
 ``` r

@@ -66,3 +66,8 @@ nhanes_search_variables("alanine", component = "Laboratory")
 nhanes_search_variables("HDL")
 }
 }
+\seealso{
+\code{\link[=nhanes_variable_map]{nhanes_variable_map()}} for a per-cycle file/variable lookup table
+ready for use with \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}}; \code{\link[=nhanes_manifest]{nhanes_manifest()}} to
+browse files rather than variables.
+}

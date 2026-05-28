@@ -61,6 +61,15 @@ This function warns but does not enforce weight selection. Use
 [`nhanes_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)
 to look up available weight variable names per cycle.
 
+## See also
+
+[`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)
+to row-bind per-cycle lists before merging;
+[`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
+to obtain the component data frames;
+[`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)
+to append mortality follow-up after merging.
+
 ## Examples
 
 ``` r

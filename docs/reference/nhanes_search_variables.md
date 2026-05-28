@@ -73,6 +73,14 @@ name for an analyte across NHANES cycles. For example, total cholesterol
 was stored in `LAB13` (1999-2000), `L13_B` (2001-2002), `L13_C`
 (2003-2004), and `TCHOL` (2005 onwards), always in variable `LBXTC`.
 
+## See also
+
+[`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)
+for a per-cycle file/variable lookup table ready for use with
+[`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md);
+[`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md)
+to browse files rather than variables.
+
 ## Examples
 
 ``` r

@@ -28,3 +28,8 @@ demos <- nhanes_download("DEMO", c("2013-2014", "2015-2016", "2017-2018"))
 stacked <- nhanes_stack(demos)
 }
 }
+\seealso{
+\code{\link[=nhanes_harmonize]{nhanes_harmonize()}} which calls this internally and also renames
+variables across cycles; \code{\link[=nhanes_merge]{nhanes_merge()}} to join components by SEQN;
+\code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}} which expects a stacked data frame as input.
+}

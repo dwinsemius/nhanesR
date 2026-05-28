@@ -33,4 +33,13 @@ linkage availability.
 \examples{
 nhanes_cycles()
 nhanes_cycles(include_iii = TRUE)
+
+# Extract cycle labels as a character vector for use in download functions
+cycles <- nhanes_cycles()[["cycle"]]
+cycles[1:10]  # first ten continuous cycles (1999-2018)
+}
+\seealso{
+\code{\link[=nhanes_manifest]{nhanes_manifest()}} to see what files are available within a cycle;
+\code{\link[=nhanes_download]{nhanes_download()}} to download files; \code{\link[=nhanes_lmf_cycles]{nhanes_lmf_cycles()}} for cycles
+that have public-use mortality linkage.
 }

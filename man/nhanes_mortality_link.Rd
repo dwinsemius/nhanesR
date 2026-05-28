@@ -41,3 +41,8 @@ demo <- nhanes_download("DEMO", "2015-2016")
 demo_mort <- nhanes_mortality_link(demo)
 }
 }
+\seealso{
+\code{\link[=nhanes_survival_prep]{nhanes_survival_prep()}} to convert the linked data into a survival
+dataset; \code{\link[=nhanes_lmf_cycles]{nhanes_lmf_cycles()}} for the cycles with public-use LMF;
+\code{\link[=nhanes_stack]{nhanes_stack()}} to row-bind multi-cycle data before linking.
+}

@@ -65,6 +65,15 @@ A tibble with columns:
 Results are cached locally for the session to avoid repeated HTTP
 requests. Use `refresh = TRUE` to force re-query.
 
+## See also
+
+[`nhanes_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)
+for valid cycle labels;
+[`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
+to download a file by its base code;
+[`nhanes_search_variables()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)
+to search the variable catalog by keyword.
+
 ## Examples
 
 ``` r

@@ -97,6 +97,15 @@ a named list of data frames.
 - **Explicit mapping** (`mapping`): a named character vector of old -\>
   new variable names. More verbose but unambiguous.
 
+## See also
+
+[`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)
+which produces the per-cycle list consumed by this function;
+[`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)
+for row-binding without renaming;
+[`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)
+to inspect variable names per cycle before choosing a mapping.
+
 ## Examples
 
 ``` r

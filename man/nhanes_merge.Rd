@@ -66,3 +66,8 @@ bpx_pool  <- rbind(bpx_13,  bpx_15)
 analytic  <- nhanes_merge(demo_pool, bpx_pool, by = c("SEQN", "cycle"))
 }
 }
+\seealso{
+\code{\link[=nhanes_stack]{nhanes_stack()}} to row-bind per-cycle lists before merging;
+\code{\link[=nhanes_download]{nhanes_download()}} to obtain the component data frames;
+\code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}} to append mortality follow-up after merging.
+}

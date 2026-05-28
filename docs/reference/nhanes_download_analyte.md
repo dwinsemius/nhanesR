@@ -57,6 +57,15 @@ nhanes_download_analyte(
 If a single cycle is requested, a data frame. If multiple cycles are
 requested, a named list of data frames keyed by cycle label.
 
+## See also
+
+[`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)
+to inspect the per-cycle file/variable lookup before downloading;
+[`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)
+to rename and stack the returned list;
+[`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
+for downloading by exact file code.
+
 ## Examples
 
 ``` r

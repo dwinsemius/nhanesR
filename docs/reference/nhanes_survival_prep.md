@@ -109,6 +109,15 @@ for select records (CDC data perturbation to reduce re-identification
 risk). `MORTSTAT` is not perturbed. Cause-specific analyses using
 `UCOD_LEADING` should be interpreted with this in mind.
 
+## See also
+
+[`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)
+which produces the input for this function;
+[`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)
+to check follow-up time by cycle;
+[`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)
+for cause-of-death codes accepted by `cause`.
+
 ## Examples
 
 ``` r

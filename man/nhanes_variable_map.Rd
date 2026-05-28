@@ -52,3 +52,8 @@ nhanes_variable_map("creatinine", keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
 nhanes_variable_map("albumin", keep_vars = c("URXUMA", "UR2UMA", "UR1MA"))
 }
 }
+\seealso{
+\code{\link[=nhanes_search_variables]{nhanes_search_variables()}} for the underlying keyword search;
+\code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}} which uses this map to resolve filenames
+automatically.
+}

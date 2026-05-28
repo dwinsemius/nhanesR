@@ -99,3 +99,9 @@ hdl <- nhanes_harmonize(
 )
 }
 }
+\seealso{
+\code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}} which produces the per-cycle list
+consumed by this function; \code{\link[=nhanes_stack]{nhanes_stack()}} for row-binding without
+renaming; \code{\link[=nhanes_variable_map]{nhanes_variable_map()}} to inspect variable names per cycle
+before choosing a mapping.
+}

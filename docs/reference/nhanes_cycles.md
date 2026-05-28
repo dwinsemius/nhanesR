@@ -61,6 +61,15 @@ A tibble with one row per cycle and columns:
 
   Character. Mortality follow-up censor date.
 
+## See also
+
+[`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md)
+to see what files are available within a cycle;
+[`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
+to download files;
+[`nhanes_lmf_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md)
+for cycles that have public-use mortality linkage.
+
 ## Examples
 
 ``` r
@@ -116,4 +125,10 @@ nhanes_cycles(include_iii = TRUE)
 #> 10       <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 11       <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 12       <NA>  WTMECPRP         TRUE           TRUE        2019  2019-12-31
+
+# Extract cycle labels as a character vector for use in download functions
+cycles <- nhanes_cycles()[["cycle"]]
+cycles[1:10]  # first ten continuous cycles (1999-2018)
+#>  [1] "1999-2000" "2001-2002" "2003-2004" "2005-2006" "2007-2008" "2009-2010"
+#>  [7] "2011-2012" "2013-2014" "2015-2016" "2017-2018"
 ```

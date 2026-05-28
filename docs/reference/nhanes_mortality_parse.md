@@ -70,6 +70,13 @@ For select records, `PERMTH_INT`, `PERMTH_EXM`, and `UCOD_LEADING`
 contain **synthetic (perturbed) values** introduced by CDC to reduce
 re-identification risk. `MORTSTAT` and `ELIGSTAT` are not perturbed.
 
+## See also
+
+[`nhanes_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_download.md)
+to download the raw `.dat` files;
+[`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)
+to join parsed mortality data onto an analytic dataset.
+
 ## Examples
 
 ``` r

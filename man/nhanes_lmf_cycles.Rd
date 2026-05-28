@@ -12,3 +12,6 @@ Character vector of cycle labels.
 \description{
 List NHANES cycles with a public-use LMF
 }
+\seealso{
+\code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}}, \code{\link[=nhanes_mortality_download]{nhanes_mortality_download()}}
+}

@@ -86,10 +86,57 @@ frame? Default <code>TRUE</code>. Required for <code><a href="nhanes_mortality_l
 If multiple file_codes or cycles are requested, a named list of data frames
 with names of the form <code>"{file_code}_{cycle}"</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+
+<div class="section">
+<h3 id="finding-valid-file-codes">Finding valid file codes<a class="anchor" aria-label="anchor" href="#finding-valid-file-codes"></a></h3>
+
+
+<p>File codes are the base names CDC assigns to each data file, without the
+cycle-letter suffix or <code>.xpt</code> extension. For example, the Demographics file
+is always <code>"DEMO"</code>, and the blood pressure examination file is <code>"BPX"</code>.</p>
+<p>Use <code><a href="nhanes_manifest.html">nhanes_manifest()</a></code> to browse all files available for a given cycle and
+component. The <code>file_name</code> column of the manifest shows the full CDC name
+including the cycle suffix (e.g. <code>"TCHOL_I"</code>); strip the trailing
+underscore-letter to get the base code for <code>nhanes_download()</code>:</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nhanes_manifest.html">nhanes_manifest</a></span><span class="op">(</span><span class="st">"2015-2016"</span>, <span class="st">"Laboratory"</span><span class="op">)</span></span>
+<span><span class="va">m</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span>, <span class="st">"description"</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Base codes ready for nhanes_download():</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"_[A-Z]$"</span>, <span class="st">""</span>, <span class="va">m</span><span class="op">$</span><span class="va">file_name</span><span class="op">)</span></span></code></pre><p></p></div>
+<p>Note that some analyte file names changed across cycles (e.g. total
+cholesterol: <code>LAB13</code> → <code>L13_B</code> → <code>TCHOL_D</code> onward). For those cases,
+use <code><a href="nhanes_download_analyte.html">nhanes_download_analyte()</a></code> instead, which looks up the correct CDC
+filename for each cycle automatically via the variable catalog.</p>
+</div>
+
+<div class="section">
+<h3 id="invalid-file-codes">Invalid file codes<a class="anchor" aria-label="anchor" href="#invalid-file-codes"></a></h3>
+
+
+<p>File codes are not validated before the download attempt. If an unknown
+code is supplied, CDC returns HTTP 200 with an HTML error page rather than
+a 404. nhanesR detects this via the <code>Content-Type</code> header and aborts with
+a message directing you to <code><a href="nhanes_manifest.html">nhanes_manifest()</a></code> to confirm the correct name.</p>
+</div>
+
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nhanes_manifest.html">nhanes_manifest()</a></code> to browse available file codes;
+<code><a href="nhanes_download_analyte.html">nhanes_download_analyte()</a></code> for analytes whose file name changed across
+cycles; <code><a href="nhanes_cycles.html">nhanes_cycles()</a></code> for valid cycle labels.</p></div>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Browse available Laboratory files for a cycle, then download by base code</span></span></span>
+<span class="r-in"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="nhanes_manifest.html">nhanes_manifest</a></span><span class="op">(</span><span class="st">"2015-2016"</span>, <span class="st">"Laboratory"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span>, <span class="st">"description"</span><span class="op">)</span><span class="op">]</span>   <span class="co"># see what's available</span></span></span>
+<span class="r-in"><span><span class="va">bpx</span> <span class="op">&lt;-</span> <span class="fu">nhanes_download</span><span class="op">(</span><span class="st">"BPX"</span>, <span class="st">"2015-2016"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Single file, single cycle</span></span></span>
 <span class="r-in"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="fu">nhanes_download</span><span class="op">(</span><span class="st">"DEMO"</span>, <span class="st">"2015-2016"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

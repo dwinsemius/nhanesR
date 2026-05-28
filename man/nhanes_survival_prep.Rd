@@ -112,3 +112,8 @@ design <- svydesign(
 )
 }
 }
+\seealso{
+\code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}} which produces the input for this
+function; \code{\link[=nhanes_followup_summary]{nhanes_followup_summary()}} to check follow-up time by cycle;
+\code{\link[=nhanes_ucod_labels]{nhanes_ucod_labels()}} for cause-of-death codes accepted by \code{cause}.
+}

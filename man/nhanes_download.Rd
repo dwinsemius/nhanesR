@@ -31,8 +31,46 @@ Downloads one or more NHANES component files in SAS transport (XPT) format
 from the CDC website, parses them into R data frames, attaches variable
 labels, and caches the results locally as RDS files.
 }
+\details{
+\subsection{Finding valid file codes}{
+
+File codes are the base names CDC assigns to each data file, without the
+cycle-letter suffix or \code{.xpt} extension. For example, the Demographics file
+is always \code{"DEMO"}, and the blood pressure examination file is \code{"BPX"}.
+
+Use \code{\link[=nhanes_manifest]{nhanes_manifest()}} to browse all files available for a given cycle and
+component. The \code{file_name} column of the manifest shows the full CDC name
+including the cycle suffix (e.g. \code{"TCHOL_I"}); strip the trailing
+underscore-letter to get the base code for \code{nhanes_download()}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{m <- nhanes_manifest("2015-2016", "Laboratory")
+m[, c("file_name", "description")]
+
+# Base codes ready for nhanes_download():
+sub("_[A-Z]$", "", m$file_name)
+}\if{html}{\out{</div>}}
+
+Note that some analyte file names changed across cycles (e.g. total
+cholesterol: \code{LAB13} → \code{L13_B} → \code{TCHOL_D} onward). For those cases,
+use \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}} instead, which looks up the correct CDC
+filename for each cycle automatically via the variable catalog.
+}
+
+\subsection{Invalid file codes}{
+
+File codes are not validated before the download attempt. If an unknown
+code is supplied, CDC returns HTTP 200 with an HTML error page rather than
+a 404. nhanesR detects this via the \code{Content-Type} header and aborts with
+a message directing you to \code{\link[=nhanes_manifest]{nhanes_manifest()}} to confirm the correct name.
+}
+}
 \examples{
 \dontrun{
+# Browse available Laboratory files for a cycle, then download by base code
+m <- nhanes_manifest("2015-2016", "Laboratory")
+m[, c("file_name", "description")]   # see what's available
+bpx <- nhanes_download("BPX", "2015-2016")
+
 # Single file, single cycle
 demo <- nhanes_download("DEMO", "2015-2016")
 
@@ -42,4 +80,9 @@ demos <- nhanes_download("DEMO", c("2013-2014", "2015-2016", "2017-2018"))
 # Multiple files, single cycle
 files <- nhanes_download(c("DEMO", "BPX", "TRIGLY"), "2015-2016")
 }
+}
+\seealso{
+\code{\link[=nhanes_manifest]{nhanes_manifest()}} to browse available file codes;
+\code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}} for analytes whose file name changed across
+cycles; \code{\link[=nhanes_cycles]{nhanes_cycles()}} for valid cycle labels.
 }

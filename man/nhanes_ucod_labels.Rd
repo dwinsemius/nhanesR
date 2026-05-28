@@ -16,3 +16,7 @@ variable, including code, plain-language label, and ICD-10 chapter ranges.
 \examples{
 nhanes_ucod_labels()
 }
+\seealso{
+\code{\link[=nhanes_survival_prep]{nhanes_survival_prep()}} where the \code{cause} argument accepts these
+codes.
+}

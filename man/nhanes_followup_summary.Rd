@@ -23,3 +23,6 @@ surv_data <- nhanes_survival_prep(linked_data, origin = "exam")
 nhanes_followup_summary(surv_data)
 }
 }
+\seealso{
+\code{\link[=nhanes_survival_prep]{nhanes_survival_prep()}} which produces the required input.
+}

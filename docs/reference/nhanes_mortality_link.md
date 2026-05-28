@@ -44,6 +44,15 @@ nhanes_mortality_link(
 (i.e., SEQNs not present in the LMF) will have `NA` for all LMF columns
 — this should not occur for continuous NHANES 1999-2018.
 
+## See also
+
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+to convert the linked data into a survival dataset;
+[`nhanes_lmf_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md)
+for the cycles with public-use LMF;
+[`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)
+to row-bind multi-cycle data before linking.
+
 ## Examples
 
 ``` r

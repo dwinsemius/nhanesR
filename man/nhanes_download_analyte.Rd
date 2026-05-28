@@ -52,3 +52,8 @@ scr_list <- nhanes_download_analyte("creatinine", cycles,
                                     keep_vars = c("LBXSCR","LBDSCR","LB2SCR"))
 }
 }
+\seealso{
+\code{\link[=nhanes_variable_map]{nhanes_variable_map()}} to inspect the per-cycle file/variable
+lookup before downloading; \code{\link[=nhanes_harmonize]{nhanes_harmonize()}} to rename and stack the
+returned list; \code{\link[=nhanes_download]{nhanes_download()}} for downloading by exact file code.
+}

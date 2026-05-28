@@ -43,3 +43,8 @@ nhanes_manifest("2015-2016", "Laboratory")
 nhanes_manifest("2015-2016", "Demographics")
 }
 }
+\seealso{
+\code{\link[=nhanes_cycles]{nhanes_cycles()}} for valid cycle labels; \code{\link[=nhanes_download]{nhanes_download()}} to
+download a file by its base code; \code{\link[=nhanes_search_variables]{nhanes_search_variables()}} to search
+the variable catalog by keyword.
+}

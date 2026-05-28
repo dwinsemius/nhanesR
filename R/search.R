@@ -266,6 +266,23 @@ nhanes_variable_map <- function(term,
   out <- out[order(out$cycle), c("cycle", "variable_name", "file_name"),
              drop = FALSE]
   rownames(out) <- NULL
+
+  # Drop cycles not in the nhanesR registry (e.g. CDC catalog artefacts)
+  registered <- c(.nhanes_cycles$cycle, .nhanes_iii$cycle)
+  out <- out[out$cycle %in% registered, , drop = FALSE]
+
+  # Warn when both 2017-2018 and 2017-2020 are present: the 2017-2018
+  # participants are included in the 2017-2020 pandemic-adjusted file, so
+  # using both in a pooled analysis double-counts them.
+  if (all(c("2017-2018", "2017-2020") %in% out$cycle)) {
+    cli::cli_warn(
+      "Both {.val 2017-2018} and {.val 2017-2020} are present. \\
+       The 2017-2018 participants are included in the 2017-2020 \\
+       pandemic-adjusted file — use one or the other in pooled analyses \\
+       to avoid double-counting."
+    )
+  }
+
   out
 }
 

@@ -1,6 +1,6 @@
 # R/mortality.R
 
-# ── Download ───────────────────────────────────────────────────────────────────
+# -- Download -------------------------------------------------------------------
 
 #' Download NHANES Public-Use Linked Mortality Files
 #'
@@ -84,7 +84,7 @@ nhanes_lmf_cycles <- function() {
   .lmf_registry$cycle
 }
 
-# ── Parse ──────────────────────────────────────────────────────────────────────
+# -- Parse ----------------------------------------------------------------------
 
 #' Parse NHANES Linked Mortality Files into data frames
 #'
@@ -168,7 +168,7 @@ nhanes_mortality_parse <- function(cycles  = NULL,
   result
 }
 
-# ── Link ───────────────────────────────────────────────────────────────────────
+# -- Link -----------------------------------------------------------------------
 
 #' Link mortality data onto an NHANES analytic dataset
 #'
@@ -189,7 +189,7 @@ nhanes_mortality_parse <- function(cycles  = NULL,
 #'
 #' @return `nhanes_data` with LMF columns appended. Rows with no mortality
 #'   record (i.e., SEQNs not present in the LMF) will have `NA` for all LMF
-#'   columns — this should not occur for continuous NHANES 1999-2018.
+#'   columns -- this should not occur for continuous NHANES 1999-2018.
 #'
 #' @seealso [nhanes_survival_prep()] to convert the linked data into a survival
 #'   dataset; [nhanes_lmf_cycles()] for the cycles with public-use LMF;
@@ -252,7 +252,7 @@ nhanes_mortality_link <- function(nhanes_data,
   merged
 }
 
-# ── Survival prep ──────────────────────────────────────────────────────────────
+# -- Survival prep --------------------------------------------------------------
 
 #' Prepare an NHANES-LMF dataset for survival analysis
 #'
@@ -351,7 +351,7 @@ nhanes_survival_prep <- function(data,
   origin    <- match.arg(origin)
   time_unit <- match.arg(time_unit)
 
-  # ── Validate required columns ──────────────────────────────────────────────
+  # -- Validate required columns ----------------------------------------------
   required <- c("SEQN", "ELIGSTAT", "MORTSTAT",
                 if (origin == "exam") "PERMTH_EXM" else "PERMTH_INT")
   missing_cols <- setdiff(required, names(data))
@@ -362,7 +362,7 @@ nhanes_survival_prep <- function(data,
     )
   }
 
-  # ── Eligibility filtering (always applied, always warned) ──────────────────
+  # -- Eligibility filtering (always applied, always warned) ------------------
   n_total      <- nrow(data)
   ineligible   <- !is.na(data$ELIGSTAT) & data$ELIGSTAT != 1L
 
@@ -384,7 +384,7 @@ nhanes_survival_prep <- function(data,
   data <- data[!ineligible, , drop = FALSE]
   n_after_elig <- nrow(data)
 
-  # ── Warn on asymmetric follow-up ───────────────────────────────────────────
+  # -- Warn on asymmetric follow-up -------------------------------------------
   if ("cycle" %in% names(data)) {
     present_cycles <- unique(data$cycle)
     if (length(present_cycles) > 1L) {
@@ -398,7 +398,7 @@ nhanes_survival_prep <- function(data,
     }
   }
 
-  # ── Build time variable ────────────────────────────────────────────────────
+  # -- Build time variable ----------------------------------------------------
   time_col <- if (origin == "exam") "PERMTH_EXM" else "PERMTH_INT"
   data$time <- data[[time_col]]
 
@@ -415,10 +415,10 @@ nhanes_survival_prep <- function(data,
     )
   }
 
-  # ── Event indicator ────────────────────────────────────────────────────────
+  # -- Event indicator --------------------------------------------------------
   data$event <- as.integer(data$MORTSTAT == 1L)
 
-  # ── Cause-specific event ───────────────────────────────────────────────────
+  # -- Cause-specific event ---------------------------------------------------
   if (!is.null(cause)) {
     valid_codes <- .ucod_labels$code
     if (!(cause %in% valid_codes)) {
@@ -448,7 +448,7 @@ nhanes_survival_prep <- function(data,
     )
   }
 
-  # ── Survey weight ──────────────────────────────────────────────────────────
+  # -- Survey weight ----------------------------------------------------------
   if (!is.null(weight_var)) {
     if (!(weight_var %in% names(data))) {
       cli::cli_abort(
@@ -473,7 +473,7 @@ nhanes_survival_prep <- function(data,
     }
   }
 
-  # ── Attach metadata ────────────────────────────────────────────────────────
+  # -- Attach metadata --------------------------------------------------------
   attr(data, ".nhanes_survival") <- list(
     origin        = origin,
     time_unit     = time_unit,
@@ -490,7 +490,7 @@ nhanes_survival_prep <- function(data,
   data
 }
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
+# -- Helpers --------------------------------------------------------------------
 
 #' Lookup table for UCOD_LEADING cause-of-death codes
 #'
@@ -557,7 +557,7 @@ nhanes_followup_summary <- function(data) {
   out
 }
 
-# ── Internal helpers ───────────────────────────────────────────────────────────
+# -- Internal helpers -----------------------------------------------------------
 
 .nhanes_lmf_rds_path <- function(cycle) {
   dir  <- .nhanes_cache_subdir("mortality", "parsed")

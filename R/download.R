@@ -26,7 +26,7 @@
 #' ```
 #'
 #' Note that some analyte file names changed across cycles (e.g. total
-#' cholesterol: `LAB13` → `L13_B` → `TCHOL_D` onward). For those cases,
+#' cholesterol: `LAB13` -> `L13_B` -> `TCHOL_D` onward). For those cases,
 #' use [nhanes_download_analyte()] instead, which looks up the correct CDC
 #' filename for each cycle automatically via the variable catalog.
 #'
@@ -127,7 +127,7 @@ nhanes_download <- function(file_code,
 
   .nhanes_download_file(url, tmp, desc = paste(file_code, cycle))
 
-  # Parse XPT — haven handles modern files; fall back to foreign for older
+  # Parse XPT -- haven handles modern files; fall back to foreign for older
   # V5 transport files (e.g. 1999-2000) that haven/ReadStat cannot parse.
   df <- tryCatch(
     haven::read_xpt(tmp),
@@ -168,13 +168,13 @@ nhanes_download <- function(file_code,
   df
 }
 
-# ── nhanes_download_analyte ────────────────────────────────────────────────────
+# -- nhanes_download_analyte ----------------------------------------------------
 
 #' Download NHANES files for an analyte using the CDC variable catalog
 #'
 #' A smarter alternative to [nhanes_download()] for analytes whose file name
-#' changed across cycles (e.g. total cholesterol: `LAB13` → `L13_B` → `L13_C`
-#' → `TCHOL_D` onward). Uses [nhanes_variable_map()] to look up the correct
+#' changed across cycles (e.g. total cholesterol: `LAB13` -> `L13_B` -> `L13_C`
+#' -> `TCHOL_D` onward). Uses [nhanes_variable_map()] to look up the correct
 #' CDC file name for each cycle, then downloads using the exact catalog name.
 #'
 #' @param term Character. Search term passed to [nhanes_variable_map()].
@@ -198,7 +198,7 @@ nhanes_download <- function(file_code,
 #' \dontrun{
 #' cycles <- nhanes_cycles()[1:10, "cycle"]
 #'
-#' # Total cholesterol — file name changed in 1999-2004; this handles it
+#' # Total cholesterol -- file name changed in 1999-2004; this handles it
 #' tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
 #'
 #' # Serum creatinine (keep_vars excludes urine creatinine)

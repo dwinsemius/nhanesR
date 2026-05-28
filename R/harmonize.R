@@ -47,7 +47,7 @@
 #'
 #' @return If `stack = TRUE` (default), a single stacked data frame. When
 #'   `unit` is used with `trim = TRUE` (the default), only `SEQN`, `cycle`,
-#'   and the harmonized column are returned — ready for merging. If
+#'   and the harmonized column are returned -- ready for merging. If
 #'   `stack = FALSE`, a named list of data frames.
 #' @seealso [nhanes_download_analyte()] which produces the per-cycle list
 #'   consumed by this function; [nhanes_stack()] for row-binding without
@@ -129,7 +129,7 @@ nhanes_harmonize <- function(data_list,
   if (stack) nhanes_stack(result) else result
 }
 
-# ── Internal helpers ──────────────────────────────────────────────────────────
+# -- Internal helpers ----------------------------------------------------------
 
 .nhanes_harmonize_by_unit <- function(df, unit, name, label_pattern) {
   labels  <- vapply(df, function(col) attr(col, "label") %||% "",

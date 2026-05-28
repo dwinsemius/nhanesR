@@ -24,10 +24,10 @@
 #' @details
 #' ## Weight guidance
 #' The appropriate weight depends on which components are merged:
-#' - **Demographics only** → `WTINT2YR` (interview weight)
-#' - **Any exam/lab component** → `WTMEC2YR` (MEC exam weight)
-#' - **Dietary 24-hr recall** → `WTDRD1` or `WTDR2D`
-#' - **Multi-cycle pooled** → divide the 2-year weight by the number of cycles,
+#' - **Demographics only** -> `WTINT2YR` (interview weight)
+#' - **Any exam/lab component** -> `WTMEC2YR` (MEC exam weight)
+#' - **Dietary 24-hr recall** -> `WTDRD1` or `WTDR2D`
+#' - **Multi-cycle pooled** -> divide the 2-year weight by the number of cycles,
 #'   or use the 4-year combined weight where available
 #'
 #' This function warns but does not enforce weight selection. Use

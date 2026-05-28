@@ -119,7 +119,7 @@ nhanes_search_variables <- function(term,
   out
 }
 
-# ── Internal helpers ───────────────────────────────────────────────────────────
+# -- Internal helpers ----------------------------------------------------------
 
 #' Fetch and cache the CDC variable list for one component
 #' @keywords internal
@@ -187,14 +187,14 @@ nhanes_search_variables <- function(term,
   out
 }
 
-# ── nhanes_variable_map ────────────────────────────────────────────────────────
+# -- nhanes_variable_map -------------------------------------------------------
 
 #' Build a per-cycle variable map for an analyte
 #'
 #' Wraps [nhanes_search_variables()] to return a single-row-per-cycle lookup
 #' table showing which variable name and file to use for a given analyte across
 #' NHANES cycles. Useful for analytes whose variable names changed between
-#' cycles (e.g. HDL cholesterol: `LBDHDL` → `LBXHDD` → `LBDHDD`).
+#' cycles (e.g. HDL cholesterol: `LBDHDL` -> `LBXHDD` -> `LBDHDD`).
 #'
 #' When multiple variables match within a cycle (e.g. mg/dL and mmol/L
 #' versions), the function prefers the non-SI variable. Comment-code variables
@@ -293,7 +293,7 @@ nhanes_variable_map <- function(term,
     cli::cli_warn(
       "Both {.val 2017-2018} and {.val 2017-2020} are present. \\
        The 2017-2018 participants are included in the 2017-2020 \\
-       pandemic-adjusted file — use one or the other in pooled analyses \\
+       pandemic-adjusted file -- use one or the other in pooled analyses \\
        to avoid double-counting."
     )
   }

@@ -1,7 +1,7 @@
 # R/nhanes_http.R
 # URL construction and HTTP download helpers for nhanesR
 
-# ── URL construction ───────────────────────────────────────────────────────────
+# -- URL construction -----------------------------------------------------------
 
 #' Build the CDC URL for an NHANES XPT data file
 #'
@@ -50,7 +50,7 @@
   paste0(reg$ftp_base, reg$filename)
 }
 
-# ── Cycle registry helpers ─────────────────────────────────────────────────────
+# -- Cycle registry helpers -----------------------------------------------------
 
 #' Extract a single field from the internal cycle registry
 #' @keywords internal
@@ -69,7 +69,7 @@
   row[[field]]
 }
 
-# ── HTTP download ──────────────────────────────────────────────────────────────
+# -- HTTP download --------------------------------------------------------------
 
 #' Download a file from a URL with retry logic and progress reporting
 #'
@@ -111,7 +111,7 @@
   invisible(dest_path)
 }
 
-# ── Misc helpers ───────────────────────────────────────────────────────────────
+# -- Misc helpers ---------------------------------------------------------------
 
 # Backport of base R's %||% for R < 4.4
 `%||%` <- function(x, y) if (!is.null(x)) x else y

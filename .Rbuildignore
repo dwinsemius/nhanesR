@@ -1,3 +1,9 @@
 ^data-raw$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^_pkgdown\.yml$
+^docs$
+^analyte_catalog\.R$
+^analyte_catalog\.rds$
+^session_transcript\.md$
+^transcript_export\.R$

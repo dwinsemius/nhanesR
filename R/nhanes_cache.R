@@ -2,7 +2,7 @@
 # Local cache management for nhanesR
 # Handles directory structure, file hashing, and RDS cache validation
 
-# ── Cache directory ────────────────────────────────────────────────────────────
+# -- Cache directory ------------------------------------------------------------
 
 #' Get or set the nhanesR local cache directory
 #'
@@ -95,7 +95,7 @@ nhanes_cache_dir <- function(path = NULL, create = TRUE) {
   path
 }
 
-# ── File hashing ───────────────────────────────────────────────────────────────
+# -- File hashing ---------------------------------------------------------------
 
 #' Compute the MD5 hash of a file
 #' @keywords internal
@@ -113,7 +113,7 @@ nhanes_cache_dir <- function(path = NULL, create = TRUE) {
   invisible(hash_path)
 }
 
-# ── Cache validation ───────────────────────────────────────────────────────────
+# -- Cache validation -----------------------------------------------------------
 
 #' Check whether a cached RDS file is present and hash-validated
 #'

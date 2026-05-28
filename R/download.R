@@ -192,7 +192,8 @@ nhanes_download_analyte <- function(term,
     )
   }
 
-  result_list <- setNames(vector("list", nrow(map)), map$cycle)
+  result_list <- vector("list", nrow(map))
+  names(result_list) <- map$cycle
 
   for (i in seq_len(nrow(map))) {
     cy       <- map$cycle[i]

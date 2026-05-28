@@ -207,6 +207,12 @@ nhanes_search_variables <- function(term,
 #'   whose names appear in this vector are retained before the per-cycle
 #'   deduplication step. Useful for disambiguating serum vs. urine forms of
 #'   the same analyte (e.g. serum vs. urinary creatinine).
+#' @param include_reliability Logical. Include NHANES reliability substudy
+#'   files, in which a random subset of participants had a second blood draw
+#'   to measure within-subject variability? Default `FALSE`. Reliability files
+#'   are identified by the `LB2` variable prefix and `_2_` file name pattern
+#'   (e.g. `l13_2_b`, `l13_2_r`). These files should not be pooled with the
+#'   main analytic dataset as they would duplicate participants.
 #' @param refresh Logical. Re-fetch the variable catalog? Default `FALSE`.
 #'
 #' @return A data frame with columns `cycle`, `variable_name`, and `file_name`,
@@ -228,9 +234,10 @@ nhanes_search_variables <- function(term,
 #' nhanes_variable_map("albumin", keep_vars = c("URXUMA", "UR2UMA", "UR1MA"))
 #' }
 nhanes_variable_map <- function(term,
-                                component = "Laboratory",
-                                keep_vars = NULL,
-                                refresh   = FALSE) {
+                                component           = "Laboratory",
+                                keep_vars           = NULL,
+                                include_reliability = FALSE,
+                                refresh             = FALSE) {
   raw <- nhanes_search_variables(term,
                                  component = component,
                                  refresh   = refresh,
@@ -242,6 +249,14 @@ nhanes_variable_map <- function(term,
   is_comment <- grepl("(LC|LCN)$", raw$variable_name, ignore.case = TRUE) |
                 grepl("comment",    raw$variable_desc,  ignore.case = TRUE)
   raw <- raw[!is_comment, , drop = FALSE]
+
+  # Drop reliability substudy files unless explicitly requested.
+  # Reliability files: LB2 variable prefix (second blood draw) or _2_ in file name.
+  if (!include_reliability) {
+    is_reliability <- grepl("^LB2", raw$variable_name, ignore.case = TRUE) |
+                      grepl("_2_",  raw$file_name,     fixed = TRUE)
+    raw <- raw[!is_reliability, , drop = FALSE]
+  }
 
   if (!is.null(keep_vars)) {
     raw <- raw[raw$variable_name %in% keep_vars, , drop = FALSE]

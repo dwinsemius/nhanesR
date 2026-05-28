@@ -8,6 +8,7 @@ nhanes_variable_map(
   term,
   component = "Laboratory",
   keep_vars = NULL,
+  include_reliability = FALSE,
   refresh = FALSE
 )
 }
@@ -21,6 +22,13 @@ Default \code{"Laboratory"}.}
 whose names appear in this vector are retained before the per-cycle
 deduplication step. Useful for disambiguating serum vs. urine forms of
 the same analyte (e.g. serum vs. urinary creatinine).}
+
+\item{include_reliability}{Logical. Include NHANES reliability substudy
+files, in which a random subset of participants had a second blood draw
+to measure within-subject variability? Default \code{FALSE}. Reliability files
+are identified by the \code{LB2} variable prefix and \verb{_2_} file name pattern
+(e.g. \code{l13_2_b}, \code{l13_2_r}). These files should not be pooled with the
+main analytic dataset as they would duplicate participants.}
 
 \item{refresh}{Logical. Re-fetch the variable catalog? Default \code{FALSE}.}
 }

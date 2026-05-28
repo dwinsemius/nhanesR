@@ -1,0 +1,74 @@
+url: https://dwinsemius.github.io/nhanesR/
+
+template:
+  bootstrap: 5
+
+home:
+  strip_header: true
+  links:
+  - text: Browse source code
+    href: https://github.com/dwinsemius/nhanesR
+
+exclude:
+  - session_transcript.md
+  - transcript_export.R
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+  components:
+    intro:
+      text: Get started
+      href: articles/nhanesR-overview.html
+
+reference:
+  - title: "Discovery"
+    desc: "Find available cycles and files"
+    contents:
+      - nhanes_cycles
+      - nhanes_manifest
+
+  - title: "Variable search"
+    desc: "Search the CDC variable catalog by keyword"
+    contents:
+      - nhanes_search_variables
+      - nhanes_variable_map
+
+  - title: "Download"
+    desc: "Download and cache NHANES XPT files"
+    contents:
+      - nhanes_download
+      - nhanes_download_analyte
+
+  - title: "Harmonize, stack, and merge"
+    desc: "Combine data across cycles and components"
+    contents:
+      - nhanes_harmonize
+      - nhanes_stack
+      - nhanes_merge
+
+  - title: "Mortality linkage"
+    desc: "Link NCHS Public-Use Linked Mortality Files"
+    contents:
+      - nhanes_mortality_link
+      - nhanes_mortality_download
+      - nhanes_mortality_parse
+      - nhanes_lmf_cycles
+
+  - title: "Survival analysis"
+    desc: "Prepare and summarise survival datasets"
+    contents:
+      - nhanes_survival_prep
+      - nhanes_followup_summary
+      - nhanes_ucod_labels
+
+  - title: "Cache management"
+    contents:
+      - nhanes_cache_dir
+
+articles:
+  - title: "Vignettes"
+    navbar: ~
+    contents:
+      - nhanesR-overview
+      - nhanes-mortality-workflow

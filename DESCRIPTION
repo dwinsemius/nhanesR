@@ -38,5 +38,5 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-URL: https://github.com/dwinsemius/nhanesR
+URL: https://dwinsemius.github.io/nhanesR/, https://github.com/dwinsemius/nhanesR
 BugReports: https://github.com/dwinsemius/nhanesR/issues

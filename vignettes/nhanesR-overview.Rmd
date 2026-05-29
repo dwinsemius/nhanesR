@@ -24,14 +24,24 @@ and analyzing data from the National Health and Nutrition Examination Survey
 
 The package handles the main friction points in working with NHANES:
 
-- File names change across cycles (e.g. total cholesterol: `LAB13` →
-  `L13_B` → `L13_C` → `TCHOL_D` onward).
-- Variable names change across cycles (e.g. HDL: `LBDHDL` → `LBXHDD` →
+- File names change across cycles (e.g. total cholesterol: `LAB13` ->
+  `L13_B` -> `L13_C` -> `TCHOL_D` onward).
+- Variable names change across cycles (e.g. HDL: `LBDHDL` -> `LBXHDD` ->
   `LBDHDD`).
 - SI-unit duplicates appear in the same file alongside conventional-unit
   columns.
 - Mortality linkage requires fixed-width file parsing and SEQN joining across
   cycles.
+- Lab measurements are restricted by age: total cholesterol is measured in
+  participants aged 6 and older; fasting analytes (triglycerides, glucose,
+  insulin) require age 12 and older. Combined with the roughly 10-15% of
+  enrolled participants who complete only the household interview and never
+  attend the Mobile Examination Center (MEC), approximately 35-40% of
+  participants in the DEMO file will have no lab measurements. This is
+  expected by design, not data loss. The LMF further restricts mortality
+  follow-up to participants aged 18 or older at the time of the survey
+  (`ELIGSTAT = 1`); `nhanes_survival_prep()` removes ineligible participants
+  automatically.
 
 ---
 

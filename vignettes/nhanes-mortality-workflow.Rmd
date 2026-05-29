@@ -389,6 +389,43 @@ table(event = surv_cvd$event, cvd_death = surv_cvd$event_cause)
 NHANES uses a complex multi-stage probability sample. Standard errors must
 account for the sampling design or they will be anti-conservative.
 
+### Choosing the correct survey weight
+
+NHANES provides three families of survey weight. Using the wrong one
+produces biased population estimates and incorrect standard errors.
+
+| Weight | Use when |
+|--------|----------|
+| `WTINT2YR` | Interview-only data (questionnaires, no lab or exam) |
+| `WTMEC2YR` | Any examination or laboratory component |
+| `WTSAF2YR` | Analytes from the **fasting subsample** |
+
+**The fasting subsample weight** (`WTSAF2YR`) is a *statistical* probability
+weight — not a body-weight measurement — that accounts for an additional
+random subsampling step: only a subset of MEC attendees are asked to fast
+before their blood draw. Analytes that require fasting include
+**triglycerides, glucose, insulin, and Friedewald-calculated LDL**. Using
+`WTMEC2YR` for these analytes ignores the fasting subsampling and will
+over- or under-represent the population.
+
+For total cholesterol and HDL — which do not require fasting — `WTMEC2YR`
+is the correct weight.
+
+### Pooling across cycles
+
+When combining data from multiple two-year cycles, the 2-year weight must
+be adjusted. The simplest approach is to divide by the number of cycles
+pooled:
+
+```r
+surv_data$wt_pooled <- surv_data$survey_weight / n_cycles
+```
+
+Some NHANES files include pre-computed 4-year weights (`WTMEC4YR`,
+`WTSAF4YR`). Use these when available rather than dividing manually.
+
+---
+
 **Weight adjustment for pooled cycles**: divide the two-year exam weight
 `WTMEC2YR` by the number of cycles pooled (here, 10).
 

@@ -79,6 +79,30 @@ when multiple cycles are detected, as this asymmetry must be accounted
 for in any pooled analysis.
 }
 
+\section{Survey weights}{
+
+NHANES provides three families of survey weight, each correcting for a
+different sampling stage. Choosing the wrong weight produces biased
+point estimates and incorrect standard errors.\tabular{ll}{
+   Weight \tab When to use \cr
+   \code{WTINT2YR} \tab Interview-only data (questionnaires, no lab/exam) \cr
+   \code{WTMEC2YR} \tab Any examination or laboratory component \cr
+   \code{WTSAF2YR} \tab Analytes from the \strong{fasting subsample} (triglycerides, glucose, insulin, calculated LDL) \cr
+}
+
+
+The fasting subsample weight (\code{WTSAF2YR}) is a \emph{statistical} probability
+weight -- not a body-weight measurement -- that accounts for the additional
+random subsampling of participants asked to fast before their blood draw.
+Fasting participants are a minority of all MEC attendees; using \code{WTMEC2YR}
+for fasting analytes ignores this extra subsampling step and will give
+incorrect population estimates.
+
+For pooled multi-cycle analyses divide the 2-year weight by the number of
+cycles pooled, or use the pre-computed 4-year weight \code{WTMEC4YR} where
+available. See the NHANES analytic guidelines for details.
+}
+
 \section{Perturbed variables}{
 
 \code{PERMTH_INT}, \code{PERMTH_EXM}, and \code{UCOD_LEADING} contain synthetic values

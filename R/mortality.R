@@ -334,6 +334,28 @@ nhanes_mortality_link <- function(nhanes_data,
 #'   when multiple cycles are detected, as this asymmetry must be accounted
 #'   for in any pooled analysis.
 #'
+#' @section Survey weights:
+#'   NHANES provides three families of survey weight, each correcting for a
+#'   different sampling stage. Choosing the wrong weight produces biased
+#'   point estimates and incorrect standard errors.
+#'
+#'   | Weight | When to use |
+#'   |--------|-------------|
+#'   | `WTINT2YR` | Interview-only data (questionnaires, no lab/exam) |
+#'   | `WTMEC2YR` | Any examination or laboratory component |
+#'   | `WTSAF2YR` | Analytes from the **fasting subsample** (triglycerides, glucose, insulin, calculated LDL) |
+#'
+#'   The fasting subsample weight (`WTSAF2YR`) is a *statistical* probability
+#'   weight -- not a body-weight measurement -- that accounts for the additional
+#'   random subsampling of participants asked to fast before their blood draw.
+#'   Fasting participants are a minority of all MEC attendees; using `WTMEC2YR`
+#'   for fasting analytes ignores this extra subsampling step and will give
+#'   incorrect population estimates.
+#'
+#'   For pooled multi-cycle analyses divide the 2-year weight by the number of
+#'   cycles pooled, or use the pre-computed 4-year weight `WTMEC4YR` where
+#'   available. See the NHANES analytic guidelines for details.
+#'
 #' @section Perturbed variables:
 #'   `PERMTH_INT`, `PERMTH_EXM`, and `UCOD_LEADING` contain synthetic values
 #'   for select records (CDC data perturbation to reduce re-identification risk).
@@ -492,15 +514,34 @@ nhanes_survival_prep <- function(data,
       )
     }
     data$survey_weight <- data[[weight_var]]
-    # Warn if weights look like 2yr but cycles suggest 4yr pooling needed
+
+    # Warn if fasting-subsample weight columns exist but a non-fasting weight
+    # was chosen -- common when triglycerides or glucose are in the dataset.
+    fasting_cols <- grep("^WTSAF", names(data), value = TRUE,
+                         ignore.case = TRUE)
+    if (length(fasting_cols) > 0L &&
+        weight_var %in% c("WTMEC2YR", "WTINT2YR", "WTMEC4YR")) {
+      cli::cli_warn(c(
+        "!" = "Fasting-subsample weight column{?s} detected: \\
+               {.val {fasting_cols}}.",
+        "i" = "If your analysis includes fasting analytes (triglycerides, \\
+               glucose, insulin, or Friedewald LDL), use {.val WTSAF2YR} \\
+               rather than {.val {weight_var}}.",
+        "i" = "{.val WTSAF2YR} is a statistical probability weight for the \\
+               fasting subsample -- not a body-weight measurement."
+      ))
+    }
+
+    # Warn if 2-year weight is used across multiple pooled cycles
     if (cycle_col %in% names(data)) {
       n_cycles <- length(unique(data[[cycle_col]]))
-      if (n_cycles > 1L && weight_var %in% c("WTMEC2YR", "WTINT2YR")) {
+      if (n_cycles > 1L &&
+          weight_var %in% c("WTMEC2YR", "WTINT2YR", "WTSAF2YR")) {
         cli::cli_warn(c(
-          "!" = "Using 2-year weight {.val {weight_var}} with {n_cycles} pooled cycles.",
-          "i" = "For 4-year pooled analyses, use the 4-year combined weight \\
-                 (e.g. {.val WTMEC4YR} where available) or divide 2-year weights \\
-                 by the number of cycles being combined.",
+          "!" = "Using 2-year weight {.val {weight_var}} with \\
+                 {n_cycles} pooled cycles.",
+          "i" = "Divide 2-year weights by the number of cycles pooled, \\
+                 or use a pre-computed 4-year weight where available.",
           "i" = "See NHANES analytic guidelines: \\
                  {.url https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx}"
         ))

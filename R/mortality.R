@@ -173,48 +173,71 @@ nhanes_mortality_parse <- function(cycles  = NULL,
 #' Link mortality data onto an NHANES analytic dataset
 #'
 #' Performs a left join of the parsed LMF onto a data frame containing NHANES
-#' participants, matched on `SEQN`. Automatically handles multiple cycles by
-#' row-binding the appropriate LMF files before joining.
+#' participants, matched on the participant sequence number. Automatically
+#' handles multiple cycles by row-binding the appropriate LMF files before
+#' joining.
 #'
-#' @param nhanes_data A data frame with at minimum a `SEQN` column and a
-#'   `cycle` column (added automatically by [nhanes_download()]). If `cycle`
-#'   is absent, `cycle` must be supplied.
-#' @param cycles Character vector of cycle labels present in `nhanes_data`.
-#'   Required if `nhanes_data` does not have a `cycle` column.
+#' Data from any source -- [nhanes_download()], `nhanesA`, or `nhanesdata` --
+#' can be linked by supplying the appropriate column name arguments. For
+#' example, `nhanesdata` stores the sequence number as `seqn` (integer) and
+#' the cycle as `year` (integer start year, e.g. 1999); pass
+#' `seqn_col = "seqn", cycle_col = "year"` and both are handled automatically.
+#'
+#' @param nhanes_data A data frame containing NHANES participants.
+#' @param cycles Character vector of `"YYYY-YYYY"` cycle labels present in
+#'   `nhanes_data`. Inferred from `cycle_col` when omitted.
 #' @param keep_vars Character vector of LMF variables to retain. Defaults to
 #'   all: `c("ELIGSTAT", "MORTSTAT", "UCOD_LEADING", "DIABETES", "HYPERTEN",
 #'   "PERMTH_INT", "PERMTH_EXM")`.
 #' @param download Logical. Download missing LMF files automatically? Default
 #'   `TRUE`.
+#' @param seqn_col Character. Name of the participant sequence-number column
+#'   in `nhanes_data`. Default `"SEQN"` (nhanesR / CDC standard). Use
+#'   `"seqn"` for `nhanesdata` output.
+#' @param cycle_col Character. Name of the cycle column in `nhanes_data`.
+#'   Default `"cycle"` (`"YYYY-YYYY"` labels). Use `"year"` for `nhanesdata`
+#'   output, where the column contains integer start years (e.g. 1999, 2001).
 #'
 #' @return `nhanes_data` with LMF columns appended. Rows with no mortality
-#'   record (i.e., SEQNs not present in the LMF) will have `NA` for all LMF
-#'   columns -- this should not occur for continuous NHANES 1999-2018.
+#'   record (SEQNs absent from the LMF) will have `NA` for all LMF columns;
+#'   this should not occur for continuous NHANES 1999-2018.
 #'
 #' @seealso [nhanes_survival_prep()] to convert the linked data into a survival
-#'   dataset; [nhanes_lmf_cycles()] for the cycles with public-use LMF;
+#'   dataset; [nhanes_lmf_cycles()] for cycles with a public-use LMF;
 #'   [nhanes_stack()] to row-bind multi-cycle data before linking.
 #' @export
 #' @examples
 #' \dontrun{
+#' # Standard nhanesR workflow
 #' demo <- nhanes_download("DEMO", "2015-2016")
 #' demo_mort <- nhanes_mortality_link(demo)
+#'
+#' # nhanesdata workflow (lowercase seqn, integer year column)
+#' library(nhanesdata)
+#' df <- read_nhanes("demo")
+#' df_mort <- nhanes_mortality_link(df, seqn_col = "seqn", cycle_col = "year")
 #' }
 nhanes_mortality_link <- function(nhanes_data,
                                   cycles    = NULL,
                                   keep_vars = NULL,
-                                  download  = TRUE) {
-  if (!("SEQN" %in% names(nhanes_data))) {
-    cli::cli_abort("{.arg nhanes_data} must contain a {.val SEQN} column.")
+                                  download  = TRUE,
+                                  seqn_col  = "SEQN",
+                                  cycle_col = "cycle") {
+  if (!(seqn_col %in% names(nhanes_data))) {
+    cli::cli_abort(
+      "{.arg nhanes_data} must contain a sequence-number column. \\
+       Looking for {.val {seqn_col}}; set {.arg seqn_col} if named differently."
+    )
   }
 
-  # Determine cycles
+  # Determine cycles, converting integer start-years if needed
   if (is.null(cycles)) {
-    if ("cycle" %in% names(nhanes_data)) {
-      cycles <- unique(nhanes_data$cycle)
+    if (cycle_col %in% names(nhanes_data)) {
+      cycles <- .nhanes_resolve_cycle_col(nhanes_data[[cycle_col]])
     } else {
       cli::cli_abort(
-        "Supply {.arg cycles} or ensure {.arg nhanes_data} has a {.val cycle} column."
+        "Supply {.arg cycles} or ensure {.arg nhanes_data} has a cycle column \\
+         (set {.arg cycle_col} if it is not named {.val cycle})."
       )
     }
   }
@@ -223,7 +246,7 @@ nhanes_mortality_link <- function(nhanes_data,
 
   default_keep <- c("SEQN", "ELIGSTAT", "MORTSTAT", "UCOD_LEADING",
                     "DIABETES", "HYPERTEN", "PERMTH_INT", "PERMTH_EXM")
-  keep_vars <- c("SEQN", keep_vars %||% default_keep[-1L])
+  keep_vars <- keep_vars %||% default_keep[-1L]
 
   # Parse and row-bind LMFs for all requested cycles
   lmf_list <- nhanes_mortality_parse(cycles, download = download)
@@ -233,14 +256,20 @@ nhanes_mortality_link <- function(nhanes_data,
     df
   }))
 
-  # Keep only requested variables (plus SEQN and cycle for joining)
-  avail <- intersect(keep_vars, names(lmf_all))
-  lmf_all <- lmf_all[, unique(c("SEQN", avail)), drop = FALSE]
+  # Keep only requested LMF variables (SEQN retained only for joining)
+  avail    <- intersect(keep_vars, names(lmf_all))
+  lmf_join <- lmf_all[, unique(c("SEQN", avail)), drop = FALSE]
 
-  # Left join: every NHANES participant gets a mortality record or NA
-  merged <- merge(nhanes_data, lmf_all, by = "SEQN", all.x = TRUE)
+  # Match on coerced-integer SEQN to handle character vs integer differences
+  idx <- match(as.integer(nhanes_data[[seqn_col]]),
+               as.integer(lmf_join$SEQN))
 
-  n_unmatched <- sum(is.na(merged$MORTSTAT))
+  lmf_cols <- setdiff(names(lmf_join), "SEQN")
+  for (col in lmf_cols) {
+    nhanes_data[[col]] <- lmf_join[[col]][idx]
+  }
+
+  n_unmatched <- sum(is.na(nhanes_data$MORTSTAT))
   if (n_unmatched > 0L) {
     cli::cli_warn(
       "{n_unmatched} NHANES participant{?s} had no matching LMF record. \\
@@ -249,7 +278,7 @@ nhanes_mortality_link <- function(nhanes_data,
     )
   }
 
-  merged
+  nhanes_data
 }
 
 # -- Survival prep --------------------------------------------------------------
@@ -278,6 +307,10 @@ nhanes_mortality_link <- function(nhanes_data,
 #' @param weight_var Character. Name of the survey weight column to carry
 #'   through. The column is renamed to `survey_weight` in the output.
 #'   If `NULL`, no weight is attached.
+#' @param seqn_col Character. Name of the participant sequence-number column.
+#'   Default `"SEQN"`. Use `"seqn"` for `nhanesdata` output.
+#' @param cycle_col Character. Name of the cycle column. Default `"cycle"`.
+#'   Use `"year"` for `nhanesdata` output.
 #'
 #' @return A data frame with additional columns:
 #'   \describe{
@@ -347,12 +380,14 @@ nhanes_survival_prep <- function(data,
                                  origin     = c("exam", "interview"),
                                  time_unit  = c("months", "years"),
                                  cause      = NULL,
-                                 weight_var = NULL) {
+                                 weight_var = NULL,
+                                 seqn_col   = "SEQN",
+                                 cycle_col  = "cycle") {
   origin    <- match.arg(origin)
   time_unit <- match.arg(time_unit)
 
   # -- Validate required columns ----------------------------------------------
-  required <- c("SEQN", "ELIGSTAT", "MORTSTAT",
+  required <- c(seqn_col, "ELIGSTAT", "MORTSTAT",
                 if (origin == "exam") "PERMTH_EXM" else "PERMTH_INT")
   missing_cols <- setdiff(required, names(data))
   if (length(missing_cols) > 0L) {
@@ -385,8 +420,8 @@ nhanes_survival_prep <- function(data,
   n_after_elig <- nrow(data)
 
   # -- Warn on asymmetric follow-up -------------------------------------------
-  if ("cycle" %in% names(data)) {
-    present_cycles <- unique(data$cycle)
+  if (cycle_col %in% names(data)) {
+    present_cycles <- unique(data[[cycle_col]])
     if (length(present_cycles) > 1L) {
       cli::cli_warn(c(
         "!" = "Data contains {length(present_cycles)} NHANES cycle{?s}: \\
@@ -458,8 +493,8 @@ nhanes_survival_prep <- function(data,
     }
     data$survey_weight <- data[[weight_var]]
     # Warn if weights look like 2yr but cycles suggest 4yr pooling needed
-    if ("cycle" %in% names(data)) {
-      n_cycles <- length(unique(data$cycle))
+    if (cycle_col %in% names(data)) {
+      n_cycles <- length(unique(data[[cycle_col]]))
       if (n_cycles > 1L && weight_var %in% c("WTMEC2YR", "WTINT2YR")) {
         cli::cli_warn(c(
           "!" = "Using 2-year weight {.val {weight_var}} with {n_cycles} pooled cycles.",
@@ -514,6 +549,8 @@ nhanes_ucod_labels <- function() {
 #' censoring problem when pooling cycles.
 #'
 #' @param data A data frame from [nhanes_survival_prep()].
+#' @param cycle_col Character. Name of the cycle column. Default `"cycle"`.
+#'   Use `"year"` for data originating from `nhanesdata`.
 #' @return A data frame with one row per cycle.
 #' @seealso [nhanes_survival_prep()] which produces the required input.
 #' @export
@@ -523,23 +560,27 @@ nhanes_ucod_labels <- function() {
 #' nhanes_followup_summary(surv_data)
 #' }
 #' @importFrom stats median
-nhanes_followup_summary <- function(data) {
-  if (!("cycle" %in% names(data))) {
-    cli::cli_abort("{.arg data} must have a {.val cycle} column.")
+nhanes_followup_summary <- function(data, cycle_col = "cycle") {
+  if (!(cycle_col %in% names(data))) {
+    cli::cli_abort(
+      "{.arg data} must have a cycle column \\
+       (set {.arg cycle_col} if not named {.val cycle})."
+    )
   }
   if (!("time" %in% names(data))) {
     cli::cli_abort(
-      "{.arg data} must have a {.val time} column. Run {.fn nhanes_survival_prep} first."
+      "{.arg data} must have a {.val time} column. \\
+       Run {.fn nhanes_survival_prep} first."
     )
   }
 
   meta  <- attr(data, ".nhanes_survival")
   units <- if (!is.null(meta)) meta$time_unit else "months"
 
-  result <- lapply(split(data, data$cycle), function(df) {
+  result <- lapply(split(data, data[[cycle_col]]), function(df) {
     eligible <- df[!is.na(df$ELIGSTAT) & df$ELIGSTAT == 1L, ]
     data.frame(
-      cycle           = unique(df$cycle),
+      cycle           = unique(df[[cycle_col]]),
       n               = nrow(eligible),
       n_events        = sum(eligible$event == 1L, na.rm = TRUE),
       event_rate_pct  = round(
@@ -558,6 +599,25 @@ nhanes_followup_summary <- function(data) {
 }
 
 # -- Internal helpers -----------------------------------------------------------
+
+# Convert a cycle column to "YYYY-YYYY" labels.
+# Accepts either character labels ("1999-2000") or integer start years (1999).
+.nhanes_resolve_cycle_col <- function(x) {
+  if (is.numeric(x) || is.integer(x)) {
+    registered  <- c(.nhanes_cycles$cycle, .nhanes_iii$cycle)
+    start_years <- as.integer(sub("-.*", "", registered))
+    vals <- unique(x)
+    out  <- character(length(vals))
+    for (i in seq_along(vals)) {
+      idx <- which(start_years == as.integer(vals[i]))
+      out[i] <- if (length(idx) == 1L) registered[idx] else
+                  paste0(vals[i], "-", vals[i] + 1L)
+    }
+    out
+  } else {
+    as.character(unique(x))
+  }
+}
 
 .nhanes_lmf_rds_path <- function(cycle) {
   dir  <- .nhanes_cache_subdir("mortality", "parsed")

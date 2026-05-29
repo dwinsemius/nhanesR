@@ -4,10 +4,13 @@
 \alias{nhanes_followup_summary}
 \title{Summarize mortality follow-up by cycle}
 \usage{
-nhanes_followup_summary(data)
+nhanes_followup_summary(data, cycle_col = "cycle")
 }
 \arguments{
 \item{data}{A data frame from \code{\link[=nhanes_survival_prep]{nhanes_survival_prep()}}.}
+
+\item{cycle_col}{Character. Name of the cycle column. Default \code{"cycle"}.
+Use \code{"year"} for data originating from \code{nhanesdata}.}
 }
 \value{
 A data frame with one row per cycle.

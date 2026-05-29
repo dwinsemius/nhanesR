@@ -9,7 +9,9 @@ nhanes_survival_prep(
   origin = c("exam", "interview"),
   time_unit = c("months", "years"),
   cause = NULL,
-  weight_var = NULL
+  weight_var = NULL,
+  seqn_col = "SEQN",
+  cycle_col = "cycle"
 )
 }
 \arguments{
@@ -30,6 +32,12 @@ For all-cause mortality, leave \code{NULL}.}
 \item{weight_var}{Character. Name of the survey weight column to carry
 through. The column is renamed to \code{survey_weight} in the output.
 If \code{NULL}, no weight is attached.}
+
+\item{seqn_col}{Character. Name of the participant sequence-number column.
+Default \code{"SEQN"}. Use \code{"seqn"} for \code{nhanesdata} output.}
+
+\item{cycle_col}{Character. Name of the cycle column. Default \code{"cycle"}.
+Use \code{"year"} for \code{nhanesdata} output.}
 }
 \value{
 A data frame with additional columns:

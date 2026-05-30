@@ -1,0 +1,478 @@
+---
+title: "Low Total Cholesterol, Low Serum Albumin, and Elevated Gamma-Glutamyl Transferase as Independent Mortality Risk Markers Spanning a Fivefold Range in Mortality Rate: A Survey-Weighted Analysis of NHANES 1999–2018"
+author: "David Winsemius"
+date: "`r Sys.Date()`"
+output:
+  word_document:
+    reference_docx: null
+  html_document:
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+---
+
+## Revision Log
+
+| Rev | Date       | Changes |
+|-----|------------|---------|
+| 1   | 2026-05-29 | Initial full draft: Introduction, Methods, Results (Tables 2, 3a, 3b), Discussion with EHR scoring section, 17 Vancouver references |
+| 2   | 2026-05-30 | Added structured BMJ abstract; fixed American spellings throughout (non-institutionalized, linearization, hypoalbuminemia, generalizability, venipuncture); split citation [14] — NHANES Weighting Tutorial extracted to new reference [18] |
+
+---
+
+## Abstract
+
+**Objective** To determine whether three routine laboratory values — total cholesterol
+(TC), gamma-glutamyl transferase (GGT), and serum albumin — function as near-orthogonal
+mortality risk predictors in adults free of statin use, and to evaluate a simple three-item
+adverse marker score derived from their extreme quintiles.
+
+**Design** Population-based cohort study with two-year landmark analysis.
+
+**Setting** Ten consecutive two-year cycles of the National Health and Nutrition
+Examination Survey (NHANES), 1999–2018, linked to the National Center for Health
+Statistics Public-Use Linked Mortality Files.
+
+**Participants** 32,792 non-statin users aged ≥18 years eligible for mortality
+follow-up, alive and uncensored two years after examination (2,671 deaths over a mean
+7.1 years of post-landmark follow-up).
+
+**Main outcome measures** All-cause mortality rate (deaths per 1,000 person-years
+after the two-year landmark); adjusted rate ratios from survey-weighted Poisson
+regression; cause-specific mortality (cardiovascular, cancer, other).
+
+**Results** Spearman rank correlations among TC, GGT, and albumin were near-zero to
+weak (TC–albumin r = −0.004; GGT–albumin r = 0.05; TC–GGT r = 0.20), confirming
+near-statistical independence. Each variable independently predicted all-cause
+mortality: adjusted rate ratios for the bottom quintile of TC (≤161 mg/dL) 1.42
+(95% CI 1.23–1.64), top quintile of GGT (≥33 U/L) 1.56 (1.41–1.73), and bottom
+quintile of albumin (≤4.0 g/dL) 1.35 (1.23–1.49). A three-item adverse marker score
+(0–3 points, one per adverse threshold) spanned a fivefold range in crude mortality
+rate: 6.6, 8.5, 14.9, and 32.4 deaths per 1,000 person-years for scores 0 through 3;
+all levels above zero remained significant after demographic and metabolic adjustment
+(score 3 rate ratio 3.44, 95% CI 2.44–4.85). Three-way cross-classification revealed
+a 57-fold difference in crude mortality between the lowest-risk combination (high
+albumin + low GGT + low TC: 0.7/1,000 person-years, N=391) and the highest-risk
+combination (low albumin + high GGT + low TC: 40.2/1,000 person-years, N=292), both
+sharing low total cholesterol. Cancer mortality showed disproportionate excess at
+score 3, beyond multiplicative expectation.
+
+**Conclusions** In non-statin users, low TC, elevated GGT, and low serum albumin are
+near-orthogonal predictors of mortality derivable from a single routine blood panel.
+A three-item adverse marker score requiring no additional testing spans a fivefold
+mortality gradient and resolves the low-cholesterol paradox: low TC carries no excess
+risk in the absence of concurrent metabolic stress markers, but identifies patients at
+substantially elevated risk when GGT and albumin are also adverse. The score is
+directly computable from structured data already present in electronic health records.
+
+---
+
+## Introduction
+
+The association between low serum total cholesterol and excess all-cause mortality has
+been reported in population cohorts for four decades, yet it remains poorly integrated
+into clinical practice.[1,2] Cardiologists and primary care physicians encounter low
+cholesterol as an ostensibly reassuring finding — one that signals freedom from
+atherosclerotic risk — and rarely pursue it further. The epidemiological literature tells
+a more complicated story: below roughly 160 mg/dL, mortality rates rise in a pattern that
+is neither explained by cardiovascular disease nor accounted for by the conventional
+lipid-CHD narrative.[3,4]
+
+The standard explanation invokes reverse causation: subclinical malignancy, hepatic
+dysfunction, and protein-energy malnutrition each suppress cholesterol synthesis before
+they announce themselves clinically, so low cholesterol marks pre-existing disease rather
+than an independent causal exposure.[5,6] This explanation is almost certainly correct as
+far as it goes. The clinical question it leaves unanswered is more specific: which
+measurable dimensions of systemic illness are responsible, and can identifying them
+prospectively separate the patient whose low cholesterol reflects constitutional leanness
+or efficient hepatic metabolism from the one whose low cholesterol reflects catabolic
+depletion? Without that discrimination, the clinician confronting a low cholesterol result
+has no basis for action. What is needed is not a refutation of reverse causation but
+practical, targeted precision — routine measurements that locate the patient within the
+illness-depletion spectrum at the time of the blood draw.
+
+Gamma-glutamyl transferase (GGT) offers one such mechanistic lens. Conventionally understood
+as a marker of alcohol exposure and hepatobiliary disease, GGT also reflects intracellular
+glutathione turnover and serves as a sensitive index of oxidative stress at concentrations
+well within the conventional normal range.[7,8] Several cohort studies have reported GGT
+as an independent all-cause and cardiovascular mortality predictor,[9,10] and its
+association with lipid peroxidation provides a biological rationale for interaction with
+cholesterol metabolism. Serum albumin provides a complementary axis: reflecting both
+nutritional reserve and hepatic synthetic capacity, it falls in catabolic and inflammatory
+states and predicts mortality across a concentration range that laboratory reports
+routinely label as normal.[11,12]
+
+We examined whether total cholesterol, GGT, and serum albumin function as orthogonal
+prognostic dimensions — statistically independent of one another yet jointly predictive
+of mortality — in a nationally representative population free of statin use at enrollment.
+Using ten consecutive cycles of the National Health and Nutrition Examination Survey
+(NHANES, 1999–2018) linked to the National Center for Health Statistics Public-Use
+Linked Mortality Files,[13] we applied a two-year landmark to attenuate reverse
+causation, excluded statin users to remove pharmacological confounding of cholesterol
+levels, and modeled all-cause and cause-specific mortality using survey-weighted Poisson
+regression. We further derived a simple three-item adverse marker score — one point each
+for low cholesterol, elevated GGT, and low albumin — and assessed its clinical
+discriminative utility across a fivefold gradient in mortality rate. Our findings suggest
+that the prognostic significance of low total cholesterol is not an artefact of reverse
+causation but a marker of a specific pathophysiological state, identifiable at the time of
+a routine blood draw, that warrants clinical evaluation rather than reassurance.
+
+---
+
+## Methods
+
+### Study population
+
+The National Health and Nutrition Examination Survey (NHANES) is a continuous,
+cross-sectional survey of the non-institutionalized United States civilian population,
+conducted by the National Center for Health Statistics (NCHS) using a complex
+multistage probability sampling design.[14] We pooled ten two-year cycles spanning
+1999–2018. Participants who attended the Mobile Examination Center (MEC) and were aged
+18 years or older at the time of survey were eligible. We excluded participants currently
+using lipid-lowering medications (statins) at enrollment, identified from the
+prescription medication interview files (RXQ_RX); drug names containing "statin" but
+not "nystatin" were classified as statin use. Participants were further restricted to
+those eligible for mortality follow-up (ELIGSTAT = 1) in the NCHS Public-Use Linked
+Mortality Files, which provide vital status through December 31, 2019.[13]
+
+To attenuate reverse causation — the tendency for subclinical terminal illness to lower
+cholesterol, GGT, and albumin before clinical presentation — we applied a two-year
+landmark: participants who died or were censored within two years of their examination
+date were excluded, and follow-up time was reset to begin at the two-year mark. The
+analysis population after these exclusions comprised 32,792 participants with 2,671
+deaths.
+
+### Exposures
+
+Serum total cholesterol (TC, mg/dL), gamma-glutamyl transferase (GGT, U/L), and serum
+albumin (g/dL) were measured in fasting and non-fasting MEC participants as part of the
+standard NHANES laboratory protocol. GGT and albumin were obtained from the standard
+biochemistry profile (file series LAB18, L40, and BIOPRO across cycles). Laboratory
+file names changed across cycles; file-to-variable linkage across all ten cycles was
+managed using the nhanesR package for R.[15]
+
+An adverse marker score (0–3) was constructed by summing three binary flags, each
+derived from the bottom or top quintile of the respective variable in the analysis
+population: low TC (≤ 161 mg/dL), elevated GGT (≥ 33 U/L), and low albumin
+(≤ 4.0 g/dL). Quintile thresholds were fixed at values derived from the full analysis
+population prior to any modelling.
+
+### Outcomes
+
+The primary outcome was all-cause mortality ascertained through linkage to the NCHS
+Public-Use Linked Mortality Files, with follow-up through December 31, 2019. Cause of
+death was classified using the leading cause recode provided in the mortality files
+(UCOD_LEADING): cardiovascular mortality (codes 001 and 005), cancer mortality (code
+002), and all other causes. Participants alive at December 31, 2019 were censored at
+that date.
+
+### Statistical analysis
+
+All analyses accounted for the NHANES complex survey design using Taylor-series
+linearization, with primary sampling units (SDMVPSU), strata (SDMVSTRA), and
+examination sample weights as specified by NCHS analytic guidelines.[14] Following NCHS
+recommendations for pooled multi-cycle analyses, examination weights were adjusted to
+represent the full 1999–2018 study period. Because the 1999–2000 cycle used pre-Census
+2000 population controls while subsequent cycles used post-Census counts, a direct
+division of WTMEC2YR by the number of cycles is not appropriate for analyses including
+1999–2000.[18] The pre-computed four-year weight (WTMEC4YR) was therefore used for the
+1999–2002 block, and the adjusted pooled weight was defined as WTMEC_adj = (2/10) ×
+WTMEC4YR for cycles 1999–2002, and (1/10) × WTMEC2YR for cycles 2003–2018, where 10
+is the total number of two-year cycles combined. Singleton PSUs within strata arising
+from subgroup analyses were handled by the "adjust" method.
+
+Mortality rates were expressed as deaths per 1,000 person-years of follow-up after the
+two-year landmark. Survey-weighted Poisson regression (quasipoisson family, log link)
+with an offset of log(follow-up time in years) was used to estimate adjusted rate ratios
+(RR) and 95% confidence intervals. Models were adjusted for age (continuous), sex,
+race/ethnicity (five categories), poverty-income ratio (continuous), body mass index
+(continuous), and smoking status (never, former, current). Total cholesterol, GGT, and
+albumin were each entered as three-level categorical variables — bottom quintile (Low),
+middle three quintiles (Mid, reference), and top quintile (High) — yielding six
+parameters for the three exposure terms. The adverse marker score was entered as an
+unordered factor with score 0 as reference.
+
+Cause-specific mortality was modeled using the same Poisson framework, treating deaths
+from other causes as censored at the date of death. The Spearman correlations among TC,
+GGT, and albumin were computed to assess the orthogonality assumption. All analyses were
+performed in R (version 4.6)[16] using the survey package (version 4.4).[17]
+
+---
+
+## Results
+
+### Analysis population
+
+After exclusion of statin users, participants ineligible for mortality follow-up,
+and those who died or were censored within two years of examination, the analysis
+population comprised 32,792 participants contributing 2,671 deaths over a mean of
+7.1 years of post-landmark follow-up. Median total cholesterol was 193 mg/dL
+(IQR 166–221), median GGT 19 U/L (IQR 13–29), and median serum albumin 4.3 g/dL
+(IQR 4.0–4.5) — all within conventional laboratory reference ranges.
+
+### Independence of the three exposure variables
+
+Spearman rank correlations among the three exposures were: TC–GGT r = 0.20,
+TC–albumin r = −0.004, GGT–albumin r = 0.05. In the six-parameter Poisson model,
+adjusted rate ratios for each variable were stable when the other two were included,
+indicating that each contributes independent predictive information.
+
+### Dose-response by decile
+
+**Table 2. Survey-weighted all-cause mortality rates by decile of each exposure
+(non-statin users, 2-year landmark, N=32,767)**
+
+*Total Cholesterol (mg/dL)*
+
+| Decile | Range   |     N | Events | Rate/1000py |
+|--------|---------|-------|--------|-------------|
+| 1      | 59–146  | 3,094 |    180 |         6.7 |
+| 2      | 146–161 | 3,004 |    189 |         6.9 |
+| 3      | 161–172 | 2,936 |    184 |         6.7 |
+| 4      | 172–183 | 3,089 |    203 |         7.0 |
+| 5      | 183–193 | 2,965 |    243 |         7.9 |
+| 6      | 193–203 | 2,864 |    229 |         7.4 |
+| 7      | 203–215 | 3,089 |    256 |         7.8 |
+| 8      | 215–229 | 2,905 |    283 |        10.3 |
+| 9      | 229–250 | 2,931 |    318 |        10.7 |
+| 10     | 250–813 | 2,890 |    313 |        10.5 |
+
+*GGT (U/L)*
+
+| Decile | Range    |     N | Events | Rate/1000py |
+|--------|----------|-------|--------|-------------|
+| 1      | 3–10     | 3,361 |    160 |         5.0 |
+| 2      | 10–12    | 2,707 |    180 |         6.7 |
+| 3      | 12–14    | 2,924 |    233 |         8.5 |
+| 4      | 14–17    | 4,199 |    307 |         7.4 |
+| 5      | 17–19    | 2,346 |    204 |         8.5 |
+| 6      | 19–22    | 2,775 |    210 |         8.4 |
+| 7      | 22–26    | 2,811 |    217 |         7.3 |
+| 8      | 26–33    | 2,913 |    229 |         7.8 |
+| 9      | 33–48    | 2,846 |    258 |         9.8 |
+| 10     | 48–2274  | 2,885 |    400 |        15.2 |
+
+*Serum Albumin (g/dL)*
+
+| Decile | Range   |     N | Events | Rate/1000py |
+|--------|---------|-------|--------|-------------|
+| 1      | 1.9–3.8 | 3,638 |    485 |        15.8 |
+| 2      | 3.8–4.0 | 4,290 |    469 |        11.9 |
+| 3      | 4.0–4.1 | 3,049 |    294 |        10.6 |
+| 4      | 4.1–4.2 | 3,442 |    294 |         8.3 |
+| 5      | 4.2–4.3 | 3,434 |    241 |         7.5 |
+| 6      | 4.3–4.4 | 3,306 |    240 |         7.5 |
+| 7      | 4.4–4.5 | 2,881 |    154 |         5.5 |
+| 8      | 4.5–4.7 | 3,700 |    166 |         4.6 |
+| 9      | 4.7–5.6 | 2,027 |     55 |         3.0 |
+
+### Adverse marker scores
+
+Two complementary scoring systems were derived from the same three exposures.
+The 0–9 score assigns 0–3 points per variable based on quartile position in the
+adverse direction (TC: lowest quartile = 3, highest = 0; GGT: highest quartile = 3,
+lowest = 0; albumin: lowest quartile = 3, highest = 0). The 0–3 binary score awards
+one point per variable for crossing the bottom or top quintile threshold.
+
+**Table 3a. Survey-weighted mortality rates and adjusted rate ratios: 0–9 score
+(ref = score 0)**
+
+Adjusted for age, sex, race/ethnicity, poverty-income ratio, BMI, and smoking status.
+
+| Score |     N | Events | Rate/1000py | Adjusted RR (95% CI)  |
+|-------|-------|--------|-------------|------------------------|
+| 0     |   164 |     11 |         6.8 | 1.00 (reference)       |
+| 1     |   713 |     44 |         6.4 | 0.90 (0.41–1.96)       |
+| 2     | 2,098 |    147 |         6.4 | 0.84 (0.45–1.57)       |
+| 3     | 4,992 |    338 |         6.8 | 0.91 (0.49–1.68)       |
+| 4     | 6,137 |    423 |         7.0 | 1.05 (0.56–1.95)       |
+| 5     | 6,327 |    505 |         8.4 | 1.17 (0.63–2.16)       |
+| 6     | 4,973 |    420 |         8.5 | 1.16 (0.62–2.17)       |
+| 7     | 2,652 |    252 |        11.3 | 1.42 (0.74–2.75)       |
+| 8     | 1,263 |    161 |        16.8 | 1.95 (1.04–3.66)       |
+| 9     |   448 |     97 |        28.0 | 2.56 (1.30–5.07)       |
+
+**Table 3b. Survey-weighted mortality rates and adjusted rate ratios: 0–3 binary
+score (ref = score 0)**
+
+One point each for TC ≤161 mg/dL, GGT ≥33 U/L, albumin ≤4.0 g/dL (bottom/top
+quintile thresholds). Adjusted for age, sex, race/ethnicity, poverty-income ratio,
+BMI, and smoking status.
+
+| Score |      N | Events | Rate/1000py | Adjusted RR (95% CI) |
+|-------|--------|--------|-------------|----------------------|
+| 0     | 13,320 |    912 |         6.6 | 1.00 (reference)     |
+| 1     | 13,110 |  1,031 |         8.5 | 1.48 (1.33–1.64)     |
+| 2     |  3,031 |    379 |        14.9 | 1.99 (1.73–2.29)     |
+| 3     |    306 |     76 |        32.4 | 3.44 (2.44–4.85)     |
+
+The discriminative range of the score is illustrated by its extremes in the full
+three-way cross-classification (Figure 1). Participants with high albumin, low GGT,
+and low TC — the cell that exonerates low cholesterol in the absence of systemic
+illness markers — had a crude mortality rate of 0.7 per 1,000 person-years (N=391,
+2 deaths). Participants with low albumin, high GGT, and low TC had a rate of 40.2
+(N=292, 73 deaths). Both groups share a low total cholesterol; the 57-fold
+difference in mortality rate is explained entirely by GGT and albumin.
+
+### Cause-specific mortality
+
+On cause-specific analysis, the association of score 3 with cancer mortality was
+disproportionately large relative to the product of the marginal risks (observed
+joint rate ratio 1.90, 95% CI 1.25–2.88; expected under multiplicativity 1.13),
+suggesting that the combination of depleted cholesterol synthesis, oxidative hepatic
+stress, and hypoalbuminemia marks a state of advanced occult malignancy more
+specifically than any single marker alone. The association with cardiovascular
+mortality was closer to multiplicative expectations.
+
+---
+
+## Discussion
+
+In a nationally representative cohort of US adults free of statin use at enrollment,
+three routine laboratory values — low total cholesterol, elevated GGT, and low serum
+albumin — each independently predicted all-cause mortality after a two-year landmark,
+with Spearman rank correlations among them ranging from near zero (TC–albumin:
+r = −0.004; GGT–albumin: r = 0.05) to weak (TC–GGT: r = 0.20). The three variables
+capture largely non-overlapping biological terrain: lipid synthetic capacity, oxidative
+and hepatic metabolic stress, and nutritional-inflammatory reserve. A simple adverse
+marker score derived from their extreme quintiles spanned a fivefold range in
+mortality rate — from 6.6 to 32.4 deaths per 1,000 person-years — with all three
+levels above zero retaining significance after adjustment for standard demographic and
+metabolic covariates.
+
+The weak positive rank correlation between TC and GGT (r = 0.20) is biologically
+interpretable: both tend to rise in the context of metabolic syndrome and insulin
+resistance, representing partially shared metabolic terrain. That this correlation
+is modest rather than strong is important — it means the two variables are not
+interchangeable, and that a person with high GGT and low TC occupies a pathophysiological
+space that neither marker alone identifies. The pattern of the 0–9 score is instructive
+in this regard: risk is essentially flat across scores 0 through 4, then rises sharply
+and monotonically from score 7 onward. This threshold character suggests that the
+mortality signal emerges when adverse values co-occur across multiple axes, not when
+any single axis is mildly abnormal.
+
+The finding that low total cholesterol in the presence of high albumin and low GGT
+carries a mortality rate of 0.7 per 1,000 person-years — lower than any other
+combination — resolves the clinical paradox rather than merely attenuating it. The
+patient whose low cholesterol reflects constitutional leanness, efficient hepatic
+metabolism, or dietary pattern is not at elevated risk. The patient whose low
+cholesterol co-occurs with hypoalbuminemia and elevated GGT is at substantially
+elevated risk, consistent with occult malignancy, chronic liver disease, or advanced
+protein-energy wasting. The cause-specific analysis supports this: the excess cancer
+mortality associated with the low-TC/high-GGT combination exceeded multiplicative
+expectation, consistent with cholesterol depletion by a tumour burden that also
+drives oxidative hepatic stress.
+
+### Clinical implications
+
+The practical consequence for the clinician is straightforward: a low total cholesterol
+result in isolation warrants no action beyond routine follow-up. The same result in a
+patient with an adverse marker score of 2 or 3 — identifiable from the same blood
+draw — warrants clinical evaluation for occult systemic disease. This is a risk
+stratification, not a causal claim; the score identifies who needs looking at, not
+what to look for.
+
+All three components of the score are elements of panels already ordered in routine
+clinical care — the lipid panel (TC) and the comprehensive metabolic panel (GGT,
+albumin) are among the most frequently performed laboratory tests in ambulatory
+medicine. The adverse marker score requires no additional testing and no proprietary
+reagents. It is directly computable from structured laboratory data already stored in
+electronic health records, making it a natural candidate for automated clinical
+decision support: a flag triggered when a patient's lab results meet two or more
+adverse thresholds could prompt the ordering clinician to consider further evaluation
+before the result would otherwise be filed and forgotten. Implementation within
+existing EHR rule engines — such as Best Practice Advisories in Epic or equivalent
+systems — would require only the three threshold values and a simple count.
+
+### Limitations
+
+Several limitations warrant consideration. Exposures were measured at a single
+examination; transient illness at the time of the MEC visit could simultaneously
+depress TC and albumin and elevate GGT, mimicking the adverse score pattern through
+acute-phase physiology rather than chronic disease burden. The two-year landmark
+attenuates but does not eliminate this possibility. GGT is sensitive to recent alcohol
+consumption and biliary obstruction as well as oxidative stress, and NHANES does not
+provide sufficient alcohol detail to fully disentangle these contributors. Albumin is
+affected by hydration status and posture at venipuncture. The score thresholds were
+derived from the analysis population itself and require external validation before
+clinical implementation. Finally, statin exclusion, while necessary to avoid
+pharmacological confounding of TC, limits generalizability to the substantial
+proportion of middle-aged and older adults currently taking lipid-lowering therapy.
+
+---
+
+## References
+
+<!-- Vancouver-style numbered references. Items marked [VERIFY] should be confirmed
+     before submission — author, year, and journal are as recalled but page numbers
+     and volume should be checked against PubMed. -->
+
+1. Jacobs D, Blackburn H, Higgins M, et al. Report of the Conference on Low Blood
+   Cholesterol: Mortality Associations. *Circulation*. 1992;86(3):1046–60.
+
+2. Neaton JD, Blackburn H, Jacobs D, et al. Serum cholesterol level and mortality
+   findings for men screened in the Multiple Risk Factor Intervention Trial.
+   *Arch Intern Med*. 1992;152(7):1490–500.
+
+3. Zhou L, Guo X, Yu S, et al. The effect of total cholesterol/high-density lipoprotein
+   cholesterol ratio on mortality risk in the general population.
+   *Front Endocrinol (Lausanne)*. 2022;13:1037573. [PMC9797665]
+
+4. Liu Y, Tong G, Tong W, Lu L, Qin X. Can statin reduce the J-curve effect of
+   cholesterol and all-cause mortality? An analysis including 467,153 participants.
+   *Sci Rep*. 2021;11(1):22521. [VERIFY volume/page]
+
+5. Iribarren C, Reed DM, Chen R, Yano K, Dwyer JH. Low serum cholesterol and mortality:
+   which is the cause and which is the effect? *Circulation*. 1995;92(9):2396–403.
+
+6. Schatz IJ, Masaki K, Yano K, Chen R, Rodriguez BL, Curb JD. Cholesterol and
+   all-cause mortality in elderly people from the Honolulu Heart Program: a cohort study.
+   *Lancet*. 2001;358(9279):351–5.
+
+7. Pompella A, Corti A, Paolicchi A, Giommarelli C, Zunino F. Gamma-glutamyltransferase,
+   redox regulation and cancer drug resistance. *Curr Opin Pharmacol*.
+   2007;7(4):360–6. [VERIFY]
+
+8. Lee DH, Jacobs DR Jr. Serum gamma-glutamyltransferase: new insights about an old
+   marker of risk. *Curr Opin Lipidol*. 2009;20(3):198–203.
+
+9. Ruttmann E, Brant LJ, Concin H, Diem G, Rapp K, Ulmer H; Vorarlberg Health
+   Monitoring and Promotion Program Study Group. Gamma-glutamyltransferase as a risk
+   factor for cardiovascular disease mortality: an epidemiological investigation in a
+   cohort of 163,944 Austrian adults. *Circulation*. 2005;112(14):2130–7.
+
+10. Wannamethee G, Ebrahim S, Shaper AG. Gamma-glutamyltransferase: determinants and
+    association with mortality from ischemic heart disease and all causes.
+    *Am J Epidemiol*. 1995;142(7):699–708.
+
+11. Corti MC, Guralnik JM, Salive ME, Sorkin JD. Serum albumin level and physical
+    disability as predictors of mortality in older persons.
+    *JAMA*. 1994;272(13):1036–42.
+
+12. Don BR, Kaysen G. Serum albumin: relationship to inflammation and nutrition.
+    *Semin Dial*. 2004;17(6):432–7.
+
+13. National Center for Health Statistics. Public-use linked mortality files, 2019.
+    Hyattsville, MD: Centers for Disease Control and Prevention; 2021.
+    https://www.cdc.gov/nchs/data-linkage/mortality-public.htm
+
+14. National Center for Health Statistics. NHANES analytic and reporting guidelines.
+    Hyattsville, MD: Centers for Disease Control and Prevention; 2013.
+    https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx
+
+15. Winsemius D. nhanesR: download, harmonise, and link NHANES survey data in R.
+    R package version 0.1.0. 2025. https://github.com/dwinsemius/nhanesR
+
+16. R Core Team. R: A language and environment for statistical computing.
+    Vienna, Austria: R Foundation for Statistical Computing; 2025.
+    https://www.R-project.org/
+
+17. Lumley T. Analysis of complex survey samples. *J Stat Softw*. 2004;9(1):1–19.
+
+18. National Center for Health Statistics. NHANES Tutorials — Module 6: Weighting.
+    Centers for Disease Control and Prevention. Available at:
+    https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx. Accessed 2026.

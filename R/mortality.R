@@ -269,7 +269,10 @@ nhanes_mortality_link <- function(nhanes_data,
     nhanes_data[[col]] <- lmf_join[[col]][idx]
   }
 
-  n_unmatched <- sum(is.na(nhanes_data$MORTSTAT))
+  # ELIGSTAT=NA means the participant has no LMF record at all.
+  # ELIGSTAT=3 (insufficient identifying data) is expected to have MORTSTAT=NA
+  # and should not trigger this warning.
+  n_unmatched <- sum(is.na(nhanes_data$ELIGSTAT))
   if (n_unmatched > 0L) {
     cli::cli_warn(
       "{n_unmatched} NHANES participant{?s} had no matching LMF record. \\
@@ -458,6 +461,18 @@ nhanes_survival_prep <- function(data,
   # -- Build time variable ----------------------------------------------------
   time_col <- if (origin == "exam") "PERMTH_EXM" else "PERMTH_INT"
   data$time <- data[[time_col]]
+
+  # Floor at 0.5 months before unit conversion: PERMTH_EXM = 0 means the
+  # participant died in the same calendar month as their exam.
+  # Cox regression requires time > 0.
+  n_floored <- sum(!is.na(data$time) & data$time < 0.5)
+  if (n_floored > 0L) {
+    cli::cli_inform(
+      "{n_floored} record{?s} {?has/have} follow-up time < 0.5 months \\
+       (same-month exam and death). Time floored at 0.5 months."
+    )
+    data$time <- pmax(data$time, 0.5, na.rm = FALSE)
+  }
 
   if (time_unit == "years") {
     data$time <- data$time / 12

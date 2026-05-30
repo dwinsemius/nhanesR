@@ -37,6 +37,29 @@
 #' a 404. nhanesR detects this via the `Content-Type` header and aborts with
 #' a message directing you to [nhanes_manifest()] to confirm the correct name.
 #'
+#' ## Variable label encoding
+#'
+#' NHANES XPT files were produced by SAS, which writes variable labels in the
+#' system locale of the generating server — typically Latin-1 (ISO 8859-1).
+#' Some biochemistry files (notably `BIOPRO` and its predecessors `L40_C`
+#' onward) use the Latin-1 byte `0xB5` for the micro prefix in SI unit
+#' strings such as `umol/L`. That byte is not valid UTF-8, so any downstream
+#' code that runs regular expressions over label attributes will receive an
+#' `"unable to translate ... to a wide string"` warning and the label will be
+#' skipped.
+#'
+#' nhanesR guards against this internally by passing labels through
+#' `iconv(..., to = "UTF-8", sub = "")` before pattern matching in
+#' [nhanes_harmonize()]. If you read label attributes directly in your own
+#' code, apply the same conversion:
+#'
+#' ```r
+#' labels <- iconv(
+#'   vapply(df, function(col) attr(col, "label") %||% "", character(1L)),
+#'   to = "UTF-8", sub = ""
+#' )
+#' ```
+#'
 #' @param file_code Character. The NHANES file code(s), without suffix or
 #'   extension (e.g. `"DEMO"`, `"BPX"`, `"TRIGLY"`). Case-insensitive.
 #'   Can be a vector to download multiple files.

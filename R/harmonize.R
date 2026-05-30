@@ -132,8 +132,10 @@ nhanes_harmonize <- function(data_list,
 # -- Internal helpers ----------------------------------------------------------
 
 .nhanes_harmonize_by_unit <- function(df, unit, name, label_pattern) {
-  labels  <- vapply(df, function(col) attr(col, "label") %||% "",
-                    character(1L))
+  labels  <- iconv(
+    vapply(df, function(col) attr(col, "label") %||% "", character(1L)),
+    to = "UTF-8", sub = ""
+  )
   matches <- grepl(unit, labels, ignore.case = TRUE)
   if (!is.null(label_pattern)) {
     matches <- matches & grepl(label_pattern, labels, ignore.case = TRUE)
@@ -174,8 +176,10 @@ nhanes_harmonize <- function(data_list,
   si_units   <- "mmol/L|g/L|umol/L|nmol/L"
   conv_units <- "mg/dL|g/dL|U/L|IU/L|ug/mL|mg/L|ug/dL|ng/mL"
 
-  labels <- vapply(df, function(col) attr(col, "label") %||% "",
-                   character(1L))
+  labels <- iconv(
+    vapply(df, function(col) attr(col, "label") %||% "", character(1L)),
+    to = "UTF-8", sub = ""
+  )
 
   si_idx   <- which(grepl(si_units,   labels, ignore.case = TRUE))
   conv_idx <- which(grepl(conv_units, labels, ignore.case = TRUE))

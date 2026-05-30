@@ -63,6 +63,29 @@ code is supplied, CDC returns HTTP 200 with an HTML error page rather than
 a 404. nhanesR detects this via the \code{Content-Type} header and aborts with
 a message directing you to \code{\link[=nhanes_manifest]{nhanes_manifest()}} to confirm the correct name.
 }
+
+\subsection{Variable label encoding}{
+
+NHANES XPT files were produced by SAS, which writes variable labels in the
+system locale of the generating server — typically Latin-1 (ISO 8859-1).
+Some biochemistry files (notably \code{BIOPRO} and its predecessors \code{L40_C}
+onward) use the Latin-1 byte \code{0xB5} for the micro prefix in SI unit
+strings such as \code{umol/L}. That byte is not valid UTF-8, so any downstream
+code that runs regular expressions over label attributes will receive an
+\code{"unable to translate ... to a wide string"} warning and the label will be
+skipped.
+
+nhanesR guards against this internally by passing labels through
+\code{iconv(..., to = "UTF-8", sub = "")} before pattern matching in
+\code{\link[=nhanes_harmonize]{nhanes_harmonize()}}. If you read label attributes directly in your own
+code, apply the same conversion:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{labels <- iconv(
+  vapply(df, function(col) attr(col, "label") \%||\% "", character(1L)),
+  to = "UTF-8", sub = ""
+)
+}\if{html}{\out{</div>}}
+}
 }
 \examples{
 \dontrun{

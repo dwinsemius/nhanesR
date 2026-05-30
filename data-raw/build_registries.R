@@ -103,8 +103,8 @@
   variable    = c("SEQN", "ELIGSTAT", "MORTSTAT", "UCOD_LEADING",
                   "DIABETES", "HYPERTEN", "PERMTH_INT", "PERMTH_EXM",
                   "WAGEGRP", "EDUCAT"),
-  col_start   = c(1,   7,   9,  11,  15,  17,  19,  24,  29,  31),
-  col_end     = c(6,   7,   9,  13,  15,  17,  23,  28,  29,  31),
+  col_start   = c(1,  15,  16,  17,  20,  21,  43,  46,  64,  65),
+  col_end     = c(6,  15,  16,  19,  20,  21,  45,  48,  64,  65),
   col_type    = c("i", "i", "i", "c", "i", "i", "d", "d", "i", "i"),
   label       = c(
     "Respondent sequence number",

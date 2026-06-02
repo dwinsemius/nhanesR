@@ -1,3 +1,12 @@
+# nhanesR (development)
+
+## Breaking changes
+
+* `nhanes_harmonize()`: the `prefer_mgdl` argument has been replaced by
+  `units = c("conventional", "SI", "both")`. The default (`"conventional"`)
+  preserves prior behaviour; set `units = "SI"` to retain SI columns and drop
+  conventional duplicates instead.
+
 # nhanesR 0.1.0
 
 Initial release.

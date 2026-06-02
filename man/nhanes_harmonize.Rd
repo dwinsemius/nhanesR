@@ -10,7 +10,7 @@ nhanes_harmonize(
   unit = NULL,
   name = NULL,
   label_pattern = NULL,
-  prefer_mgdl = TRUE,
+  units = c("conventional", "SI", "both"),
   trim = TRUE,
   stack = TRUE
 )
@@ -37,17 +37,25 @@ a file contains multiple columns in the same unit (e.g. \code{"HDL"} to
 select only the HDL column from a file that also contains total
 cholesterol in mg/dL).}
 
-\item{prefer_mgdl}{Logical. If \code{TRUE} (default), drop SI-unit columns
-(mmol/L, g/L, etc.) when a conventional-unit counterpart (mg/dL, g/dL,
-U/L) exists in the same data frame. Detection uses label attributes:
-the unit token is stripped from each label and SI columns whose base
-description matches a conventional-unit column are removed. Applied
-before any renaming step.}
+\item{units}{Character. Controls which unit system to retain when both
+conventional and SI versions of the same measurement exist in a data frame
+(e.g. \code{LBXTC} in mg/dL and \code{LBDTCSI} in mmol/L). One of:
+\describe{
+\item{\code{"conventional"}}{(default) Keep mg/dL, g/dL, U/L, etc.; drop SI
+duplicates. Appropriate for US-centric analyses.}
+\item{\code{"SI"}}{Keep mmol/L, g/L, umol/L, etc.; drop conventional
+duplicates. Appropriate for international use or journals that require
+SI units.}
+\item{\code{"both"}}{Retain all columns; no duplicates are removed.}
+}
+Detection uses label attributes rather than variable names because CDC
+naming is inconsistent (e.g. \code{LBXTC}/\code{LBDTCSI}). Applied before any
+renaming step.}
 
-\item{trim}{Logical. Only applies when \code{unit} is used. If \code{TRUE} (default),
-the returned data frame contains only \code{SEQN}, \code{cycle}, and the column
-named by \code{name}. Set to \code{FALSE} to retain all columns (useful when the
-source file contains other variables you want to keep).}
+\item{trim}{Logical. If \code{TRUE} (default), the returned data frame contains
+only \code{SEQN}, \code{cycle}, and the harmonized column(s). Set to \code{FALSE} to
+retain all columns (useful when the source file contains other variables
+you want to keep).}
 
 \item{stack}{Logical. If \code{TRUE} (default), row-bind the renamed data
 frames into a single data frame using \code{\link[=nhanes_stack]{nhanes_stack()}}. Set to \code{FALSE}
@@ -80,10 +88,14 @@ variable names. More verbose but unambiguous.
 \dontrun{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# Unit-based: trim = TRUE (default) returns SEQN + cycle + HDL_mgdl only
+# Conventional units (default): returns SEQN + cycle + HDL_mgdl
 hdl_list <- nhanes_download_analyte("HDL", cycles)
 hdl <- nhanes_harmonize(hdl_list, unit = "mg/dL", name = "HDL_mgdl",
                          label_pattern = "HDL")
+
+# SI units: retain mmol/L columns, drop conventional duplicates
+hdl_si <- nhanes_harmonize(hdl_list, unit = "mmol/L", name = "HDL_mmol",
+                            label_pattern = "HDL", units = "SI")
 
 # Merge two analytes cleanly
 tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
@@ -91,7 +103,7 @@ TC  <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
                          label_pattern = "total cholesterol")
 lipids <- merge(hdl, TC, by = c("SEQN", "cycle"))
 
-# Explicit mapping (trim does not apply)
+# Explicit mapping
 hdl <- nhanes_harmonize(
   hdl_list,
   mapping = c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl",

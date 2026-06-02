@@ -191,21 +191,21 @@ message directing you to `nhanes_manifest()` to confirm the correct name.
 
 ```{r harmonize}
 # Unit-based: finds the mg/dL column by its label attribute
-TC <- nhanes_harmonize(tchol_list,
-                        unit          = "mg/dL",
-                        name          = "TC_mgdl",
-                        label_pattern = "total cholesterol")
+tc <- nhanes_harmonize(tchol_list,
+                       unit          = "mg/dL",
+                       name          = "TC_mgdl",
+                       label_pattern = "total cholesterol")
 
 # Mapping-based: explicit old-name → new-name translation
-MI <- nhanes_harmonize(mi_list,
-                        mapping = c(MCQ160E = "MI_history",
-                                    MCQ160e = "MI_history"))
+mi <- nhanes_harmonize(mi_list,
+                       mapping = c(MCQ160E = "MI_history",
+                                   MCQ160e = "MI_history"))
 
 # Stack demographics (no renaming needed)
 demo <- nhanes_stack(demo_list)
 
 # Merge components
-analytic <- nhanes_merge(demo, TC, MI, by = c("SEQN", "cycle"))
+analytic <- nhanes_merge(demo, tc, mi, by = c("SEQN", "cycle"))
 ```
 
 ---
@@ -240,9 +240,9 @@ analytic_mort <- nhanes_mortality_link(analytic)
 ```{r survprep}
 # All-cause mortality, time from exam visit
 surv_data <- nhanes_survival_prep(analytic_mort,
-                                   origin     = "exam",
-                                   time_unit  = "years",
-                                   weight_var = "WTMEC2YR")
+                                  origin     = "exam",
+                                  time_unit  = "years",
+                                  weight_var = "WTMEC2YR")
 
 # Check follow-up by cycle (note shrinking window near 2017-2018)
 nhanes_followup_summary(surv_data)
@@ -252,9 +252,9 @@ nhanes_ucod_labels()
 
 # Cardiovascular mortality (code "001")
 surv_cvd <- nhanes_survival_prep(analytic_mort,
-                                  origin = "exam",
-                                  cause  = "001",
-                                  weight_var = "WTMEC2YR")
+                                 origin = "exam",
+                                 cause  = "001",
+                                 weight_var = "WTMEC2YR")
 ```
 
 ---
@@ -293,8 +293,25 @@ nhanes_cycles()                    # 1. find available cycles
   medication across ten cycles (1999–2018), ending with a survey-weighted
   Cox proportional hazards model.
 
-- NHANES analytic guidelines:
+- `vignette("analyte-harmonization", package = "nhanesR")` — detailed guide
+  to variable name drift, analyte availability gaps, and multi-cycle
+  harmonisation, with context on quality problems in published NHANES analyses.
+
+**Quality framework and methodological context**
+
+- NCHS. *Guidelines for High Quality Analyses of NHANES Data.* January 2026.
+  <https://wwwn.cdc.gov/nchs/nhanes/QualityAnalysesGuidelines.aspx>
+
+- Suchak T, Aliu AE, Harrison C, et al. Explosion of formulaic research
+  articles, including inappropriate study designs and false discoveries, based
+  on the NHANES US national health database. *PLoS Biol.* 2025;23(5):e3003152.
+  doi:10.1371/journal.pbio.3003152
+
+- NHANES analytic guidelines (2013):
   <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
+
+- NHANES tutorials — weighting module:
+  <https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx>
 
 - CDC mortality linkage documentation:
   <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>

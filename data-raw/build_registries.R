@@ -167,15 +167,22 @@
   stringsAsFactors = FALSE
 )
 
-# ── Early BIOPRO catalog supplement ──────────────────────────────────────────
-# Lab18 (1999-2000) and L40_B (2001-2002) contain the full comprehensive
-# metabolic panel (GGT, ALT, AST, ALP, albumin, creatinine, bilirubin, etc.)
-# but the CDC online variable catalog does not list those variables for those
-# two cycles.  This supplement patches the gap so nhanes_variable_map() and
-# nhanes_download_analyte() can retrieve them without special-case workarounds.
+# ── BIOPRO catalog supplement ─────────────────────────────────────────────────
+# The CDC online variable catalog has indexing gaps for BIOPRO analytes in
+# several cycles, confirmed by cross-checking XPT files against catalog pages:
 #
-# Only needs to be rebuilt if CDC changes the file layout of Lab18 or L40_B
-# (extremely unlikely for legacy files).
+#   Cycle       File      Variables missing from CDC catalog (data present + documented)
+#   1999-2000   Lab18     ALL BIOPRO variables (full CMP panel)
+#   2001-2002   L40_B     ALL BIOPRO variables (full CMP panel)
+#   2005-2006   BIOPRO_D  LBXSAPSI (alkaline phosphatase only)
+#   2007-2008   BIOPRO_E  LBXSASSI (AST) and LBXSAPSI (ALP)
+#   2009-2010   BIOPRO_F  LBXSAPSI (alkaline phosphatase only)
+#   2011-2012   BIOPRO_G  LBXSAPSI (alkaline phosphatase only)
+#
+# CDC documentation pages for all affected files include full methodology
+# sections and no quality caveats — these are pure catalog indexing failures.
+# The supplement patches all gaps so nhanes_variable_map() returns complete
+# cycle coverage without requiring direct file downloads as workarounds.
 
 .build_early_catalog <- function(xpt_url, cycle, file_name,
                                   component = "Laboratory") {
@@ -197,26 +204,74 @@
   )
 }
 
-cat("Downloading Lab18 (1999-2000) for early BIOPRO supplement...\n")
-.early_lab18 <- .build_early_catalog(
+cat("Downloading Lab18 (1999-2000) for BIOPRO supplement...\n")
+.biopro_lab18 <- .build_early_catalog(
   "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/1999/DataFiles/Lab18.xpt",
   "1999-2000", "Lab18"
 )
 
-cat("Downloading L40_B (2001-2002) for early BIOPRO supplement...\n")
-.early_l40b <- .build_early_catalog(
+cat("Downloading L40_B (2001-2002) for BIOPRO supplement...\n")
+.biopro_l40b <- .build_early_catalog(
   "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2001/DataFiles/L40_B.xpt",
   "2001-2002", "L40_B"
 )
 
-# Drop SEQN (not an analyte variable)
+# For 2005-2012, only specific variables are missing from the catalog.
+# Download target files and extract just the affected variables + labels.
+.extract_vars <- function(xpt_url, cycle, file_name, vars,
+                           component = "Laboratory") {
+  df <- haven::read_xpt(url(xpt_url))
+  vars_present <- intersect(vars, names(df))
+  labels <- vapply(df[, vars_present, drop = FALSE], function(col) {
+    lab <- attr(col, "label")
+    if (is.null(lab) || !nzchar(lab)) NA_character_
+    else iconv(as.character(lab), to = "UTF-8", sub = "")
+  }, character(1L))
+  data.frame(
+    variable_name = vars_present,
+    variable_desc = unname(labels),
+    file_name     = file_name,
+    file_desc     = paste("NHANES", cycle, "BIOPRO (catalog gap)"),
+    cycle         = cycle,
+    component     = component,
+    stringsAsFactors = FALSE
+  )
+}
+
+cat("Downloading BIOPRO_D (2005-2006) for ALP supplement row...\n")
+.biopro_d <- .extract_vars(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2005/DataFiles/BIOPRO_D.xpt",
+  "2005-2006", "BIOPRO_D", c("LBXSAPSI")
+)
+
+cat("Downloading BIOPRO_E (2007-2008) for AST + ALP supplement rows...\n")
+.biopro_e <- .extract_vars(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2007/DataFiles/BIOPRO_E.xpt",
+  "2007-2008", "BIOPRO_E", c("LBXSASSI", "LBXSAPSI")
+)
+
+cat("Downloading BIOPRO_F (2009-2010) for ALP supplement row...\n")
+.biopro_f <- .extract_vars(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2009/DataFiles/BIOPRO_F.xpt",
+  "2009-2010", "BIOPRO_F", c("LBXSAPSI")
+)
+
+cat("Downloading BIOPRO_G (2011-2012) for ALP supplement row...\n")
+.biopro_g <- .extract_vars(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2011/DataFiles/BIOPRO_G.xpt",
+  "2011-2012", "BIOPRO_G", c("LBXSAPSI")
+)
+
+# Combine all supplement rows; drop SEQN from early full-file downloads
 .early_biopro_catalog <- rbind(
-  .early_lab18[.early_lab18$variable_name != "SEQN", ],
-  .early_l40b[.early_l40b$variable_name   != "SEQN", ]
+  .biopro_lab18[.biopro_lab18$variable_name != "SEQN", ],
+  .biopro_l40b[.biopro_l40b$variable_name   != "SEQN", ],
+  .biopro_d, .biopro_e, .biopro_f, .biopro_g
 )
 rownames(.early_biopro_catalog) <- NULL
 
-cat("Early BIOPRO supplement:", nrow(.early_biopro_catalog), "rows across 2 cycles\n")
+cat("BIOPRO supplement:", nrow(.early_biopro_catalog),
+    "rows across", length(unique(.early_biopro_catalog$cycle)), "cycles\n")
 
 # ── Save to internal sysdata ───────────────────────────────────────────────────
 usethis::use_data(

@@ -111,23 +111,64 @@ to resolve the NHANES representation, then download.
 
 ## The analytic panel
 
-The analysis tracks eight biomarkers across the eight NHANES cycles from
-2003–2018 that contain linked mortality follow-up and GGT measurements
-(the nine previous cycles, 1999–2002, lack GGT in the standard biochemistry
-panel):
+The analysis tracks eight biomarkers across the ten NHANES cycles from
+1999–2018 that contain linked mortality follow-up:
 
-| Analyte | Primary variable | Known complication |
-|---|---|---|
-| GGT | LBXSGTSI | Consistent across all 8 cycles |
-| ALT | LBXSATSI | Consistent across all 8 cycles |
-| Total cholesterol | LBXTC | Consistent |
-| Albumin | LBXSAL | Consistent |
-| AST | LBXSASSI | **Missing from 2007–2008** |
-| ALP | LBXSAPSI / LBDSAPSI | **Prefix changes; missing 4 of 8 cycles** |
-| Total bilirubin | LBXSTB | Consistent |
-| Serum creatinine | LBXSCR | Consistent |
-| Liver disease (ever) | MCQ160L / MCQ160l | **Case changes at 2011–2012** |
-| Liver disease (current) | MCQ170L / MCQ170l | **Case changes at 2011–2012** |
+| Analyte | Primary variable | Cycles available | Known complication |
+|---|---|---|---|
+| GGT | LBXSGTSI | 10 (1999–2018) | **CDC catalog gap: 1999-2002 absent from variable search; download Lab18/L40_B directly** |
+| ALT | LBXSATSI | 10 (1999–2018) | Same CDC catalog gap as GGT |
+| AST | LBXSASSI | 9 (1999–2018 excl. 2007–2008) | Same catalog gap; also **missing from 2007–2008** |
+| ALP | LBXSAPSI / LBDSAPSI | 6 (1999–2004, 2013–2018) | Same catalog gap for 1999-2002; **prefix change; missing 2005–2012** |
+| Total cholesterol | LBXTC | 10 (1999–2018) | Consistent |
+| Albumin | LBXSAL | 10 (1999–2018) | Consistent |
+| Total bilirubin | LBXSTB | 10 (1999–2018) | Consistent |
+| Serum creatinine | LBXSCR | 10 (1999–2018) | Consistent |
+| Liver disease (ever) | MCQ160L / MCQ160l | 8 (2003–2018) | **Case changes at 2011–2012** |
+| Liver disease (current) | MCQ170L / MCQ170l | 8 (2003–2018) | **Case changes at 2011–2012** |
+
+### The CDC catalog gap for 1999–2002 BIOPRO data
+
+`nhanes_variable_map()` and `nhanes_search_variables()` scrape the CDC online
+variable catalog, which does not list `LBXSGTSI`, `LBXSATSI`, `LBXSASSI`, or
+`LBXSAPSI` for the 1999-2000 (Lab18) and 2001-2002 (L40_B) cycles — even
+though those variables are present in the XPT files. The catalog instead
+returns `LB2SGTSI` (a reliability-substudy variable from a second blood draw),
+which `nhanes_variable_map()` correctly filters out as a duplicate-participant
+file.
+
+The consequence is that a naive call to `nhanes_download_analyte("glutamyl")`
+will retrieve GGT for 2003–2018 only, silently omitting the 1999–2002 data.
+For GGT and ALT this represents approximately 9,800 additional participants
+with complete follow-up — the longest follow-up in the dataset.
+
+The workaround is to download the two early files directly:
+
+```{r early-biopro}
+library(haven)
+
+lab18 <- read_xpt(url(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/1999/DataFiles/Lab18.xpt"))
+l40b  <- read_xpt(url(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2001/DataFiles/L40_B.xpt"))
+
+early_df <- rbind(
+  data.frame(SEQN = as.character(lab18$SEQN),
+             GGT  = lab18$LBXSGTSI,
+             ALT  = lab18$LBXSATSI,
+             AST  = lab18$LBXSASSI,
+             ALP  = lab18$LBXSAPSI),
+  data.frame(SEQN = as.character(l40b$SEQN),
+             GGT  = l40b$LBXSGTSI,
+             ALT  = l40b$LBXSATSI,
+             AST  = l40b$LBXSASSI,
+             ALP  = l40b$LBDSAPSI)   # prefix change: LBDS- not LBXS-
+)
+```
+
+Note that L40_B already embeds the cycle suffix (`_B`) in its file name; the
+nhanesR URL builder would append `_B` a second time, producing `L40_B_B.xpt`
+(HTTP 404). The direct URL is required.
 
 Without a harmonisation layer, a researcher would need to locate each of these
 variables in each cycle's data dictionary, note the file it lives in, and

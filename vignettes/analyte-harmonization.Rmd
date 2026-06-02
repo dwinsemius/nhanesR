@@ -243,8 +243,8 @@ nhanes_variable_map("LBXPT21")
 Parathyroid hormone (`LBXPT21`) was measured in only two NHANES cycles:
 2003–2004 and 2005–2006. The variable map returns exactly two rows. Any
 analysis requiring PTH is therefore limited to those two cycles, and any
-attempt to merge PTH with ALP (available in 2003–2004, 2013–2014, 2015–2016,
-and 2017–2018) will yield a single-cycle overlap (2003–2004) — a constraint
+attempt to merge PTH with ALP (available in 1999–2004 and 2013–2018)
+will yield a single-cycle overlap (2003–2004) — a constraint
 that is immediately visible from the two variable maps but would otherwise
 require manually checking both data dictionaries.
 
@@ -275,7 +275,8 @@ column.
 ### Downloading ALP across all available cycles
 
 ```{r download-alp}
-alp_cycles <- c("2003-2004", "2013-2014", "2015-2016", "2017-2018")
+alp_cycles <- c("1999-2000", "2001-2002", "2003-2004",
+                "2013-2014", "2015-2016", "2017-2018")
 
 alp_list <- nhanes_download_analyte(
   "alkaline phosphatase",

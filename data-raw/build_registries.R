@@ -167,6 +167,57 @@
   stringsAsFactors = FALSE
 )
 
+# ── Early BIOPRO catalog supplement ──────────────────────────────────────────
+# Lab18 (1999-2000) and L40_B (2001-2002) contain the full comprehensive
+# metabolic panel (GGT, ALT, AST, ALP, albumin, creatinine, bilirubin, etc.)
+# but the CDC online variable catalog does not list those variables for those
+# two cycles.  This supplement patches the gap so nhanes_variable_map() and
+# nhanes_download_analyte() can retrieve them without special-case workarounds.
+#
+# Only needs to be rebuilt if CDC changes the file layout of Lab18 or L40_B
+# (extremely unlikely for legacy files).
+
+.build_early_catalog <- function(xpt_url, cycle, file_name,
+                                  component = "Laboratory") {
+  df <- haven::read_xpt(url(xpt_url))
+  labels <- vapply(df, function(col) {
+    lab <- attr(col, "label")
+    if (is.null(lab) || !nzchar(lab)) NA_character_
+    else iconv(as.character(lab), to = "UTF-8", sub = "")
+  }, character(1L))
+  data.frame(
+    variable_name = names(labels),
+    variable_desc = unname(labels),
+    file_name     = file_name,
+    file_desc     = paste("NHANES", cycle,
+                          "comprehensive metabolic panel (Lab18/L40 series)"),
+    cycle         = cycle,
+    component     = component,
+    stringsAsFactors = FALSE
+  )
+}
+
+cat("Downloading Lab18 (1999-2000) for early BIOPRO supplement...\n")
+.early_lab18 <- .build_early_catalog(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/1999/DataFiles/Lab18.xpt",
+  "1999-2000", "Lab18"
+)
+
+cat("Downloading L40_B (2001-2002) for early BIOPRO supplement...\n")
+.early_l40b <- .build_early_catalog(
+  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2001/DataFiles/L40_B.xpt",
+  "2001-2002", "L40_B"
+)
+
+# Drop SEQN (not an analyte variable)
+.early_biopro_catalog <- rbind(
+  .early_lab18[.early_lab18$variable_name != "SEQN", ],
+  .early_l40b[.early_l40b$variable_name   != "SEQN", ]
+)
+rownames(.early_biopro_catalog) <- NULL
+
+cat("Early BIOPRO supplement:", nrow(.early_biopro_catalog), "rows across 2 cycles\n")
+
 # ── Save to internal sysdata ───────────────────────────────────────────────────
 usethis::use_data(
   .nhanes_cycles,
@@ -174,6 +225,7 @@ usethis::use_data(
   .lmf_registry,
   .lmf_colspec,
   .ucod_labels,
+  .early_biopro_catalog,
   internal  = TRUE,
   overwrite = TRUE
 )

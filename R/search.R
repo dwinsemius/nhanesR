@@ -1,5 +1,3 @@
-# R/search.R
-
 #' Search NHANES variables by keyword
 #'
 #' Searches the CDC NHANES variable catalog for variables whose name or
@@ -79,15 +77,18 @@ nhanes_search_variables <- function(term,
   # Case-insensitive search across variable name and description
   pattern <- term
   matches <- grepl(pattern, catalog$variable_name, ignore.case = TRUE) |
-             grepl(pattern, catalog$variable_desc,  ignore.case = TRUE)
+    grepl(pattern, catalog$variable_desc, ignore.case = TRUE)
 
   out <- catalog[matches, , drop = FALSE]
   rownames(out) <- NULL
 
   if (nrow(out) == 0L) {
     cli::cli_inform("No variables matched {.val {term}}. Try a broader term.")
-    return(if (summarize) .nhanes_empty_variable_summary() else
-                          .nhanes_empty_variable_list())
+    if (summarize) {
+      return(.nhanes_empty_variable_summary())
+    } else {
+      return(.nhanes_empty_variable_list())
+    }
   }
 
   if (summarize) {
@@ -148,7 +149,7 @@ nhanes_search_variables <- function(term,
       cli::cli_warn(
         "Could not fetch variable list for {component}: {conditionMessage(e)}"
       )
-      return(NULL)
+      NULL
     }
   )
 
@@ -228,7 +229,8 @@ nhanes_search_variables <- function(term,
 #' nhanes_variable_map("HDL")
 #'
 #' # Serum creatinine only (exclude urine variables)
-#' nhanes_variable_map("creatinine", keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
+#' nhanes_variable_map("creatinine",
+#'                     keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
 #'
 #' # Urinary albumin only
 #' nhanes_variable_map("albumin", keep_vars = c("URXUMA", "UR2UMA", "UR1MA"))
@@ -243,18 +245,40 @@ nhanes_variable_map <- function(term,
                                  refresh   = refresh,
                                  summarize = FALSE)
 
+  # Inject early-cycle supplement for BIOPRO analytes (Lab18 1999-2000 and
+  # L40_B 2001-2002) that the CDC online catalog omits.  Only add rows not
+  # already present (checked by cycle × variable_name key).
+  if (nrow(.early_biopro_catalog) > 0L) {
+    ec       <- .early_biopro_catalog
+    comp_ok  <- is.null(component) |
+      (tolower(ec$component) == tolower(component))
+    name_ok  <- grepl(term, ec$variable_name, ignore.case = TRUE)
+    desc_ok  <- grepl(term, ec$variable_desc,  ignore.case = TRUE)
+    # Also include rows whose variable_name the CDC catalog already matched.
+    # Lab18/L40_B labels are abbreviated ("GGT (U/L)") and do not contain the
+    # full search term ("glutamyl"), so term matching alone would miss them.
+    var_ok   <- ec$variable_name %in% raw$variable_name
+    suppl    <- ec[comp_ok & (name_ok | desc_ok | var_ok), , drop = FALSE]
+    if (nrow(suppl) > 0L) {
+      existing_key <- paste(raw$cycle, raw$variable_name)
+      suppl_key    <- paste(suppl$cycle, suppl$variable_name)
+      suppl <- suppl[!suppl_key %in% existing_key, , drop = FALSE]
+      if (nrow(suppl) > 0L) raw <- rbind(raw, suppl)
+    }
+  }
+
   if (nrow(raw) == 0L) return(.nhanes_empty_variable_map())
 
   # Drop comment-code variables
   is_comment <- grepl("(LC|LCN)$", raw$variable_name, ignore.case = TRUE) |
-                grepl("comment",    raw$variable_desc,  ignore.case = TRUE)
+    grepl("comment", raw$variable_desc, ignore.case = TRUE)
   raw <- raw[!is_comment, , drop = FALSE]
 
   # Drop reliability substudy files unless explicitly requested.
   # Reliability files: LB2 variable prefix (second blood draw) or _2_ in file name.
   if (!include_reliability) {
     is_reliability <- grepl("^LB2", raw$variable_name, ignore.case = TRUE) |
-                      grepl("_2_",  raw$file_name,     fixed = TRUE)
+      grepl("_2_", raw$file_name, fixed = TRUE)
     raw <- raw[!is_reliability, , drop = FALSE]
   }
 

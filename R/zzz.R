@@ -3,6 +3,13 @@
 # Cache directory management lives in nhanes_cache.R
 # HTTP helpers live in nhanes_http.R
 
+# Suppress R CMD CHECK "no visible binding" notes for internal sysdata objects.
+utils::globalVariables(c(
+  ".nhanes_cycles", ".nhanes_iii",
+  ".lmf_registry",  ".lmf_colspec", ".ucod_labels",
+  ".early_biopro_catalog"
+))
+
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
   op <- options()

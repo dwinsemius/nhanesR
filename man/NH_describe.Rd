@@ -4,7 +4,7 @@
 \alias{NH_describe}
 \title{NHANES-annotated variable descriptions}
 \usage{
-NH_describe(x, descriptions = NULL, ...)
+NH_describe(x, descriptions = NULL, all_weights = FALSE, ...)
 }
 \arguments{
 \item{x}{A data frame of NHANES data, typically from
@@ -12,6 +12,11 @@ NH_describe(x, descriptions = NULL, ...)
 
 \item{descriptions}{Optional lookup passed through to \code{\link{NH_label}}.
 See that function for accepted forms.}
+
+\item{all_weights}{Logical. If \code{FALSE} (default), columns whose names
+match \code{REP\d+$} (balanced repeated replication weights such as
+\code{WTMREP01}–\code{WTMREP52}) are excluded from the output. Set to
+\code{TRUE} to include all weight columns.}
 
 \item{...}{Additional arguments passed to \code{\link[Hmisc]{describe}}.}
 }
@@ -25,10 +30,23 @@ Attaches CDC plain-language descriptions as column labels via
 convenience wrapper; for repeated use prefer \code{NH_label()} once so that
 labels persist across all subsequent Hmisc operations.
 }
+\details{
+Replicate weights (variables matching \code{REP\d+$}, e.g.
+\code{WTMREP01}–\code{WTMREP52} and \code{WTIREP01}–\code{WTIREP52}) are
+suppressed by default because they appear in NHANES DEMO files but are not
+needed for Taylor-series linearization variance estimation, which is the
+standard approach for NHANES analysis. Set \code{all_weights = TRUE} to
+include them.
+}
 \examples{
 \dontrun{
 tc <- nhanes_download_analyte("total cholesterol")
 NH_describe(tc)
+
+# Include replicate weights in the output
+demo_list <- nhanes_download("DEMO", nhanes_cycles()[1:10, "cycle"])
+demo <- nhanes_stack(demo_list)
+NH_describe(demo, all_weights = TRUE)
 
 # Supply descriptions from a prior nhanes_search_variables() call
 vars <- nhanes_search_variables("cholesterol")

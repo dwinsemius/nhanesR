@@ -58,10 +58,21 @@ NH_label <- function(x, descriptions = NULL) {
 #' convenience wrapper; for repeated use prefer \code{NH_label()} once so that
 #' labels persist across all subsequent Hmisc operations.
 #'
+#' Replicate weights (variables matching \code{REP\d+$}, e.g.
+#' \code{WTMREP01}–\code{WTMREP52} and \code{WTIREP01}–\code{WTIREP52}) are
+#' suppressed by default because they appear in NHANES DEMO files but are not
+#' needed for Taylor-series linearization variance estimation, which is the
+#' standard approach for NHANES analysis. Set \code{all_weights = TRUE} to
+#' include them.
+#'
 #' @param x A data frame of NHANES data, typically from
 #'   \code{\link{nhanes_download_analyte}}.
 #' @param descriptions Optional lookup passed through to \code{\link{NH_label}}.
 #'   See that function for accepted forms.
+#' @param all_weights Logical. If \code{FALSE} (default), columns whose names
+#'   match \code{REP\d+$} (balanced repeated replication weights such as
+#'   \code{WTMREP01}–\code{WTMREP52}) are excluded from the output. Set to
+#'   \code{TRUE} to include all weight columns.
 #' @param ... Additional arguments passed to \code{\link[Hmisc]{describe}}.
 #'
 #' @return An object of class \code{"describe"} with CDC descriptions embedded
@@ -75,17 +86,33 @@ NH_label <- function(x, descriptions = NULL) {
 #' tc <- nhanes_download_analyte("total cholesterol")
 #' NH_describe(tc)
 #'
+#' # Include replicate weights in the output
+#' demo_list <- nhanes_download("DEMO", nhanes_cycles()[1:10, "cycle"])
+#' demo <- nhanes_stack(demo_list)
+#' NH_describe(demo, all_weights = TRUE)
+#'
 #' # Supply descriptions from a prior nhanes_search_variables() call
 #' vars <- nhanes_search_variables("cholesterol")
 #' NH_describe(tc, descriptions = vars)
 #' }
-NH_describe <- function(x, descriptions = NULL, ...) {
+NH_describe <- function(x, descriptions = NULL, all_weights = FALSE, ...) {
   if (!requireNamespace("Hmisc", quietly = TRUE)) {
     stop(
       "The 'Hmisc' package is required for NH_describe(). ",
       "Install it with: install.packages('Hmisc')",
       call. = FALSE
     )
+  }
+  if (!all_weights) {
+    drop <- grep("REP\\d+$", names(x), ignore.case = TRUE)
+    if (length(drop)) {
+      cli::cli_inform(
+        "Hiding {length(drop)} replicate weight column{?s} \\
+         ({.val {names(x)[drop[1]]}} – {.val {names(x)[drop[length(drop)]]}}).  \\
+         Use {.code all_weights = TRUE} to include them."
+      )
+      x <- x[, -drop, drop = FALSE]
+    }
   }
   Hmisc::describe(NH_label(x, descriptions = descriptions), ...)
 }

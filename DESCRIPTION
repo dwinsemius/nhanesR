@@ -1,7 +1,7 @@
 Package: nhanesR
 Type: Package
 Title: Download, Parse, and Analyze NHANES Data with Mortality Linkage
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person("David", "Winsemius", email = "dwinsemius@comcast.net",
     role = c("aut", "cre"),
     comment = c(credentials = "MD, MPH"))
@@ -33,6 +33,8 @@ Suggests:
     survival,
     ggsurvfit,
     rvest,
+    Hmisc,
+    gt,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

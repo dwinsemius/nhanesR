@@ -54,7 +54,8 @@ versions), the function prefers the non-SI variable. Comment-code variables
 nhanes_variable_map("HDL")
 
 # Serum creatinine only (exclude urine variables)
-nhanes_variable_map("creatinine", keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
+nhanes_variable_map("creatinine",
+                    keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
 
 # Urinary albumin only
 nhanes_variable_map("albumin", keep_vars = c("URXUMA", "UR2UMA", "UR1MA"))

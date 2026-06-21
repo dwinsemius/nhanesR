@@ -267,3 +267,68 @@ NH_describe(tc, descriptions = vars)
 | `gt` in `Suggests` | `print.describe` calls `requireNamespace("gt")` for the `which=` display modes |
 | Catalog loaded from cache, no network | The five per-component RDS files written by `nhanes_search_variables()` are read directly; no HTTP request needed |
 | No custom `print` method | The standard `print.describe.single` already renders `"VARNAME : label"` once the label attribute is set |
+
+---
+
+## Follow-up: label preservation through nhanes_stack()
+
+**User:**
+
+> When we harmonise variables with the same meaning but different "common
+> names", do the labels get populated meaningfully?
+
+**Claude Code:**
+
+Traced the full pipeline by reading `harmonize.R` and `merge.R`:
+
+1. **Download** — `haven::read_xpt()` populates `attr(col, "label")` from the
+   SAS metadata embedded in the XPT file (e.g. `LBXTC` gets label
+   `"Total Cholesterol (mg/dL)"`).
+2. **Harmonize** — both code paths (`unit=` and `mapping=`) rename via
+   `names(df)[idx] <- name`. This changes only the column name; attributes are
+   untouched. Labels survive the rename. ✓
+3. **Stack** — `nhanes_stack()` uses `do.call(rbind, dfs)`. Base R
+   `rbind.data.frame()` silently drops column attributes. Labels lost here. ✗
+4. **`NH_label()` on harmonized data** — harmonized names (`TC_mgdl`, etc.) are
+   user-defined and absent from the CDC catalog, so the lookup finds nothing. ✗
+
+**Fix: preserve labels in `nhanes_stack()`**
+
+Added seven lines to `R/merge.R` around the `rbind` call:
+
+```r
+# Save labels before rbind: base R rbind.data.frame() drops column attributes
+saved_labels <- lapply(dfs[[1L]], function(col) attr(col, "label"))
+
+out <- do.call(rbind, dfs)
+rownames(out) <- NULL
+
+for (nm in names(saved_labels)) {
+  lbl <- saved_labels[[nm]]
+  if (!is.null(lbl) && nm %in% names(out))
+    attr(out[[nm]], "label") <- lbl
+}
+```
+
+Labels are read from the first frame (they are consistent across cycles after
+harmonization) and restored after `rbind`. The full pipeline now works end to
+end:
+
+```
+download → harmonize → stack → Hmisc::describe()
+                                  shows "TC_mgdl : Total Cholesterol (mg/dL)"
+```
+
+Smoke-test output after the fix:
+
+```
+TC_mgdl : Total Cholesterol (mg/dL)
+       n  missing distinct     Info     Mean  pMedian      Gmd
+       4        0        4        1    201.2    201.2     22.5
+...
+HDL_mgdl : HDL-cholesterol (mg/dL)
+...
+```
+
+`NH_label()` remains useful for raw per-cycle frames that haven't passed
+through `nhanes_harmonize()`, or for variables whose XPT labels are absent.

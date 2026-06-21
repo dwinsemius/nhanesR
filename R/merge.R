@@ -183,8 +183,17 @@ nhanes_stack <- function(..., fill = TRUE) {
     })
   }
 
+  # Save labels before rbind: base R rbind.data.frame() drops column attributes
+  saved_labels <- lapply(dfs[[1L]], function(col) attr(col, "label"))
+
   out <- do.call(rbind, dfs)
   rownames(out) <- NULL
+
+  for (nm in names(saved_labels)) {
+    lbl <- saved_labels[[nm]]
+    if (!is.null(lbl) && nm %in% names(out))
+      attr(out[[nm]], "label") <- lbl
+  }
 
   n_cycles <- length(unique(out$cycle))
   if (getOption("nhanesR.verbose")) {

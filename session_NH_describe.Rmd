@@ -332,3 +332,70 @@ HDL_mgdl : HDL-cholesterol (mg/dL)
 
 `NH_label()` remains useful for raw per-cycle frames that haven't passed
 through `nhanes_harmonize()`, or for variables whose XPT labels are absent.
+
+---
+
+## Follow-up: replicate weight suppression in NH_describe()
+
+**User:**
+
+> There are a lot of replicate weights. [observed during live test on the
+> getting-started example — stacked DEMO across 10 cycles]
+
+**Claude Code:**
+
+Investigated which file was causing this by downloading and inspecting the
+stacked DEMO frame. Confirmed the source:
+
+```
+WTMREP01 … WTMREP52   # 52 MEC exam balanced repeated replication weights
+WTIREP01 … WTIREP52   # 52 interview BRR weights
+```
+
+108 columns in total, present because one or more recent NHANES DEMO cycles
+bundle BRR replicate weights alongside the primary weights. These are an
+alternative variance estimation approach (balanced repeated replication) — not
+needed when using Taylor-series linearization via `svydesign()`, which is the
+standard nhanesR / NHANES analytic approach.
+
+**User:**
+
+> Can we suppress printing those by default and allow them to show up when a
+> particular option is chosen, perhaps `all_weights`?
+
+**Fix: `all_weights = FALSE` default in `NH_describe()`**
+
+Added an `all_weights` argument. Before passing to `Hmisc::describe()`, columns
+whose names match `REP\d+$` are dropped unless `all_weights = TRUE`. An
+informative message reports what was hidden:
+
+```r
+if (!all_weights) {
+  drop <- grep("REP\\d+$", names(x), ignore.case = TRUE)
+  if (length(drop)) {
+    cli::cli_inform(
+      "Hiding {length(drop)} replicate weight column{?s} \\
+       ({.val {names(x)[drop[1]]}} – {.val {names(x)[drop[length(drop)]]}}).  \\
+       Use {.code all_weights = TRUE} to include them."
+    )
+    x <- x[, -drop, drop = FALSE]
+  }
+}
+```
+
+Live output with the default:
+
+```
+Hiding 104 replicate weight columns ("WTMREP01" – "WTIREP52").
+Use `all_weights = TRUE` to include them.
+```
+
+Usage:
+
+```r
+# Default — replicate weights hidden
+NH_describe(demo)
+
+# Show everything
+NH_describe(demo, all_weights = TRUE)
+```

@@ -540,6 +540,6 @@ Most Yes/No questionnaire items use: `1 = Yes`, `2 = No`, `7 = Refused`,
 
 **Further reading:**
 
-- CDC mortality linkage: <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+- CDC mortality linkage: <https://www.cdc.gov/nchs/linked-data/about/index.html>
 - NHANES analytic guidelines: <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
 - `survey` package: <https://r-survey.r-forge.r-project.org/survey/>

@@ -314,4 +314,4 @@ nhanes_cycles()                    # 1. find available cycles
   <https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx>
 
 - CDC mortality linkage documentation:
-  <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+  <https://www.cdc.gov/nchs/linked-data/about/index.html>

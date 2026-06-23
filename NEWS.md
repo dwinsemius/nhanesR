@@ -1,3 +1,13 @@
+# nhanesR 0.1.2
+
+## Bug fixes
+
+* Fixed broken CDC mortality linkage URL in three vignettes (CDC reorganised
+  their site; updated to current NCHS Data Linkage landing page).
+* Removed non-standard sentence from `DESCRIPTION`.
+* Added `inst/WORDLIST` to suppress spell-check NOTEs for domain abbreviations
+  (NHANES, NCHS, LMF, NDI) and "codebook".
+
 # nhanesR 0.1.1
 
 ## Breaking changes

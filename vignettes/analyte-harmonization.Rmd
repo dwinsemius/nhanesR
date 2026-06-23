@@ -613,7 +613,7 @@ clinical questions that motivated the analysis.
   <https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx>
 
 - CDC mortality linkage documentation:
-  <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+  <https://www.cdc.gov/nchs/linked-data/about/index.html>
 
 **Related R packages**
 

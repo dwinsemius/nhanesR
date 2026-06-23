@@ -12,9 +12,9 @@ NH_label(x, descriptions = NULL)
 
 \item{descriptions}{Optional lookup for variable descriptions. May be:
 \itemize{
-\item \code{NULL} (default) — descriptions are loaded from the locally
-cached variable catalog. Run any \code{\link{nhanes_search_variables}}
-call first to populate the cache.
+\item \code{NULL} (default): descriptions are loaded from the locally cached
+variable catalog. Run any \code{\link{nhanes_search_variables}} call first
+to populate the cache.
 \item A \code{data.frame} with columns \code{variable_name} and
 \code{variable_desc}, such as the output of
 \code{\link{nhanes_search_variables}}.

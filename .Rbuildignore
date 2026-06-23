@@ -7,3 +7,37 @@
 ^analyte_catalog\.rds$
 ^session_transcript\.md$
 ^transcript_export\.R$
+
+# Large data files not needed for the package
+^analytic_survival\.rds$
+^analytic_tchol_hdl\.rds$
+^weighted_rates\.rds$
+^coffee_ggt_ldl_mortality_results\.rds$
+^coffee_exposure_path_comparison\.csv$
+^coffee_ggt_ldl_stratified_results\.csv$
+
+# Analysis scripts living in the repo root (not package code)
+^analysis_surface_nostatin\.R$
+^analysis_surface_plots\.R$
+^build_analytic_lft\.R$
+^biostatistics-paper-plan\.Rmd$
+^session_NH_describe\.Rmd$
+
+# Word/PDF documents
+^NHANES_liver_bibliography\.docx$
+^paper_introduction\.docx$
+
+# PNG figures
+^cause_specific_rates\.png$
+^risk_cube\.png$
+^risk_cube_statin\.png$
+^tc_hdl_surface_ggt\.png$
+^tc_hdl_surface_landmark\.png$
+^tc_hdl_surface_landmark3\.png$
+^tc_hdl_surface_nostatin\.png$
+^test_survplot\.png$
+^test_survplot_bands\.png$
+^test_survplot_gw_bands\.png$
+
+# Analysis sub-projects (contain non-portable paths)
+^r-code$

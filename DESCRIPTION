@@ -3,8 +3,7 @@ Type: Package
 Title: Download, Parse, and Analyze NHANES Data with Mortality Linkage
 Version: 0.1.1
 Authors@R: person("David", "Winsemius", email = "dwinsemius@comcast.net",
-    role = c("aut", "cre"),
-    comment = c(credentials = "MD, MPH"))
+    role = c("aut", "cre"))
 Description: Provides tools for downloading and organizing National Health and
     Nutrition Examination Survey (NHANES) public-use data files and the NCHS
     Public-Use Linked Mortality Files (LMF). Supports structured local caching,
@@ -15,8 +14,6 @@ Description: Provides tools for downloading and organizing National Health and
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
-LazyData: true
-LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.1.0)

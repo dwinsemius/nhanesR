@@ -10,9 +10,9 @@
 #'   \code{\link{nhanes_download_analyte}}.
 #' @param descriptions Optional lookup for variable descriptions. May be:
 #'   \itemize{
-#'     \item \code{NULL} (default) — descriptions are loaded from the locally
-#'       cached variable catalog. Run any \code{\link{nhanes_search_variables}}
-#'       call first to populate the cache.
+#'     \item \code{NULL} (default): descriptions are loaded from the locally cached
+#'       variable catalog. Run any \code{\link{nhanes_search_variables}} call first
+#'       to populate the cache.
 #'     \item A \code{data.frame} with columns \code{variable_name} and
 #'       \code{variable_desc}, such as the output of
 #'       \code{\link{nhanes_search_variables}}.
@@ -58,8 +58,8 @@ NH_label <- function(x, descriptions = NULL) {
 #' convenience wrapper; for repeated use prefer \code{NH_label()} once so that
 #' labels persist across all subsequent Hmisc operations.
 #'
-#' Replicate weights (variables matching \code{REP\d+$}, e.g.
-#' \code{WTMREP01}–\code{WTMREP52} and \code{WTIREP01}–\code{WTIREP52}) are
+#' Replicate weights (variables matching \code{REP\\d+$}, e.g.
+#' \code{WTMREP01}--\code{WTMREP52} and \code{WTIREP01}--\code{WTIREP52}) are
 #' suppressed by default because they appear in NHANES DEMO files but are not
 #' needed for Taylor-series linearization variance estimation, which is the
 #' standard approach for NHANES analysis. Set \code{all_weights = TRUE} to
@@ -70,8 +70,8 @@ NH_label <- function(x, descriptions = NULL) {
 #' @param descriptions Optional lookup passed through to \code{\link{NH_label}}.
 #'   See that function for accepted forms.
 #' @param all_weights Logical. If \code{FALSE} (default), columns whose names
-#'   match \code{REP\d+$} (balanced repeated replication weights such as
-#'   \code{WTMREP01}–\code{WTMREP52}) are excluded from the output. Set to
+#'   match \code{REP\\d+$} (balanced repeated replication weights such as
+#'   \code{WTMREP01}--\code{WTMREP52}) are excluded from the output. Set to
 #'   \code{TRUE} to include all weight columns.
 #' @param ... Additional arguments passed to \code{\link[Hmisc]{describe}}.
 #'
@@ -108,7 +108,7 @@ NH_describe <- function(x, descriptions = NULL, all_weights = FALSE, ...) {
     if (length(drop)) {
       cli::cli_inform(
         "Hiding {length(drop)} replicate weight column{?s} \\
-         ({.val {names(x)[drop[1]]}} – {.val {names(x)[drop[length(drop)]]}}).  \\
+         ({.val {names(x)[drop[1]]}} \u2013 {.val {names(x)[drop[length(drop)]]}}).  \\
          Use {.code all_weights = TRUE} to include them."
       )
       x <- x[, -drop, drop = FALSE]
@@ -121,6 +121,7 @@ NH_describe <- function(x, descriptions = NULL, all_weights = FALSE, ...) {
 
 #' Build a variable-name -> description lookup from cache or user input
 #' @keywords internal
+#' @importFrom stats setNames
 .nhanes_build_desc_map <- function(descriptions) {
   if (!is.null(descriptions)) {
     if (is.data.frame(descriptions)) {

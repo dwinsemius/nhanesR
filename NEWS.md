@@ -1,4 +1,4 @@
-# nhanesR (development)
+# nhanesR 0.1.1
 
 ## Breaking changes
 

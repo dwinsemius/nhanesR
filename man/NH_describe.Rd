@@ -14,8 +14,8 @@ NH_describe(x, descriptions = NULL, all_weights = FALSE, ...)
 See that function for accepted forms.}
 
 \item{all_weights}{Logical. If \code{FALSE} (default), columns whose names
-match \code{REP\d+$} (balanced repeated replication weights such as
-\code{WTMREP01}–\code{WTMREP52}) are excluded from the output. Set to
+match \code{REP\\d+$} (balanced repeated replication weights such as
+\code{WTMREP01}--\code{WTMREP52}) are excluded from the output. Set to
 \code{TRUE} to include all weight columns.}
 
 \item{...}{Additional arguments passed to \code{\link[Hmisc]{describe}}.}
@@ -31,8 +31,8 @@ convenience wrapper; for repeated use prefer \code{NH_label()} once so that
 labels persist across all subsequent Hmisc operations.
 }
 \details{
-Replicate weights (variables matching \code{REP\d+$}, e.g.
-\code{WTMREP01}–\code{WTMREP52} and \code{WTIREP01}–\code{WTIREP52}) are
+Replicate weights (variables matching \code{REP\\d+$}, e.g.
+\code{WTMREP01}--\code{WTMREP52} and \code{WTIREP01}--\code{WTIREP52}) are
 suppressed by default because they appear in NHANES DEMO files but are not
 needed for Taylor-series linearization variance estimation, which is the
 standard approach for NHANES analysis. Set \code{all_weights = TRUE} to

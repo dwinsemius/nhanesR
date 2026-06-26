@@ -27,10 +27,8 @@ Suggests:
     foreign,
     survey,
     survival,
-    ggsurvfit,
     rvest,
     Hmisc,
-    gt,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

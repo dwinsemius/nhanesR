@@ -32,18 +32,17 @@ to make the change permanent across sessions; changes made during a session
 (via \code{nhanes_cache_dir()} or \code{options()} directly) last only until the
 session ends.\tabular{lll}{
    Option \tab Default \tab Purpose \cr
-   \code{nhanesR.cache_dir} \tab OS user-data dir (see below) \tab Root directory for all cached files \cr
+   \code{nhanesR.cache_dir} \tab \code{file.path(tempdir(), "nhanesR")} \tab Root directory for all cached files \cr
    \code{nhanesR.verbose} \tab \code{TRUE} \tab Print progress messages during downloads \cr
    \code{nhanesR.timeout} \tab \code{120L} \tab HTTP request timeout in seconds \cr
 }
 
-\subsection{Default cache locations by platform}{\tabular{ll}{
-   Platform \tab Default path \cr
-   macOS \tab \verb{~/Library/Application Support/nhanesR} \cr
-   Linux \tab \verb{~/.local/share/nhanesR} (or \verb{$XDG_DATA_HOME/nhanesR}) \cr
-   Windows \tab \verb{\%APPDATA\%/nhanesR} \cr
-}
+\subsection{Default cache location}{
 
+By default the cache lives inside R's session-temporary directory
+(\code{tempdir()}), so nhanesR never writes to your home directory without
+your consent. Downloaded files are re-fetched in each new R session. To
+keep a persistent cache, set \code{nhanesR.cache_dir} in your \verb{~/.Rprofile}.
 }
 
 \subsection{Setting options permanently}{
@@ -64,11 +63,13 @@ only sets an option at load time if it is not already defined.
 }
 }
 \examples{
-# View current cache location
+# View current cache location (defaults to a subdirectory of tempdir())
 nhanes_cache_dir()
 
-# Change for this session only
+# Change to a persistent location for this session only
+\dontrun{
 nhanes_cache_dir("~/my_nhanes_cache")
+}
 
 # Suppress download messages for this session
 options(nhanesR.verbose = FALSE)

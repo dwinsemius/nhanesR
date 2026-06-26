@@ -65,17 +65,17 @@ nhanesR only sets an option if it is not already defined.
 
 | Option | Default | Purpose |
 |--------|---------|---------|
-| `nhanesR.cache_dir` | OS user-data directory (see below) | Root path for all cached RDS and `.dat` files |
+| `nhanesR.cache_dir` | `file.path(tempdir(), "nhanesR")` | Root path for all cached RDS and `.dat` files |
 | `nhanesR.verbose` | `TRUE` | Print progress messages during downloads |
 | `nhanesR.timeout` | `120L` | HTTP request timeout in seconds |
 
-### Default cache locations by platform
+### Default cache location
 
-| Platform | Path |
-|----------|------|
-| macOS | `~/Library/Application Support/nhanesR` |
-| Linux | `~/.local/share/nhanesR` (or `$XDG_DATA_HOME/nhanesR`) |
-| Windows | `%APPDATA%/nhanesR` |
+By default, nhanesR caches files inside R's session-temporary directory
+(`tempdir()`). This means **no files are written to your home directory**
+without your explicit consent, but downloaded files are not retained across R
+sessions. To keep a persistent cache — and avoid re-downloading on every
+session — set `nhanesR.cache_dir` in your `~/.Rprofile` (see below).
 
 Downloaded files are parsed, stored as RDS, and verified with an MD5 hash
 sidecar on every subsequent load. Re-downloading is skipped unless
@@ -96,8 +96,8 @@ options(
 ### Checking and changing settings interactively
 
 ```{r options-interactive}
-nhanes_cache_dir()                   # view current cache path
-nhanes_cache_dir("~/my_nhanes_cache") # change for this session
+nhanes_cache_dir()                        # view current cache path (tempdir-based by default)
+nhanes_cache_dir("~/my_nhanes_cache")    # opt in to a persistent home-directory cache
 options(nhanesR.verbose = FALSE)     # suppress messages for this session
 ```
 

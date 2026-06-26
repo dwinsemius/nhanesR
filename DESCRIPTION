@@ -1,7 +1,7 @@
 Package: nhanesR
 Type: Package
 Title: Download, Parse, and Analyze NHANES Data with Mortality Linkage
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: person("David", "Winsemius", email = "dwinsemius@comcast.net",
     role = c("aut", "cre"))
 Description: Provides tools for downloading and organizing National Health and

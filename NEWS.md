@@ -1,3 +1,15 @@
+# nhanesR 0.1.3
+
+## Bug fixes
+
+* Default cache directory changed from a platform-specific path under `~` to
+  `file.path(tempdir(), "nhanesR")`. This prevents nhanesR from writing to the
+  user's home filespace without explicit consent, in compliance with CRAN Policy.
+  To retain a persistent cache across sessions, set `nhanesR.cache_dir` in
+  `~/.Rprofile`.
+* `nhanes_cache_dir("~/my_nhanes_cache")` example wrapped in `\dontrun{}` to
+  prevent directory creation during `R CMD CHECK`.
+
 # nhanesR 0.1.2
 
 ## Bug fixes

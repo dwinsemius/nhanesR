@@ -42,3 +42,8 @@
 
 # Analysis sub-projects (contain non-portable paths)
 ^r-code$
+
+# macOS metadata and previous tarballs
+\.DS_Store$
+^nhanesR_.*\.tar\.gz$
+^nhanesR\.Rcheck$

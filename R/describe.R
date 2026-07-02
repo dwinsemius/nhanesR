@@ -58,7 +58,7 @@ NH_label <- function(x, descriptions = NULL) {
 #' convenience wrapper; for repeated use prefer \code{NH_label()} once so that
 #' labels persist across all subsequent Hmisc operations.
 #'
-#' Replicate weights (variables matching \code{REP\\d+$}, e.g.
+#' Replicate weights (variables matching \code{REP[0-9]+$}, e.g.
 #' \code{WTMREP01}--\code{WTMREP52} and \code{WTIREP01}--\code{WTIREP52}) are
 #' suppressed by default because they appear in NHANES DEMO files but are not
 #' needed for Taylor-series linearization variance estimation, which is the
@@ -70,7 +70,7 @@ NH_label <- function(x, descriptions = NULL) {
 #' @param descriptions Optional lookup passed through to \code{\link{NH_label}}.
 #'   See that function for accepted forms.
 #' @param all_weights Logical. If \code{FALSE} (default), columns whose names
-#'   match \code{REP\\d+$} (balanced repeated replication weights such as
+#'   match \code{REP[0-9]+$} (balanced repeated replication weights such as
 #'   \code{WTMREP01}--\code{WTMREP52}) are excluded from the output. Set to
 #'   \code{TRUE} to include all weight columns.
 #' @param ... Additional arguments passed to \code{\link[Hmisc]{describe}}.
@@ -104,7 +104,7 @@ NH_describe <- function(x, descriptions = NULL, all_weights = FALSE, ...) {
     )
   }
   if (!all_weights) {
-    drop <- grep("REP\\d+$", names(x), ignore.case = TRUE)
+    drop <- grep("REP[0-9]+$", names(x), ignore.case = TRUE)
     if (length(drop)) {
       cli::cli_inform(
         "Hiding {length(drop)} replicate weight column{?s} \\

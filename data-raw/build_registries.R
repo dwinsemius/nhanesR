@@ -37,7 +37,7 @@
   pandemic_adj = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
                    FALSE, FALSE, FALSE, TRUE),
   has_lmf_public = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-                     TRUE, TRUE, TRUE),
+                     TRUE, TRUE, FALSE),
   lmf_vintage = rep("2019", 11),
   censor_date = rep("2019-12-31", 11),
   stringsAsFactors = FALSE
@@ -69,7 +69,7 @@
   cycle    = c("1988-1994",
                "1999-2000", "2001-2002", "2003-2004", "2005-2006",
                "2007-2008", "2009-2010", "2011-2012", "2013-2014",
-               "2015-2016", "2017-2018", "2017-2020"),
+               "2015-2016", "2017-2018"),
   filename = c("NHANES_III_MORT_2019_PUBLIC.dat",
                "NHANES_1999_2000_MORT_2019_PUBLIC.dat",
                "NHANES_2001_2002_MORT_2019_PUBLIC.dat",
@@ -80,15 +80,14 @@
                "NHANES_2011_2012_MORT_2019_PUBLIC.dat",
                "NHANES_2013_2014_MORT_2019_PUBLIC.dat",
                "NHANES_2015_2016_MORT_2019_PUBLIC.dat",
-               "NHANES_2017_2018_MORT_2019_PUBLIC.dat",
-               "NHANES_2017_2020_MORT_2019_PUBLIC.dat"),
+               "NHANES_2017_2018_MORT_2019_PUBLIC.dat"),
   ftp_base = rep(
     "https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/",
-    12
+    11
   ),
-  vintage      = rep("2019", 12),
-  censor_date  = rep("2019-12-31", 12),
-  follow_up_origin = rep("interview and exam", 12),
+  vintage      = rep("2019", 11),
+  censor_date  = rep("2019-12-31", 11),
+  follow_up_origin = rep("interview and exam", 11),
   stringsAsFactors = FALSE
 )
 

@@ -40,7 +40,7 @@ contain \strong{synthetic (perturbed) values} introduced by CDC to reduce
 re-identification risk. \code{MORTSTAT} and \code{ELIGSTAT} are not perturbed.
 }
 \examples{
-\dontrun{
+\donttest{
 lmf <- nhanes_mortality_parse(c("2015-2016", "2017-2018"))
 lmf[["2015-2016"]]
 }

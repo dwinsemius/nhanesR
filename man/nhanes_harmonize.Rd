@@ -85,7 +85,7 @@ variable names. More verbose but unambiguous.
 }
 }
 \examples{
-\dontrun{
+\donttest{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
 # Conventional units (default): returns SEQN + cycle + HDL_mgdl

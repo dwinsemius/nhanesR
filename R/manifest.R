@@ -74,7 +74,7 @@ nhanes_cycles <- function(include_iii = FALSE) {
 #'   the variable catalog by keyword.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' nhanes_manifest("2015-2016", "Laboratory")
 #' nhanes_manifest("2015-2016", "Demographics")
 #' }

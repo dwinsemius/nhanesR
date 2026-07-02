@@ -38,7 +38,7 @@ Results are cached locally for the session to avoid repeated HTTP
 requests. Use \code{refresh = TRUE} to force re-query.
 }
 \examples{
-\dontrun{
+\donttest{
 nhanes_manifest("2015-2016", "Laboratory")
 nhanes_manifest("2015-2016", "Demographics")
 }

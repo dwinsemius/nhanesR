@@ -23,7 +23,7 @@ Row-binds the same component across multiple cycles, enforcing that the
 \code{cycle} column is present and handling variable name changes across cycles.
 }
 \examples{
-\dontrun{
+\donttest{
 demos <- nhanes_download("DEMO", c("2013-2014", "2015-2016", "2017-2018"))
 stacked <- nhanes_stack(demos)
 }

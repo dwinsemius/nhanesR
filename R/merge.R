@@ -38,21 +38,18 @@
 #'   [nhanes_mortality_link()] to append mortality follow-up after merging.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' demo  <- nhanes_download("DEMO",  "2015-2016")
 #' bpx   <- nhanes_download("BPX",   "2015-2016")
 #' trigly <- nhanes_download("TRIGLY","2015-2016")
 #'
 #' analytic <- nhanes_merge(demo, bpx, trigly)
 #'
-#' # Multi-cycle
-#' demo_13 <- nhanes_download("DEMO", "2013-2014")
-#' demo_15 <- nhanes_download("DEMO", "2015-2016")
-#' bpx_13  <- nhanes_download("BPX",  "2013-2014")
-#' bpx_15  <- nhanes_download("BPX",  "2015-2016")
-#'
-#' demo_pool <- rbind(demo_13, demo_15)
-#' bpx_pool  <- rbind(bpx_13,  bpx_15)
+#' # Multi-cycle: use nhanes_stack() before merging
+#' demo_list <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+#' bpx_list  <- nhanes_download("BPX",  c("2013-2014", "2015-2016"))
+#' demo_pool <- nhanes_stack(demo_list)
+#' bpx_pool  <- nhanes_stack(bpx_list)
 #' analytic  <- nhanes_merge(demo_pool, bpx_pool, by = c("SEQN", "cycle"))
 #' }
 nhanes_merge <- function(...,
@@ -96,7 +93,7 @@ nhanes_merge <- function(...,
 
     if (length(dups) > 0L) {
       cli::cli_warn(c(
-        "!" = "Duplicate column{?s} found in merge {i}: {.val {dups}}.",
+        "!" = "{cli::qty(length(dups))}Duplicate column{?s} in merge step {i}: {.val {dups}}.",
         "i" = "Keeping the version from the first data frame. \\
                Rename columns before merging if both are needed."
       ))
@@ -149,7 +146,7 @@ nhanes_merge <- function(...,
 #'   [nhanes_mortality_link()] which expects a stacked data frame as input.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' demos <- nhanes_download("DEMO", c("2013-2014", "2015-2016", "2017-2018"))
 #' stacked <- nhanes_stack(demos)
 #' }

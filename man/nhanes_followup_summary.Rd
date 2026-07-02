@@ -21,8 +21,10 @@ maximum possible follow-up per cycle. Useful for assessing the asymmetric
 censoring problem when pooling cycles.
 }
 \examples{
-\dontrun{
-surv_data <- nhanes_survival_prep(linked_data, origin = "exam")
+\donttest{
+demo <- nhanes_download("DEMO", "2015-2016")
+linked <- nhanes_mortality_link(demo)
+surv_data <- nhanes_survival_prep(linked, origin = "exam")
 nhanes_followup_summary(surv_data)
 }
 }

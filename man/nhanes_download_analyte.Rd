@@ -41,7 +41,7 @@ changed across cycles (e.g. total cholesterol: \code{LAB13} -> \code{L13_B} -> \
 CDC file name for each cycle, then downloads using the exact catalog name.
 }
 \examples{
-\dontrun{
+\donttest{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
 # Total cholesterol -- file name changed in 1999-2004; this handles it

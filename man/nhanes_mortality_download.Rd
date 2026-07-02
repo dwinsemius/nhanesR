@@ -36,7 +36,7 @@ for NHANES 1999-2018 and NHANES III. Files were released in April 2022 and
 will not be updated (the 2022-linked restricted-use files require RDC access).
 }
 \examples{
-\dontrun{
+\donttest{
 # Download all available cycles
 nhanes_mortality_download()
 

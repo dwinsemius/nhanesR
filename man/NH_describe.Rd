@@ -39,8 +39,8 @@ standard approach for NHANES analysis. Set \code{all_weights = TRUE} to
 include them.
 }
 \examples{
-\dontrun{
-tc <- nhanes_download_analyte("total cholesterol")
+\donttest{
+tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 NH_describe(tc)
 
 # Include replicate weights in the output

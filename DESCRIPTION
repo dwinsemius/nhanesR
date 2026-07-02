@@ -1,15 +1,17 @@
 Package: nhanesR
 Type: Package
 Title: Download, Parse, and Analyze NHANES Data with Mortality Linkage
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: person("David", "Winsemius", email = "dwinsemius@comcast.net",
     role = c("aut", "cre"))
 Description: Provides tools for downloading and organizing National Health and
-    Nutrition Examination Survey (NHANES) public-use data files and the NCHS
-    Public-Use Linked Mortality Files (LMF). Supports structured local caching,
-    codebook access, survey-aware merging, and preparation of survival analysis
-    datasets using NHANES-NDI linked mortality data (follow-up through
-    December 31, 2019).
+    Nutrition Examination Survey (NHANES) public-use data files and the National
+    Center for Health Statistics (NCHS) Public-Use Linked Mortality Files (LMF).
+    Supports structured local caching, codebook access, survey-aware merging,
+    and preparation of survival analysis datasets using NHANES-National Death
+    Index (NDI) linked mortality data (follow-up through December 31, 2019).
+    NHANES methodology is described at
+    <https://wwwn.cdc.gov/nchs/nhanes/Default.aspx>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US

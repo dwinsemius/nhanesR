@@ -67,7 +67,7 @@ only sets an option at load time if it is not already defined.
 nhanes_cache_dir()
 
 # Change to a persistent location for this session only
-\dontrun{
+\donttest{
 nhanes_cache_dir("~/my_nhanes_cache")
 }
 

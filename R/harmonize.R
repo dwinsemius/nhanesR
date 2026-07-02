@@ -63,7 +63,7 @@
 #'   before choosing a mapping.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' cycles <- nhanes_cycles()[1:10, "cycle"]
 #'
 #' # Conventional units (default): returns SEQN + cycle + HDL_mgdl

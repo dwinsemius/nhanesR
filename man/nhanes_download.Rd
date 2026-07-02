@@ -88,7 +88,7 @@ code, apply the same conversion:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Browse available Laboratory files for a cycle, then download by base code
 m <- nhanes_manifest("2015-2016", "Laboratory")
 m[, c("file_name", "description")]   # see what's available

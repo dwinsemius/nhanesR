@@ -52,15 +52,9 @@ the cycle as \code{year} (integer start year, e.g. 1999); pass
 \verb{seqn_col = "seqn", cycle_col = "year"} and both are handled automatically.
 }
 \examples{
-\dontrun{
-# Standard nhanesR workflow
+\donttest{
 demo <- nhanes_download("DEMO", "2015-2016")
 demo_mort <- nhanes_mortality_link(demo)
-
-# nhanesdata workflow (lowercase seqn, integer year column)
-library(nhanesdata)
-df <- read_nhanes("demo")
-df_mort <- nhanes_mortality_link(df, seqn_col = "seqn", cycle_col = "year")
 }
 }
 \seealso{

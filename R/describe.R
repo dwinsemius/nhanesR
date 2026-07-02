@@ -28,8 +28,8 @@
 #'   \code{\link[Hmisc]{label}} for the Hmisc label convention.
 #' @export
 #' @examples
-#' \dontrun{
-#' tc <- nhanes_download_analyte("total cholesterol")
+#' \donttest{
+#' tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 #' tc <- NH_label(tc)
 #'
 #' # CDC descriptions now appear in all Hmisc label-aware output
@@ -82,8 +82,8 @@ NH_label <- function(x, descriptions = NULL) {
 #'   persistent use; \code{\link[Hmisc]{describe}} for the underlying engine.
 #' @export
 #' @examples
-#' \dontrun{
-#' tc <- nhanes_download_analyte("total cholesterol")
+#' \donttest{
+#' tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 #' NH_describe(tc)
 #'
 #' # Include replicate weights in the output

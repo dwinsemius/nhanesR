@@ -38,7 +38,7 @@
 #'   browse files rather than variables.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Find total cholesterol across all cycles (summarized)
 #' nhanes_search_variables("total cholesterol")
 #'
@@ -224,7 +224,7 @@ nhanes_search_variables <- function(term,
 #'   automatically.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # HDL cholesterol across all cycles
 #' nhanes_variable_map("HDL")
 #'

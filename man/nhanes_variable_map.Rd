@@ -49,7 +49,7 @@ versions), the function prefers the non-SI variable. Comment-code variables
 (suffix \code{LC}/\code{LCN} or "comment" in description) are always dropped.
 }
 \examples{
-\dontrun{
+\donttest{
 # HDL cholesterol across all cycles
 nhanes_variable_map("HDL")
 

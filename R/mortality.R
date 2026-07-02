@@ -28,7 +28,7 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Download all available cycles
 #' nhanes_mortality_download()
 #'
@@ -119,7 +119,7 @@ nhanes_lmf_cycles <- function() {
 #'   dataset.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' lmf <- nhanes_mortality_parse(c("2015-2016", "2017-2018"))
 #' lmf[["2015-2016"]]
 #' }
@@ -207,15 +207,9 @@ nhanes_mortality_parse <- function(cycles  = NULL,
 #'   [nhanes_stack()] to row-bind multi-cycle data before linking.
 #' @export
 #' @examples
-#' \dontrun{
-#' # Standard nhanesR workflow
+#' \donttest{
 #' demo <- nhanes_download("DEMO", "2015-2016")
 #' demo_mort <- nhanes_mortality_link(demo)
-#'
-#' # nhanesdata workflow (lowercase seqn, integer year column)
-#' library(nhanesdata)
-#' df <- read_nhanes("demo")
-#' df_mort <- nhanes_mortality_link(df, seqn_col = "seqn", cycle_col = "year")
 #' }
 nhanes_mortality_link <- function(nhanes_data,
                                   cycles    = NULL,
@@ -370,8 +364,9 @@ nhanes_mortality_link <- function(nhanes_data,
 #'   [nhanes_ucod_labels()] for cause-of-death codes accepted by `cause`.
 #' @export
 #' @examples
-#' \dontrun{
-#' demo <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+#' \donttest{
+#' demo_list <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+#' demo <- nhanes_stack(demo_list)
 #' demo_mort <- nhanes_mortality_link(demo)
 #'
 #' # All-cause mortality, exam origin, MEC 2-year weight
@@ -611,8 +606,10 @@ nhanes_ucod_labels <- function() {
 #' @seealso [nhanes_survival_prep()] which produces the required input.
 #' @export
 #' @examples
-#' \dontrun{
-#' surv_data <- nhanes_survival_prep(linked_data, origin = "exam")
+#' \donttest{
+#' demo <- nhanes_download("DEMO", "2015-2016")
+#' linked <- nhanes_mortality_link(demo)
+#' surv_data <- nhanes_survival_prep(linked, origin = "exam")
 #' nhanes_followup_summary(surv_data)
 #' }
 #' @importFrom stats median

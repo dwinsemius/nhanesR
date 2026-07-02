@@ -34,8 +34,8 @@ Hmisc reads these attributes automatically in \code{\link[Hmisc]{describe}},
 functions, so labelling once makes descriptions available everywhere.
 }
 \examples{
-\dontrun{
-tc <- nhanes_download_analyte("total cholesterol")
+\donttest{
+tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 tc <- NH_label(tc)
 
 # CDC descriptions now appear in all Hmisc label-aware output

@@ -62,7 +62,7 @@
 #' nhanes_cache_dir()
 #'
 #' # Change to a persistent location for this session only
-#' \dontrun{
+#' \donttest{
 #' nhanes_cache_dir("~/my_nhanes_cache")
 #' }
 #'

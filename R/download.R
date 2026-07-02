@@ -80,7 +80,7 @@
 #'   cycles; [nhanes_cycles()] for valid cycle labels.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Browse available Laboratory files for a cycle, then download by base code
 #' m <- nhanes_manifest("2015-2016", "Laboratory")
 #' m[, c("file_name", "description")]   # see what's available
@@ -218,7 +218,7 @@ nhanes_download <- function(file_code,
 #'   returned list; [nhanes_download()] for downloading by exact file code.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' cycles <- nhanes_cycles()[1:10, "cycle"]
 #'
 #' # Total cholesterol -- file name changed in 1999-2004; this handles it

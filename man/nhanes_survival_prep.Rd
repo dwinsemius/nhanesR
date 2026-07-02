@@ -112,8 +112,9 @@ should be interpreted with this in mind.
 }
 
 \examples{
-\dontrun{
-demo <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+\donttest{
+demo_list <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+demo <- nhanes_stack(demo_list)
 demo_mort <- nhanes_mortality_link(demo)
 
 # All-cause mortality, exam origin, MEC 2-year weight

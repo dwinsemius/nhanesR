@@ -52,7 +52,7 @@ was stored in \code{LAB13} (1999-2000), \code{L13_B} (2001-2002), \code{L13_C}
 (2003-2004), and \code{TCHOL} (2005 onwards), always in variable \code{LBXTC}.
 }
 \examples{
-\dontrun{
+\donttest{
 # Find total cholesterol across all cycles (summarized)
 nhanes_search_variables("total cholesterol")
 

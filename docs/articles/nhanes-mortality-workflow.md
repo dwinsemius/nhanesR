@@ -30,6 +30,7 @@ The workflow has nine steps:
 9.  Fit a survey-weighted Cox proportional hazards model
 
 ``` r
+
 library(nhanesR)
 library(survival)
 library(survey)
@@ -39,27 +40,26 @@ library(survey)
 
 ## Package options
 
-Three options control nhanesR behaviour. The package sets defaults at
+Three options control nhanesR behavior. The package sets defaults at
 load time, but any option defined in your `.Rprofile` before loading
 takes precedence.
 
 | Option | Default | Purpose |
 |----|----|----|
-| `nhanesR.cache_dir` | OS user-data directory | Root path for all cached RDS files |
+| `nhanesR.cache_dir` | `file.path(tempdir(), "nhanesR")` | Root path for all cached RDS files |
 | `nhanesR.verbose` | `TRUE` | Print progress messages during downloads |
 | `nhanesR.timeout` | `120L` | HTTP timeout in seconds |
 
-Default cache locations by platform:
-
-| Platform | Path                                                   |
-|----------|--------------------------------------------------------|
-| macOS    | `~/Library/Application Support/nhanesR`                |
-| Linux    | `~/.local/share/nhanesR` (or `$XDG_DATA_HOME/nhanesR`) |
-| Windows  | `%APPDATA%/nhanesR`                                    |
+By default, nhanesR caches files inside R’s session-temporary directory
+([`tempdir()`](https://rdrr.io/r/base/tempfile.html)). No files are
+written to your home directory without your explicit consent. The
+trade-off is that downloads are repeated in each new R session. To keep
+a persistent cache, set `nhanesR.cache_dir` in your `~/.Rprofile`:
 
 To make changes permanent, add lines like these to your `~/.Rprofile`:
 
 ``` r
+
 options(
   nhanesR.cache_dir = "/data/nhanes_cache",  # e.g. a shared server path
   nhanesR.verbose   = FALSE,
@@ -70,10 +70,11 @@ options(
 To check or change settings interactively during a session:
 
 ``` r
+
 # View current cache location
 nhanes_cache_dir()
 
-# Change for this session only
+# Opt in to a persistent home-directory cache for this session
 nhanes_cache_dir("~/my_nhanes_cache")
 
 # Suppress download messages for this session
@@ -105,6 +106,7 @@ within a cycle. SEQNs are not reused across cycles, so always include
 ## 1. What cycles and files are available?
 
 ``` r
+
 # All continuous NHANES cycles known to nhanesR
 nhanes_cycles()
 
@@ -117,6 +119,7 @@ To see what files are available for a specific cycle and component, use
 [`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md):
 
 ``` r
+
 nhanes_manifest("2015-2016", "Laboratory")
 nhanes_manifest("2013-2014", "Questionnaire")
 ```
@@ -134,6 +137,7 @@ returns a one-row-per-cycle lookup table showing the exact file name and
 variable name to use.
 
 ``` r
+
 # Find total cholesterol across all cycles (summarized by default)
 nhanes_search_variables("total cholesterol", component = "Laboratory")
 
@@ -143,6 +147,7 @@ nhanes_search_variables("total cholesterol", component = "Laboratory",
 ```
 
 ``` r
+
 # Per-cycle lookup: which file and variable name holds total cholesterol?
 nhanes_variable_map("total cholesterol")
 
@@ -171,6 +176,7 @@ automatically — for example, total cholesterol was in `LAB13`
 onward.
 
 ``` r
+
 cycles <- nhanes_cycles()[1:10, "cycle"]  # 1999-2018
 
 # Demographics — file name has always been DEMO; nhanes_download() works fine
@@ -196,6 +202,7 @@ function works for any component. Use `keep_vars` when a search term
 would otherwise match false positives.
 
 ``` r
+
 # History of myocardial infarction (MCQ file)
 # MCQ160E (1999-2010) and MCQ160e (2011-2018) are the same question;
 # keep_vars filters out RXQ510 which also mentions "heart attack"
@@ -229,6 +236,7 @@ its label attribute, no variable codes needed. `prefer_mgdl = TRUE`
 returns only `SEQN`, `cycle`, and the target column — ready for merging.
 
 ``` r
+
 # Total cholesterol — LBXTC throughout, but label_pattern narrows the match
 # in 1999-2004 when TC and HDL were bundled in the same file
 TC <- nhanes_harmonize(
@@ -254,6 +262,7 @@ str(HDL)  # SEQN (chr), cycle (chr), HDL_mgdl (num)
 there is no unit to match. The same `trim = TRUE` default applies.
 
 ``` r
+
 MI <- nhanes_harmonize(
   mi_list,
   mapping = c(MCQ160E = "MI_history", MCQ160e = "MI_history")
@@ -285,6 +294,7 @@ NHANES questionnaire responses use a numeric coding convention:
 For analysis, recode to `0`/`1` and treat `7` and `9` as `NA`:
 
 ``` r
+
 nhanes_recode_yn <- function(x) {
   out        <- rep(NA_integer_, length(x))
   out[x == 1] <- 1L
@@ -309,6 +319,7 @@ Stack the per-cycle demographics list, then merge all components by
 outward so that participants without lab values are retained with `NA`.
 
 ``` r
+
 demo <- nhanes_stack(demo_list)
 
 # Inner join lab data (keeps only participants who attended the exam)
@@ -339,6 +350,7 @@ downloads the NCHS Public-Use Linked Mortality Files and left-joins them
 by SEQN. Follow-up runs through December 31, 2019.
 
 ``` r
+
 analytic_mort <- nhanes_mortality_link(analytic)
 
 # Key variables added:
@@ -358,6 +370,7 @@ when laboratory measurements are the exposure — they were collected at
 the exam visit.
 
 ``` r
+
 surv_data <- nhanes_survival_prep(
   analytic_mort,
   origin     = "exam",
@@ -372,6 +385,7 @@ nhanes_followup_summary(surv_data)
 For cause-specific mortality:
 
 ``` r
+
 nhanes_ucod_labels()   # see available cause-of-death codes
 
 surv_cvd <- nhanes_survival_prep(
@@ -392,6 +406,44 @@ table(event = surv_cvd$event, cvd_death = surv_cvd$event_cause)
 NHANES uses a complex multi-stage probability sample. Standard errors
 must account for the sampling design or they will be anti-conservative.
 
+### Choosing the correct survey weight
+
+NHANES provides three families of survey weight. Using the wrong one
+produces biased population estimates and incorrect standard errors.
+
+| Weight     | Use when                                             |
+|------------|------------------------------------------------------|
+| `WTINT2YR` | Interview-only data (questionnaires, no lab or exam) |
+| `WTMEC2YR` | Any examination or laboratory component              |
+| `WTSAF2YR` | Analytes from the **fasting subsample**              |
+
+**The fasting subsample weight** (`WTSAF2YR`) is a *statistical*
+probability weight — not a body-weight measurement — that accounts for
+an additional random subsampling step: only a subset of MEC attendees
+are asked to fast before their blood draw. Analytes that require fasting
+include **triglycerides, glucose, insulin, and Friedewald-calculated
+LDL**. Using `WTMEC2YR` for these analytes ignores the fasting
+subsampling and will over- or under-represent the population.
+
+For total cholesterol and HDL — which do not require fasting —
+`WTMEC2YR` is the correct weight.
+
+### Pooling across cycles
+
+When combining data from multiple two-year cycles, the 2-year weight
+must be adjusted. The simplest approach is to divide by the number of
+cycles pooled:
+
+``` r
+
+surv_data$wt_pooled <- surv_data$survey_weight / n_cycles
+```
+
+Some NHANES files include pre-computed 4-year weights (`WTMEC4YR`,
+`WTSAF4YR`). Use these when available rather than dividing manually.
+
+------------------------------------------------------------------------
+
 **Weight adjustment for pooled cycles**: divide the two-year exam weight
 `WTMEC2YR` by the number of cycles pooled (here, 10).
 
@@ -399,6 +451,7 @@ must account for the sampling design or they will be anti-conservative.
 repeat across strata.
 
 ``` r
+
 surv_data$wt_pooled <- surv_data$survey_weight / 10
 
 # Scale continuous predictors to per-SD units for interpretable hazard ratios
@@ -418,6 +471,7 @@ Fit a Cox model for all-cause mortality adjusting for age, sex, HDL,
 prior MI, and cholesterol-lowering medication:
 
 ``` r
+
 fit <- svycoxph(
   Surv(time, event) ~ TC_sd + HDL_sd + RIDAGEYR + RIAGENDR +
                       MI_history + chol_med,
@@ -471,6 +525,7 @@ to get the per-cycle file names, and
 to download and rename consistently:
 
 ``` r
+
 # General pattern for any analyte
 analyte_list <- nhanes_download_analyte("search term", cycles,
                                          component = "Laboratory")
@@ -515,7 +570,7 @@ and `9` to `NA`.
 **Further reading:**
 
 - CDC mortality linkage:
-  <https://www.cdc.gov/nchs/data-linkage/mortality-public.htm>
+  <https://www.cdc.gov/nchs/linked-data/about/index.html>
 - NHANES analytic guidelines:
   <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
 - `survey` package: <https://r-survey.r-forge.r-project.org/survey/>

@@ -48,13 +48,13 @@ the column appears, with a warning.
 
 The appropriate weight depends on which components are merged:
 
-- **Demographics only** → `WTINT2YR` (interview weight)
+- **Demographics only** -\> `WTINT2YR` (interview weight)
 
-- **Any exam/lab component** → `WTMEC2YR` (MEC exam weight)
+- **Any exam/lab component** -\> `WTMEC2YR` (MEC exam weight)
 
-- **Dietary 24-hr recall** → `WTDRD1` or `WTDR2D`
+- **Dietary 24-hr recall** -\> `WTDRD1` or `WTDR2D`
 
-- **Multi-cycle pooled** → divide the 2-year weight by the number of
+- **Multi-cycle pooled** -\> divide the 2-year weight by the number of
   cycles, or use the 4-year combined weight where available
 
 This function warns but does not enforce weight selection. Use
@@ -73,21 +73,27 @@ to append mortality follow-up after merging.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 demo  <- nhanes_download("DEMO",  "2015-2016")
 bpx   <- nhanes_download("BPX",   "2015-2016")
 trigly <- nhanes_download("TRIGLY","2015-2016")
 
 analytic <- nhanes_merge(demo, bpx, trigly)
+#> Warning: ! Some inputs have a "cycle" column but `by` does not include "'cycle'".
+#> ℹ For multi-cycle data, use `by = c('SEQN', 'cycle')` to avoid cross-cycle
+#>   contamination.
+#> Warning: ! Duplicate column in merge step 2: "cycle".
+#> ℹ Keeping the version from the first data frame. Rename columns before merging
+#>   if both are needed.
+#> Warning: ! Duplicate column in merge step 3: "cycle".
+#> ℹ Keeping the version from the first data frame. Rename columns before merging
+#>   if both are needed.
 
-# Multi-cycle
-demo_13 <- nhanes_download("DEMO", "2013-2014")
-demo_15 <- nhanes_download("DEMO", "2015-2016")
-bpx_13  <- nhanes_download("BPX",  "2013-2014")
-bpx_15  <- nhanes_download("BPX",  "2015-2016")
-
-demo_pool <- rbind(demo_13, demo_15)
-bpx_pool  <- rbind(bpx_13,  bpx_15)
+# Multi-cycle: use nhanes_stack() before merging
+demo_list <- nhanes_download("DEMO", c("2013-2014", "2015-2016"))
+bpx_list  <- nhanes_download("BPX",  c("2013-2014", "2015-2016"))
+demo_pool <- nhanes_stack(demo_list)
+bpx_pool  <- nhanes_stack(bpx_list)
 analytic  <- nhanes_merge(demo_pool, bpx_pool, by = c("SEQN", "cycle"))
-} # }
+# }
 ```

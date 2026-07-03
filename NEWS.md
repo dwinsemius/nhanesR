@@ -1,3 +1,27 @@
+# nhanesR 0.1.4
+
+## CRAN resubmission fixes
+
+* Expanded all unexpanded acronyms in `DESCRIPTION`: "NCHS" → "National Center
+  for Health Statistics (NCHS)" and "NDI" → "National Death Index (NDI)".
+* Added NHANES methodology URL reference to `DESCRIPTION`.
+* Replaced all `\dontrun{}` with `\donttest{}` in examples; all examples
+  require CDC network access so none were unwrapped.
+* Fixed `\d` regex in `NH_describe` documentation (unknown Rd macro on Windows);
+  replaced with `[0-9]`.
+
+## Bug fixes
+
+* Removed "2017-2020" from the internal LMF registry: CDC has not published
+  `NHANES_2017_2020_MORT_2019_PUBLIC.dat`; `has_lmf_public` set to `FALSE`
+  for that cycle.
+* Fixed `cli` pluralization crash in `nhanes_merge()` when duplicate columns
+  are found (`{i}` and `{?s}` quantity conflict resolved with `cli::qty()`).
+* Fixed several example bugs exposed by switching from `\dontrun` to `\donttest`:
+  missing `cycles` argument in `nhanes_download_analyte()` calls; list passed
+  to `nhanes_mortality_link()` instead of a stacked data frame; undefined
+  `linked_data` object in `nhanes_followup_summary()` example.
+
 # nhanesR 0.1.3
 
 ## Bug fixes

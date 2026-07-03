@@ -14,7 +14,7 @@ nhanes_harmonize(
   unit = NULL,
   name = NULL,
   label_pattern = NULL,
-  prefer_mgdl = TRUE,
+  units = c("conventional", "SI", "both"),
   trim = TRUE,
   stack = TRUE
 )
@@ -55,21 +55,37 @@ nhanes_harmonize(
   multiple columns in the same unit (e.g. `"HDL"` to select only the HDL
   column from a file that also contains total cholesterol in mg/dL).
 
-- prefer_mgdl:
+- units:
 
-  Logical. If `TRUE` (default), drop SI-unit columns (mmol/L, g/L, etc.)
-  when a conventional-unit counterpart (mg/dL, g/dL, U/L) exists in the
-  same data frame. Detection uses label attributes: the unit token is
-  stripped from each label and SI columns whose base description matches
-  a conventional-unit column are removed. Applied before any renaming
-  step.
+  Character. Controls which unit system to retain when both conventional
+  and SI versions of the same measurement exist in a data frame (e.g.
+  `LBXTC` in mg/dL and `LBDTCSI` in mmol/L). One of:
+
+  `"conventional"`
+
+  :   (default) Keep mg/dL, g/dL, U/L, etc.; drop SI duplicates.
+      Appropriate for US-centric analyses.
+
+  `"SI"`
+
+  :   Keep mmol/L, g/L, umol/L, etc.; drop conventional duplicates.
+      Appropriate for international use or journals that require SI
+      units.
+
+  `"both"`
+
+  :   Retain all columns; no duplicates are removed.
+
+  Detection uses label attributes rather than variable names because CDC
+  naming is inconsistent (e.g. `LBXTC`/`LBDTCSI`). Applied before any
+  renaming step.
 
 - trim:
 
-  Logical. Only applies when `unit` is used. If `TRUE` (default), the
-  returned data frame contains only `SEQN`, `cycle`, and the column
-  named by `name`. Set to `FALSE` to retain all columns (useful when the
-  source file contains other variables you want to keep).
+  Logical. If `TRUE` (default), the returned data frame contains only
+  `SEQN`, `cycle`, and the harmonized column(s). Set to `FALSE` to
+  retain all columns (useful when the source file contains other
+  variables you want to keep).
 
 - stack:
 
@@ -82,7 +98,7 @@ nhanes_harmonize(
 
 If `stack = TRUE` (default), a single stacked data frame. When `unit` is
 used with `trim = TRUE` (the default), only `SEQN`, `cycle`, and the
-harmonized column are returned — ready for merging. If `stack = FALSE`,
+harmonized column are returned – ready for merging. If `stack = FALSE`,
 a named list of data frames.
 
 ## Details
@@ -109,25 +125,37 @@ to inspect variable names per cycle before choosing a mapping.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# Unit-based: trim = TRUE (default) returns SEQN + cycle + HDL_mgdl only
+# Conventional units (default): returns SEQN + cycle + HDL_mgdl
 hdl_list <- nhanes_download_analyte("HDL", cycles)
+#> Found 11 unique variables matching "HDL".
+#> Warning: Both "2017-2018" and "2017-2020" are present. The 2017-2018 participants are
+#> included in the 2017-2020 pandemic-adjusted file -- use one or the other in
+#> pooled analyses to avoid double-counting.
 hdl <- nhanes_harmonize(hdl_list, unit = "mg/dL", name = "HDL_mgdl",
                          label_pattern = "HDL")
 
+# SI units: retain mmol/L columns, drop conventional duplicates
+hdl_si <- nhanes_harmonize(hdl_list, unit = "mmol/L", name = "HDL_mmol",
+                            label_pattern = "HDL", units = "SI")
+
 # Merge two analytes cleanly
 tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
+#> Found 6 unique variables matching "total cholesterol".
+#> Warning: Both "2017-2018" and "2017-2020" are present. The 2017-2018 participants are
+#> included in the 2017-2020 pandemic-adjusted file -- use one or the other in
+#> pooled analyses to avoid double-counting.
 TC  <- nhanes_harmonize(tchol_list, unit = "mg/dL", name = "TC_mgdl",
                          label_pattern = "total cholesterol")
 lipids <- merge(hdl, TC, by = c("SEQN", "cycle"))
 
-# Explicit mapping (trim does not apply)
+# Explicit mapping
 hdl <- nhanes_harmonize(
   hdl_list,
   mapping = c(LBDHDL = "HDL_mgdl", LBXHDD = "HDL_mgdl",
               LBDHDD = "HDL_mgdl")
 )
-} # }
+# }
 ```

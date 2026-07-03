@@ -1,12 +1,18 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://dwinsemius.github.io/nhanesR/404.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/LICENSE-text.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/articles/analyte-harmonization.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/articles/index.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/articles/nhanes-mortality-workflow.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/articles/nhanesR-overview.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/articles/survey-weighted-survival.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/articles/uacr-bridging.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/authors.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/index.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/news/index.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/NH_describe.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/NH_label.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_build_desc_map.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_cache_invalidate.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_cache_subdir.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_cache_valid.html</loc></url>
@@ -20,6 +26,7 @@
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_file_hash.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_lmf_url.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_parse_lmf_dat.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_resolve_unit_duplicates.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_write_hash.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_xpt_url.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/index.html</loc></url>
@@ -40,6 +47,10 @@
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/svycph_set_basehaz.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/session_transcript.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/vscode_cheatsheet.html</loc></url>
 </urlset>
 

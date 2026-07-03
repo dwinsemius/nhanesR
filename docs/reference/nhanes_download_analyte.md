@@ -3,7 +3,7 @@
 A smarter alternative to
 [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
 for analytes whose file name changed across cycles (e.g. total
-cholesterol: `LAB13` → `L13_B` → `L13_C` → `TCHOL_D` onward). Uses
+cholesterol: `LAB13` -\> `L13_B` -\> `L13_C` -\> `TCHOL_D` onward). Uses
 [`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)
 to look up the correct CDC file name for each cycle, then downloads
 using the exact catalog name.
@@ -69,14 +69,22 @@ for downloading by exact file code.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 cycles <- nhanes_cycles()[1:10, "cycle"]
 
-# Total cholesterol — file name changed in 1999-2004; this handles it
+# Total cholesterol -- file name changed in 1999-2004; this handles it
 tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
+#> Found 6 unique variables matching "total cholesterol".
+#> Warning: Both "2017-2018" and "2017-2020" are present. The 2017-2018 participants are
+#> included in the 2017-2020 pandemic-adjusted file -- use one or the other in
+#> pooled analyses to avoid double-counting.
 
 # Serum creatinine (keep_vars excludes urine creatinine)
 scr_list <- nhanes_download_analyte("creatinine", cycles,
                                     keep_vars = c("LBXSCR","LBDSCR","LB2SCR"))
-} # }
+#> Found 20 unique variables matching "creatinine".
+#> Warning: Both "2017-2018" and "2017-2020" are present. The 2017-2018 participants are
+#> included in the 2017-2020 pandemic-adjusted file -- use one or the other in
+#> pooled analyses to avoid double-counting.
+# }
 ```

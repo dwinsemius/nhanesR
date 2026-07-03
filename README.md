@@ -23,7 +23,7 @@ analysis:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("dwinsemius/nhanesR", build_vignettes = TRUE)
+remotes::install_github("dwinsemius/nhanesR", build_vignettes = TRUE, force = TRUE)
 ```
 
 **Requirements:** R ≥ 4.1.0. The following packages are used optionally and
@@ -80,7 +80,7 @@ them in `~/.Rprofile` to make changes permanent:
 
 ```r
 options(
-  nhanesR.cache_dir = "/path/to/cache",   # default: OS user-data directory
+  nhanesR.cache_dir = "/path/to/cache",   # default: tempdir()/nhanesR (session only)
   nhanesR.verbose   = FALSE,              # suppress progress messages
   nhanesR.timeout   = 300L               # HTTP timeout in seconds
 )
@@ -114,8 +114,10 @@ vignette("nhanes-mortality-workflow", package = "nhanesR")
 | Variable search | `nhanes_search_variables()`, `nhanes_variable_map()` |
 | Download | `nhanes_download()`, `nhanes_download_analyte()` |
 | Harmonize / stack / merge | `nhanes_harmonize()`, `nhanes_stack()`, `nhanes_merge()` |
-| Mortality linkage | `nhanes_mortality_link()`, `nhanes_lmf_cycles()` |
+| Variable labelling | `NH_label()`, `NH_describe()` |
+| Mortality linkage | `nhanes_mortality_link()`, `nhanes_mortality_download()`, `nhanes_mortality_parse()`, `nhanes_lmf_cycles()` |
 | Survival prep | `nhanes_survival_prep()`, `nhanes_followup_summary()`, `nhanes_ucod_labels()` |
+| Survey-weighted Cox | `svycph_fuse()`, `weighted_basehaz()`, `svycph_set_basehaz()` |
 | Cache | `nhanes_cache_dir()` |
 
 ## Acknowledgements

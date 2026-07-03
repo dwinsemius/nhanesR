@@ -20,8 +20,9 @@ multi-cycle NHANES analysis:
 ## Installation
 
 ``` r
+
 # install.packages("remotes")
-remotes::install_github("dwinsemius/nhanesR", build_vignettes = TRUE)
+remotes::install_github("dwinsemius/nhanesR", build_vignettes = TRUE, force = TRUE)
 ```
 
 **Requirements:** R ≥ 4.1.0. The following packages are used optionally
@@ -37,6 +38,7 @@ and will be requested if needed:
 ## Quick start
 
 ``` r
+
 library(nhanesR)
 
 # 1. Find available cycles
@@ -76,12 +78,13 @@ surv_data <- nhanes_survival_prep(analytic_mort,
 
 ## Configuration
 
-Downloaded files are cached locally. Three options control behaviour —
+Downloaded files are cached locally. Three options control behavior —
 set them in `~/.Rprofile` to make changes permanent:
 
 ``` r
+
 options(
-  nhanesR.cache_dir = "/path/to/cache",   # default: OS user-data directory
+  nhanesR.cache_dir = "/path/to/cache",   # default: tempdir()/nhanesR (session only)
   nhanesR.verbose   = FALSE,              # suppress progress messages
   nhanesR.timeout   = 300L               # HTTP timeout in seconds
 )
@@ -90,6 +93,7 @@ options(
 View or change the cache location interactively:
 
 ``` r
+
 nhanes_cache_dir()                        # show current path
 nhanes_cache_dir("~/my_nhanes_cache")     # change for this session
 ```
@@ -99,6 +103,7 @@ nhanes_cache_dir("~/my_nhanes_cache")     # change for this session
 Two vignettes are included:
 
 ``` r
+
 # Package overview and complete function map
 vignette("nhanesR-overview", package = "nhanesR")
 
@@ -115,8 +120,10 @@ vignette("nhanes-mortality-workflow", package = "nhanesR")
 | Variable search | [`nhanes_search_variables()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md), [`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md) |
 | Download | [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md), [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md) |
 | Harmonize / stack / merge | [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md), [`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md), [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md) |
-| Mortality linkage | [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md), [`nhanes_lmf_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md) |
+| Variable labelling | [`NH_label()`](https://dwinsemius.github.io/nhanesR/reference/NH_label.md), [`NH_describe()`](https://dwinsemius.github.io/nhanesR/reference/NH_describe.md) |
+| Mortality linkage | [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md), [`nhanes_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_download.md), [`nhanes_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_parse.md), [`nhanes_lmf_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md) |
 | Survival prep | [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md), [`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md), [`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md) |
+| Survey-weighted Cox | [`svycph_fuse()`](https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.md), [`weighted_basehaz()`](https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.md), [`svycph_set_basehaz()`](https://dwinsemius.github.io/nhanesR/reference/svycph_set_basehaz.md) |
 | Cache | [`nhanes_cache_dir()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.md) |
 
 ## Acknowledgements

@@ -1,5 +1,70 @@
 # Changelog
 
+## nhanesR 0.1.4
+
+### CRAN resubmission fixes
+
+- Expanded all unexpanded acronyms in `DESCRIPTION`: “NCHS” → “National
+  Center for Health Statistics (NCHS)” and “NDI” → “National Death Index
+  (NDI)”.
+- Added NHANES methodology URL reference to `DESCRIPTION`.
+- Replaced all `\dontrun{}` with `\donttest{}` in examples; all examples
+  require CDC network access so none were unwrapped.
+- Fixed `\d` regex in `NH_describe` documentation (unknown Rd macro on
+  Windows); replaced with `[0-9]`.
+
+### Bug fixes
+
+- Removed “2017-2020” from the internal LMF registry: CDC has not
+  published `NHANES_2017_2020_MORT_2019_PUBLIC.dat`; `has_lmf_public`
+  set to `FALSE` for that cycle.
+- Fixed `cli` pluralization crash in
+  [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md)
+  when duplicate columns are found (`{i}` and `{?s}` quantity conflict
+  resolved with
+  [`cli::qty()`](https://cli.r-lib.org/reference/pluralization-helpers.html)).
+- Fixed several example bugs exposed by switching from `\dontrun` to
+  `\donttest`: missing `cycles` argument in
+  [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)
+  calls; list passed to
+  [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)
+  instead of a stacked data frame; undefined `linked_data` object in
+  [`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)
+  example.
+
+## nhanesR 0.1.3
+
+### Bug fixes
+
+- Default cache directory changed from a platform-specific path under
+  `~` to `file.path(tempdir(), "nhanesR")`. This prevents nhanesR from
+  writing to the user’s home filespace without explicit consent, in
+  compliance with CRAN Policy. To retain a persistent cache across
+  sessions, set `nhanesR.cache_dir` in `~/.Rprofile`.
+- `nhanes_cache_dir("~/my_nhanes_cache")` example wrapped in
+  `\dontrun{}` to prevent directory creation during `R CMD CHECK`.
+
+## nhanesR 0.1.2
+
+### Bug fixes
+
+- Fixed broken CDC mortality linkage URL in three vignettes (CDC
+  reorganised their site; updated to current NCHS Data Linkage landing
+  page).
+- Removed non-standard sentence from `DESCRIPTION`.
+- Added `inst/WORDLIST` to suppress spell-check NOTEs for domain
+  abbreviations (NHANES, NCHS, LMF, NDI) and “codebook”.
+
+## nhanesR 0.1.1
+
+### Breaking changes
+
+- [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md):
+  the `prefer_mgdl` argument has been replaced by
+  `units = c("conventional", "SI", "both")`. The default
+  (`"conventional"`) preserves prior behaviour; set `units = "SI"` to
+  retain SI columns and drop conventional duplicates instead.
+
 ## nhanesR 0.1.0
 
 Initial release.
@@ -44,7 +109,7 @@ Initial release.
   cycles.
 
 - [`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)
-  — summarise follow-up time and event rates by cycle.
+  — summarize follow-up time and event rates by cycle.
 
 - [`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)
   — return the 11-category ICD-10 underlying cause-of- death recode used
@@ -95,6 +160,6 @@ Initial release.
 
 - Added “NHANES Mortality Linkage: A Complete Workflow” vignette
   illustrating the full pipeline from file discovery through
-  survey-weighted Cox proportional hazards modelling, using serum total
+  survey-weighted Cox proportional hazards modeling, using serum total
   cholesterol and cardiovascular mortality across ten cycles (1999–2018)
   as a worked example.

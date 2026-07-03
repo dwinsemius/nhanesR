@@ -97,7 +97,7 @@ nhanes_cycles()
 #> 8    WTMEC4YR      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 9        <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 10       <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
-#> 11       <NA>  WTMECPRP         TRUE           TRUE        2019  2019-12-31
+#> 11       <NA>  WTMECPRP         TRUE          FALSE        2019  2019-12-31
 nhanes_cycles(include_iii = TRUE)
 #>        cycle begin_year end_year  url_path suffix wt_mec_2yr wt_int_2yr
 #> 1  1988-1994       1988     1994   nhanes3              <NA>       <NA>
@@ -124,7 +124,7 @@ nhanes_cycles(include_iii = TRUE)
 #> 9    WTMEC4YR      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 10       <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
 #> 11       <NA>      <NA>        FALSE           TRUE        2019  2019-12-31
-#> 12       <NA>  WTMECPRP         TRUE           TRUE        2019  2019-12-31
+#> 12       <NA>  WTMECPRP         TRUE          FALSE        2019  2019-12-31
 
 # Extract cycle labels as a character vector for use in download functions
 cycles <- nhanes_cycles()[["cycle"]]

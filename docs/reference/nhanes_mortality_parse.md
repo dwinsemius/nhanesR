@@ -80,8 +80,23 @@ to join parsed mortality data onto an analytic dataset.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 lmf <- nhanes_mortality_parse(c("2015-2016", "2017-2018"))
 lmf[["2015-2016"]]
-} # }
+#> # A tibble: 9,971 × 11
+#>     SEQN ELIGSTAT MORTSTAT UCOD_LEADING DIABETES HYPERTEN PERMTH_INT PERMTH_EXM
+#>    <int>    <int>    <int> <chr>           <int>    <int>      <dbl>      <dbl>
+#>  1 83732        1        0 NA                 NA       NA         43         42
+#>  2 83733        1        0 NA                 NA       NA         41         41
+#>  3 83734        1        0 NA                 NA       NA         49         48
+#>  4 83735        1        0 NA                 NA       NA         49         48
+#>  5 83736        1        0 NA                 NA       NA         56         56
+#>  6 83737        1        0 NA                 NA       NA         49         47
+#>  7 83738        2       NA NA                 NA       NA         NA         NA
+#>  8 83739        2       NA NA                 NA       NA         NA         NA
+#>  9 83740        2       NA NA                 NA       NA         NA         NA
+#> 10 83741        1        0 NA                 NA       NA         49         48
+#> # ℹ 9,961 more rows
+#> # ℹ 3 more variables: WAGEGRP <int>, EDUCAT <int>, cycle <chr>
+# }
 ```

@@ -47,8 +47,14 @@ reference:
       - nhanes_stack
       - nhanes_merge
 
+  - title: "Variable labelling"
+    desc: "Attach CDC descriptions as Hmisc-style column labels"
+    contents:
+      - NH_label
+      - NH_describe
+
   - title: "Mortality linkage"
-    desc: "Link NCHS Public-Use Linked Mortality Files"
+    desc: "Link National Center for Health Statistics (NCHS) Public-Use Linked Mortality Files"
     contents:
       - nhanes_mortality_link
       - nhanes_mortality_download
@@ -62,6 +68,13 @@ reference:
       - nhanes_followup_summary
       - nhanes_ucod_labels
 
+  - title: "Survey-weighted Cox models"
+    desc: "Fuse rms and survey Cox fits; compute weighted baseline hazard"
+    contents:
+      - svycph_fuse
+      - weighted_basehaz
+      - svycph_set_basehaz
+
   - title: "Cache management"
     contents:
       - nhanes_cache_dir
@@ -72,3 +85,6 @@ articles:
     contents:
       - nhanesR-overview
       - nhanes-mortality-workflow
+      - analyte-harmonization
+      - uacr-bridging
+      - survey-weighted-survival

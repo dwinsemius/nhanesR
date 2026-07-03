@@ -39,9 +39,19 @@ Combine data across cycles and components
 - [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md)
   : Merge NHANES component data frames by SEQN
 
+## Variable labelling
+
+Attach CDC descriptions as Hmisc-style column labels
+
+- [`NH_label()`](https://dwinsemius.github.io/nhanesR/reference/NH_label.md)
+  : Attach CDC variable descriptions as Hmisc-style labels
+- [`NH_describe()`](https://dwinsemius.github.io/nhanesR/reference/NH_describe.md)
+  : NHANES-annotated variable descriptions
+
 ## Mortality linkage
 
-Link NCHS Public-Use Linked Mortality Files
+Link National Center for Health Statistics (NCHS) Public-Use Linked
+Mortality Files
 
 - [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)
   : Link mortality data onto an NHANES analytic dataset
@@ -59,9 +69,20 @@ Prepare and summarise survival datasets
 - [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
   : Prepare an NHANES-LMF dataset for survival analysis
 - [`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)
-  : Summarise mortality follow-up by cycle
+  : Summarize mortality follow-up by cycle
 - [`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)
   : Lookup table for UCOD_LEADING cause-of-death codes
+
+## Survey-weighted Cox models
+
+Fuse rms and survey Cox fits; compute weighted baseline hazard
+
+- [`svycph_fuse()`](https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.md)
+  : Fuse svycoxph and cph objects for rms ecosystem compatibility
+- [`weighted_basehaz()`](https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.md)
+  : Compute survey-weighted cumulative baseline hazard with variance
+- [`svycph_set_basehaz()`](https://dwinsemius.github.io/nhanesR/reference/svycph_set_basehaz.md)
+  : Substitute weighted baseline hazard into a fused cph object
 
 ## Cache management
 

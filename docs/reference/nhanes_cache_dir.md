@@ -33,7 +33,7 @@ The current (or newly set) cache directory path, invisibly.
 
 ### Package options
 
-Three options control nhanesR behaviour. Set any of them in your
+Three options control nhanesR behavior. Set any of them in your
 `.Rprofile` to make the change permanent across sessions; changes made
 during a session (via `nhanes_cache_dir()` or
 [`options()`](https://rdrr.io/r/base/options.html) directly) last only
@@ -42,18 +42,17 @@ until the session ends.
 |  |  |  |
 |----|----|----|
 | Option | Default | Purpose |
-| `nhanesR.cache_dir` | OS user-data dir (see below) | Root directory for all cached files |
+| `nhanesR.cache_dir` | `file.path(tempdir(), "nhanesR")` | Root directory for all cached files |
 | `nhanesR.verbose` | `TRUE` | Print progress messages during downloads |
 | `nhanesR.timeout` | `120L` | HTTP request timeout in seconds |
 
-#### Default cache locations by platform
+#### Default cache location
 
-|          |                                                        |
-|----------|--------------------------------------------------------|
-| Platform | Default path                                           |
-| macOS    | `~/Library/Application Support/nhanesR`                |
-| Linux    | `~/.local/share/nhanesR` (or `$XDG_DATA_HOME/nhanesR`) |
-| Windows  | `%APPDATA%/nhanesR`                                    |
+By default the cache lives inside R's session-temporary directory
+([`tempdir()`](https://rdrr.io/r/base/tempfile.html)), so nhanesR never
+writes to your home directory without your consent. Downloaded files are
+re-fetched in each new R session. To keep a persistent cache, set
+`nhanesR.cache_dir` in your `~/.Rprofile`.
 
 #### Setting options permanently
 
@@ -73,18 +72,20 @@ nhanesR only sets an option at load time if it is not already defined.
 [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)
 and
 [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md),
-whose caching behaviour is controlled by the options described above.
+whose caching behavior is controlled by the options described above.
 
 ## Examples
 
 ``` r
-# View current cache location
+# View current cache location (defaults to a subdirectory of tempdir())
 nhanes_cache_dir()
-#> [1] "/Users/dwinsemius/Library/Application Support/nhanesR"
+#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmprTeAcI/nhanesR"
 
-# Change for this session only
+# Change to a persistent location for this session only
+# \donttest{
 nhanes_cache_dir("~/my_nhanes_cache")
 #> [1] "/Users/dwinsemius/my_nhanes_cache"
+# }
 
 # Suppress download messages for this session
 options(nhanesR.verbose = FALSE)

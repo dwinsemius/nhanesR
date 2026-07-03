@@ -55,11 +55,11 @@ require RDC access).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Download all available cycles
 nhanes_mortality_download()
 
 # Download specific cycles
 nhanes_mortality_download(c("2013-2014", "2015-2016", "2017-2018"))
-} # }
+# }
 ```

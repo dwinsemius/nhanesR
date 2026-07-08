@@ -79,7 +79,7 @@ whose caching behavior is controlled by the options described above.
 ``` r
 # View current cache location (defaults to a subdirectory of tempdir())
 nhanes_cache_dir()
-#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmprTeAcI/nhanesR"
+#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//Rtmp7zLR2U/nhanesR"
 
 # Change to a persistent location for this session only
 # \donttest{

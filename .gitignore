@@ -6,3 +6,6 @@
 .DS_Store
 transcript_export.R
 session_transcript.md
+# pkgdown auto-renders any top-level .md file; CLAUDE.md is internal-only
+docs/CLAUDE.md
+docs/CLAUDE.html

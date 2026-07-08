@@ -48,3 +48,14 @@
 \.DS_Store$
 ^nhanesR_.*\.tar\.gz$
 ^nhanesR\.Rcheck$
+
+# Shell/editor history and scratch notes
+^\.Rapp\.history$
+^\.Rhistory$
+^vscode_cheatsheet\.md$
+^vscode_cheatsheet\.html$
+
+# Stray test plot images
+^test_survplot\.png$
+^test_survplot_bands\.png$
+^test_survplot_gw_bands\.png$

@@ -4,6 +4,7 @@
 .Ruserdata
 *.Rproj
 .DS_Store
+.claude
 transcript_export.R
 session_transcript.md
 # pkgdown auto-renders any top-level .md file; CLAUDE.md is internal-only

@@ -481,6 +481,17 @@ the variable of interest, given the covariates in the model. When that
 condition holds, the weighted and unweighted coefficient estimates converge and
 the design correction provides little benefit for coefficient inference.
 
+*Why* this differs so sharply from the mean/proportion case — where design
+weighting is essentially never optional — is a question of likelihood
+structure, not just an empirical regularity. `vignettes/survival-framework-comparison.Rmd`
+derives the weighted Cox/piecewise-exponential risk-set contribution term
+by term (via Binder 1992) and shows that only the risk-set-sum side of that
+contribution is a population aggregate needing weighted correction; the
+event's own covariate value is observed exactly and needs none. That
+asymmetry — absent from mean estimation, where both sides of the estimating
+equation are aggregates — is the mechanism behind the ICC/DEFF pattern
+demonstrated empirically here.
+
 The Lin (2000) design variance for the baseline hazard illustrates this
 directly: it is negligibly small precisely *because* the model has absorbed the
 major sources of geographic clustering through its covariates. A large Lin

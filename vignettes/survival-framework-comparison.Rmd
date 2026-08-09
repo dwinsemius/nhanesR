@@ -53,7 +53,13 @@ time** — the atomic unit every one of these models is built from.
 This document derives that contribution for all three frameworks side by
 side, shows the algebraic equivalence between (1) and (2) in the limit of
 fine time-splitting, and gives a runnable simulation comparing all three
-numerically.
+numerically. It then extends the same risk-set-contribution machinery to
+survey design weights, and answers the question this comparison project
+was originally motivated by: design weights are well known to matter for
+population-level means and proportions — why do
+`vignettes/survey-weighted-survival.Rmd`'s empirical results show their
+effect on Cox regression coefficients to be so much smaller, and so
+predictor-specific? See the "Design weights" section below.
 
 ### Key references
 
@@ -73,6 +79,10 @@ numerically.
 - Bender, R., Augustin, T. & Blettner, M. (2005). Generating survival times
   to simulate Cox proportional hazards models. *Statistics in Medicine*,
   24(11), 1713–1723. [the simulation scheme used below]
+- Binder, D.A. (1992). Fitting Cox's proportional hazards models from
+  survey data. *Biometrika*, 79(1), 139–147. [the weighted risk-set
+  contribution derived in "Design weights" below; see also
+  `vignettes/survey-weighted-survival.Rmd`]
 
 ---
 
@@ -224,6 +234,118 @@ avoid the natural confusion between "Cox model fit via mgcv" and
 | Direct output: smooth hazard curve | No (step-function Breslow estimator, or manual smoothing) | No (step function by construction) | Yes — smooth $\hat\lambda_0(t)$ with pointwise CIs, no post-hoc smoothing needed |
 | Computational cost | $O(n \log n)$ per iteration (risk-set sums via sorted times) | $O(nK)$ rows, cheap `glm()` | $O(nK)$ rows, plus smoothing-parameter selection (more expensive per fit, but scales the same way in $n$) |
 | Natural extensions | Frailty (`coxph(frailty())`), stratification | Random effects via `lme4`/`glmer` on the same person-interval data | Random effects (`s(id, bs="re")`), competing risks (multinomial/multi-state extensions), smooth time-varying effects |
+
+---
+
+## Design weights: why the effect on β differs from the effect on marginal means
+
+This section answers the question this comparison project actually started
+from: NHANES design weights are known to matter a great deal for
+population-level means and proportions, so why does
+`vignettes/survey-weighted-survival.Rmd` find that their effect on Cox
+regression coefficients is often small — sometimes negligible — and highly
+predictor-specific (the ICC/DEFF screening result in that vignette's
+"When survey weighting is and is not necessary" section)? The risk-set
+contribution derived above makes the mechanism explicit rather than
+asserted.
+
+### The marginal case: weighted mean as an intercept-only estimating equation
+
+A Hájek-weighted mean solves the weighted estimating equation
+$\sum_i w_i(y_i - \mu) = 0$, giving
+$\hat\mu_w = \sum_i w_i y_i \big/ \sum_i w_i$. **Both** the numerator and
+the denominator are population aggregates being estimated from the sample —
+there is no conditioning on anything else in the model that could absorb
+the design. Whenever $w_i$ correlates with $y_i$ at all, marginally,
+$\hat\mu_w \neq \hat\mu_{\text{unweighted}}$ in expectation, and only the
+weighted version is design-consistent. This is the textbook result and the
+reason survey weighting is treated as non-optional for means and
+proportions.
+
+### The conditional case: Binder's (1992) weighted partial likelihood
+
+The standard extension of the Cox partial likelihood to survey-weighted
+data (Binder 1992; implemented by `survey::svycoxph()`) weights each
+event's contribution and *also* weights every risk-set member inside the
+sum:
+
+$$
+\ell_i^w(\beta) = w_i \left[ \eta_i - \log \sum_{j \in R(t_i)} w_j e^{\eta_j} \right]
+$$
+
+The same profiling argument used above to connect PEM to Cox extends
+cleanly to the weighted case and shows *where this formula comes from*
+rather than just asserting it. Attaching each person-interval's pseudo-log-likelihood
+contribution to its own survey weight $w_j$ (exactly what `glm(family =
+poisson, weights = w)` and `survey::svyglm()` do) gives, for interval $k$
+with a single event at $i^\*$:
+
+$$
+\ell_k^w(\alpha_k, \beta) = \sum_{j \in R_k} w_j\left[d_{jk}(\alpha_k + \eta_j + \log o_{jk}) - e^{\alpha_k + \eta_j}o_{jk}\right]
+= w_{i^\*}(\alpha_k + \eta_{i^\*} + \log o_{i^\*k}) - e^{\alpha_k}\sum_{j\in R_k} w_j o_{jk}e^{\eta_j}
+$$
+
+Profiling $\alpha_k$ out ($\partial\ell_k^w/\partial\alpha_k = 0$) gives
+$e^{\hat\alpha_k} = w_{i^\*} \big/ \sum_{j\in R_k} w_j o_{jk}e^{\eta_j}$, and
+substituting back — exactly as in the unweighted derivation, with the
+narrow-interval approximation $o_{jk} \approx \Delta_k$ — yields
+
+$$
+\ell_k^w(\hat\alpha_k, \beta) \;\propto_\beta\; w_{i^\*}\left[\eta_{i^\*} - \log \sum_{j\in R_k} w_j e^{\eta_j}\right]
+$$
+
+which is Binder's weighted Cox contribution exactly (up to the additive,
+$\beta$-free constant from before). **Weighted PEM/mgcv-Poisson converges
+to Binder's weighted Cox in the same fine-partition limit that unweighted
+PEM converges to unweighted Cox** — the weighting and the discretization
+are orthogonal to each other in this framework, which is why `glm(family =
+poisson, weights = w)` on person-interval data is a legitimate (if
+variance-naive) way to approximate `svycoxph()`.
+
+### Why the numerator doesn't need weighting but the denominator does
+
+Differentiating $\ell_i^w(\beta)$ gives the weighted score contribution
+
+$$
+\delta_i\, w_i \left[x_i - \bar{x}_w(t_i; \beta)\right], \qquad
+\bar{x}_w(t;\beta) = \frac{\sum_{j\in R(t)} w_j x_j e^{\eta_j}}{\sum_{j\in R(t)} w_j e^{\eta_j}}
+$$
+
+$x_i$, the covariate vector of the subject who actually had the event, is
+observed exactly for that one sampled individual — there is nothing about
+it that weighting could make "more correct." $\bar{x}_w(t;\beta)$, the
+(exponentially tilted) risk-set mean covariate, *is* a population
+aggregate — a Horvitz–Thompson-type ratio estimator of the full risk set's
+mean covariate, exactly analogous to $\hat\mu_w$ above. **Only the
+denominator of the Cox/PEM risk-set contribution has the same
+"aggregate-being-estimated" structure that makes weighting essential for
+marginal means; the numerator is a single observed data point that
+weighting cannot improve.** This asymmetry — not present at all in
+mean/proportion estimation, where every term on both sides is an
+aggregate — is the structural reason $\hat\beta$ can be considerably more
+robust to omitting weights than $\hat\mu$ is.
+
+That robustness is not automatic, though. If $w_j = g(x_j)$ for some
+function $g$ of covariates *already in the model*, both the weighted and
+unweighted score equations are consistent for the same conditional
+parameter $\beta$ as $n \to \infty$ (the population conditional hazard
+ratio given $X$ does not depend on how heavily each $X$-stratum was
+sampled) — weighted and unweighted $\hat\beta$ converge, even though
+$\bar{x}_w(t;\beta) \neq \bar{x}(t;\beta)$ at any finite sample. If instead
+$w_j$ depends on something correlated with the outcome *beyond* what $X$
+already explains — an omitted covariate, unmeasured heterogeneity,
+informative dropout — the weighted and unweighted risk-set means diverge
+in a way the model cannot absorb, and $\hat\beta_w$ and
+$\hat\beta_{\text{unweighted}}$ are consistent for genuinely different
+quantities. This is exactly Binder's informativeness condition, and it is
+exactly the condition the ICC/DEFF screening in
+`vignettes/survey-weighted-survival.Rmd` is checking: a covariate with low
+ICC across NHANES PSUs is, loosely, one for which the design-driving
+geography is well proxied by variables already conditioned on, so its
+$\hat\beta$ is design-robust; a high-ICC covariate (race/ethnicity in that
+vignette's empirical table) is one where the sampling weight carries
+information the model's covariate set does not, and weighting the
+point estimate — not just the standard error — matters.
 
 ---
 
@@ -397,11 +519,102 @@ interval width and the mgcv curve smooth by construction. The Cox
 (Breslow) and PEM curves should nearly coincide, consistent with the
 profile-likelihood equivalence above.
 
+### Design weights: conditional robustness vs. marginal sensitivity
+
+This operationalizes the previous section's central claim: that weighting
+can move a marginal mean while leaving a conditional $\hat\beta$ almost
+untouched, or move both, depending on *what the weight is a function of*.
+Extend the simulation with a covariate $u$ that genuinely drives the
+hazard but — mimicking an analyst who does not have every design-relevant
+variable measured — is left out of the fitted model.
+
+```{r weighted-demo-setup}
+u       <- rnorm(n)
+beta_u  <- 0.6
+lp_full <- beta_true["x1"] * x1 + beta_true["x2"] * x2 + beta_u * u
+
+u2       <- runif(n)
+t_event2 <- scale_true * (-log(u2) * exp(-lp_full))^(1 / shape_true)
+t_cens2  <- runif(n, 0, 15)
+
+dat_u <- data.frame(
+  time   = pmin(t_event2, t_cens2),
+  status = as.integer(t_event2 <= t_cens2),
+  x1 = x1, x2 = x2, u = u
+)
+
+# Regime (a): weight is a function only of a covariate already in the
+# fitted model (x1). Informative for the marginal outcome, but the
+# conditional hazard ratio given x1, x2 does not depend on how heavily
+# each x1-stratum was sampled.
+w_modeled <- exp(0.5 * dat_u$x1)
+
+# Regime (b): weight is a function of the omitted covariate u.
+# Informative given the covariates the analyst actually has (x1, x2) --
+# exactly Binder's informativeness condition.
+w_omitted <- exp(0.5 * dat_u$u)
+```
+
+```{r weighted-demo-fit}
+# coxph(weights = ) implements Binder's weighted partial-likelihood point
+# estimate. Its default standard errors are NOT design/sandwich-corrected
+# for sampling weights -- that correction is what survey::svycoxph() adds
+# (see vignettes/survey-weighted-survival.Rmd). This demo is about the
+# point estimate only.
+fit_cox_u <- coxph(Surv(time, status) ~ x1 + x2, data = dat_u)
+
+marginal_shift <- function(w) {
+  c(unweighted = mean(dat_u$status), weighted = weighted.mean(dat_u$status, w))
+}
+beta_shift <- function(w) {
+  fit_w <- coxph(Surv(time, status) ~ x1 + x2, data = dat_u, weights = w)
+  rbind(unweighted = coef(fit_cox_u), weighted = coef(fit_w))
+}
+
+marginal_shift(w_modeled)   # regime (a): marginal event rate
+beta_shift(w_modeled)       # regime (a): conditional beta
+
+marginal_shift(w_omitted)   # regime (b): marginal event rate
+beta_shift(w_omitted)       # regime (b): conditional beta
+```
+
+**Expected pattern**: the weighted marginal event rate should shift
+noticeably from the unweighted rate under *both* regimes — $x_1$ and $u$
+each genuinely drive the hazard, so weighting by a function of either one
+is informative for the marginal outcome distribution, exactly as the
+"marginal case" argument above predicts. The conditional $\hat\beta$
+for $x_1$ and $x_2$, in contrast, should stay close to the unweighted
+estimate under regime (a) — weighting by a modeled covariate leaves the
+conditional-on-$X$ estimating equation targeting the same population
+parameter — but diverge from it under regime (b), where the weight
+carries information about $u$ that the fitted model cannot see. Seeing
+the marginal rate move in both columns while $\hat\beta$ moves in only
+one is the numeric content of "weighting always matters for means but
+only conditionally matters for regression coefficients."
+
 ---
 
 ## Discussion
 
-The equivalence derived here explains why PEM has historically been
+Two separate equivalences were established above, and they compose. First,
+PEM/mgcv-Poisson converges to Cox as the time partition becomes fine,
+because profiling the interval-specific baseline-hazard parameter out of
+the Poisson likelihood reproduces the Cox risk-set ratio exactly (up to a
+$\beta$-free constant). Second, that same profiling argument holds
+term-for-term when every contribution carries a survey weight, so weighted
+PEM/mgcv-Poisson converges to Binder's (1992) weighted Cox in the identical
+limit. The practical payoff is the "Design weights" section above: because
+only the risk-set-sum side of the Cox/PEM contribution is a population
+aggregate that weighting corrects — the event's own covariate value needs
+no correction — a design-based $\hat\beta$ can be far more robust to
+unweighted fitting than a design-based $\hat\mu$ is, *provided* the
+variables driving selection are already in the model. That proviso is
+exactly what the ICC/DEFF screening in
+`vignettes/survey-weighted-survival.Rmd` checks empirically, and this
+document supplies the mechanism for why that screening result should be
+expected in the first place.
+
+The equivalence derived here also explains why PEM has historically been
 attractive as "Cox regression using ordinary GLM software" (Whitehead
 1980) — before efficient partial-likelihood implementations were common,
 fitting a Poisson GLM on split data was a practical way to get
@@ -437,11 +650,18 @@ attractive in the first place.
   generalizes by replacing the single-event score equation with a sum over
   the $k$ tied events, recovering the Poisson analogue of the
   Breslow-tie-corrected Cox likelihood.
-- Survey-weighted extensions (relevant for NHANES analyses; see
-  `vignettes/survey-weighted-survival.Rmd`) are not addressed here. The
-  weighted Poisson-GLM literature (survey-weighted PEM) and a
-  design-consistent version of PAMM are both open extensions parallel to
-  the `svycph_fuse()` approach used elsewhere in this package.
+- The "Design weights" demonstration above uses `coxph(weights = )` and
+  `glm(family = poisson, weights = )` for point estimates only. Neither
+  reports a design/sandwich-corrected standard error for sampling weights;
+  valid inference for NHANES-style data still requires
+  `survey::svycoxph()` (or `svyglm()` on person-interval data), as in
+  `vignettes/survey-weighted-survival.Rmd`. A fully design-consistent
+  version of PAMM — penalized weighted Poisson regression with a sandwich
+  variance that accounts for both the smoothing penalty and the cluster
+  design — is, as far as we are aware, an open methodological extension
+  rather than an available implementation, and is the natural next step
+  connecting this document to the `svycph_fuse()` machinery used elsewhere
+  in this package.
 
 ---
 

@@ -1,0 +1,452 @@
+---
+title: "Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+> **Note on chunk evaluation.** This vignette is fully self-contained — it
+> simulates its own data and requires no network access or external files —
+> but chunks are set `eval = FALSE` because it was authored in an environment
+> without an R installation available to verify execution. Set
+> `knitr::opts_chunk$set(eval = TRUE)` (or knit normally, which honors chunk
+> options as written unless overridden) once you have confirmed the code runs
+> cleanly, and fold the results back into the prose before treating any
+> numbers below as real. Everything under "Expected pattern" is a
+> qualitative prediction from the theory in this document, not an executed
+> result.
+
+## Motivation
+
+Three common frameworks for estimating a covariate-adjusted hazard produce
+numerically related, and in one limiting case *identical*, answers:
+
+1. **Cox proportional hazards** (`survival::coxph()`) — semiparametric,
+   partial likelihood, baseline hazard left completely unspecified.
+2. **Piecewise exponential model (PEM)** — the time axis is cut into
+   intervals, the hazard is assumed constant within each interval, and the
+   model is fit as a Poisson GLM on person-interval records
+   (`stats::glm(family = poisson)`).
+3. **mgcv-Poisson / PAMM** (piecewise-exponential *additive* model,
+   Bender, Groll & Scheipl 2018) — the same person-interval data as (2), but
+   the interval-specific log-hazards are replaced by a penalized smooth
+   function of time, fit with `mgcv::gam(family = poisson)`.
+
+These are usually presented as three unrelated modeling choices. They are
+not: (2) is a discretized, computationally cheap approximation to (1), and
+(3) is what you get when you stop forcing the discretization to be a step
+function and let a penalized spline choose its own effective smoothness.
+The clearest way to see the relationship is to look at what each framework
+contributes to its likelihood **from the risk set present at a single event
+time** — the atomic unit every one of these models is built from.
+
+This document derives that contribution for all three frameworks side by
+side, shows the algebraic equivalence between (1) and (2) in the limit of
+fine time-splitting, and gives a runnable simulation comparing all three
+numerically.
+
+### Key references
+
+- Whitehead, J. (1980). Fitting Cox's regression model to survival data
+  using GLIM. *Applied Statistics*, 29(3), 268–275.
+- Laird, N. & Olivier, D. (1981). Covariance analysis of censored survival
+  data using log-linear analysis techniques. *JASA*, 76(374), 231–240.
+- Holford, T.R. (1980). The analysis of rates and of survivorship using
+  log-linear models. *Biometrics*, 36(2), 299–305.
+- Bender, A., Groll, A. & Scheipl, F. (2018). A generalized additive model
+  approach to time-to-event analysis. *Statistical Modelling*, 18(3-4),
+  299–321. [PAMMs; see also the `pammtools` package]
+- Wood, S.N. (2017). *Generalized Additive Models: An Introduction with R*,
+  2nd ed. CRC Press. [`mgcv`]
+- Therneau, T.M. & Grambsch, P.M. (2000). *Modeling Survival Data: Extending
+  the Cox Model*. Springer.
+- Bender, R., Augustin, T. & Blettner, M. (2005). Generating survival times
+  to simulate Cox proportional hazards models. *Statistics in Medicine*,
+  24(11), 1713–1723. [the simulation scheme used below]
+
+---
+
+## Notation
+
+For subject $j$ with covariate vector $x_j$ and linear predictor
+$\eta_j = x_j^\top \beta$, let $R(t)$ denote the risk set at time $t$ — the
+set of subjects still under observation (not yet failed or censored) just
+before $t$. An event occurs at time $t_i$ for subject $i^\*(t_i) \in R(t_i)$.
+
+---
+
+## Cox: the partial-likelihood contribution
+
+Ignoring ties, the Cox partial likelihood contribution at event time
+$t_i$ is the now-familiar risk-set ratio:
+
+$$
+L_i(\beta) = \frac{\exp(\eta_{i^\*})}{\sum_{j \in R(t_i)} \exp(\eta_j)},
+\qquad
+\ell_i(\beta) = \eta_{i^\*} - \log \sum_{j \in R(t_i)} \exp(\eta_j)
+$$
+
+The baseline hazard $\lambda_0(t)$ never appears: it cancels out of the
+ratio entirely. This is the sense in which Cox regression is
+semiparametric — $\lambda_0(t)$ is an infinite-dimensional nuisance
+parameter that is *profiled out analytically*, not estimated. Ties are
+handled by the Breslow or Efron approximation to the exact discrete-risk-set
+likelihood; `coxph()` uses Efron by default.
+
+---
+
+## Piecewise exponential: the Poisson-trick contribution
+
+Partition the time axis into intervals with cutpoints
+$0 = c_0 < c_1 < \dots < c_K$. Every subject contributes one
+person-interval record for each interval they were at risk in. For
+subject $j$ in interval $k$: exposure time $o_{jk}$ (time spent at risk in
+that interval), event indicator $d_{jk} \in \{0, 1\}$ (1 only if the event
+happened in that interval), and assumed constant hazard within the
+interval, $\lambda_k(x_j) = \lambda_{0k}\exp(\eta_j)$. Then
+$d_{jk} \sim \text{Poisson}(\mu_{jk})$ with
+$\mu_{jk} = o_{jk}\lambda_{0k}\exp(\eta_j) = \exp(\log o_{jk} + \alpha_k + \eta_j)$,
+i.e. a Poisson GLM with an offset of $\log o_{jk}$ and a free intercept
+$\alpha_k = \log \lambda_{0k}$ per interval.
+
+For an interval $k$ containing exactly one event, at subject $i^\*$, the
+Poisson log-likelihood contributed by the whole risk set in that interval is
+
+$$
+\ell_k(\alpha_k, \beta) = \sum_{j \in R_k} \left[ d_{jk}(\alpha_k + \eta_j + \log o_{jk}) - e^{\alpha_k + \eta_j}o_{jk} \right]
+= \alpha_k + \eta_{i^\*} + \log o_{i^\*k} - e^{\alpha_k}\sum_{j \in R_k} o_{jk}e^{\eta_j}
+$$
+
+**This is exactly the "contribution from the risk set at a single event"
+for the PEM framework** — it sums over the same risk set $R_k$ as the Cox
+formula, but through the Poisson mean $\mu_{jk}$ rather than a normalized
+ratio, and it carries an explicit nuisance parameter $\alpha_k$ that the
+Cox contribution does not have.
+
+### Profiling out $\alpha_k$ recovers Cox
+
+Because $\alpha_k$ is a free parameter (one interval, one event, no
+penalty), it can be profiled out in closed form. Setting
+$\partial \ell_k / \partial \alpha_k = 0$:
+
+$$
+\hat\alpha_k = -\log \sum_{j \in R_k} o_{jk} e^{\eta_j}
+$$
+
+Substituting back:
+
+$$
+\ell_k(\hat\alpha_k, \beta) = \eta_{i^\*} + \log o_{i^\*k} - \log \sum_{j \in R_k} o_{jk}e^{\eta_j} - 1
+$$
+
+If the interval is narrow enough that every member of $R_k$ has
+approximately equal exposure $o_{jk} \approx \Delta_k$ (true for anyone who
+neither entered, failed, nor was censored mid-interval — the generic case
+as $\Delta_k \to 0$), $o_{jk}$ factors out of the sum:
+
+$$
+\ell_k(\hat\alpha_k, \beta) \;\approx\; \underbrace{\eta_{i^\*} - \log \sum_{j \in R_k} e^{\eta_j}}_{\text{Cox contribution } \ell_i(\beta)} \;+\; \underbrace{\log \Delta_k - 1}_{\text{constant, independent of }\beta}
+$$
+
+The profiled PEM log-likelihood contribution equals the Cox partial
+log-likelihood contribution **exactly**, up to an additive constant that
+does not depend on $\beta$. This is the Whitehead (1980) / Laird & Olivier
+(1981) result: maximizing the PEM Poisson likelihood over $(\alpha_1,
+\dots, \alpha_K, \beta)$ and maximizing the Cox partial likelihood over
+$\beta$ give the same $\hat\beta$ in the limit of infinitesimally fine
+time-splitting (one event per interval, negligible within-interval
+exposure variation). At any *finite* $K$, PEM is a genuine approximation:
+it discretizes $\lambda_0(t)$ into a $K$-parameter step function rather
+than leaving it fully unspecified, and the approximation error shrinks as
+$K$ grows.
+
+---
+
+## mgcv-Poisson (PAMM): the same contribution, a penalized $\alpha_k$
+
+The PAMM approach (Bender, Groll & Scheipl 2018) uses **identical**
+person-interval data and the identical Poisson likelihood
+$\ell_k(\alpha_k, \beta)$ above — the risk-set sum
+$\sum_{j\in R_k} o_{jk}e^{\eta_j}$ is unchanged. What changes is the model
+for $\alpha_k$: instead of $K$ free parameters (one per interval, as in
+PEM) or a fully unconstrained function (as in Cox), $\alpha_k = f(t_k)$
+where $f$ is a penalized smooth (typically P-splines,
+`s(t, bs = "ps")`), fit by `mgcv::gam(family = poisson)`. The likelihood
+being maximized is the same Poisson likelihood, but subject to a roughness
+penalty $\lambda \int f''(t)^2\,dt$ whose weight $\lambda$ is itself
+selected (by REML or GCV) rather than fixed at zero (PEM, effectively
+$\lambda = 0$, a free parameter per interval) or infinity (a single
+constant hazard).
+
+So the three frameworks form a spectrum in how many effective degrees of
+freedom are spent on $\lambda_0(t)$:
+
+- **Cox**: $\infty$ — no parametric or discretized form at all; profiled
+  out analytically, exact for any $K$.
+- **PEM**: exactly $K$ — one free parameter per interval, the choice of
+  $K$ (cutpoints) is a bias/variance decision made by the analyst.
+- **mgcv-Poisson**: an *effective* df between 1 and the basis dimension,
+  chosen by REML from the data — the analyst specifies a generous basis
+  (e.g. 10–20 knots) and the penalty shrinks unneeded flexibility away.
+
+A related but distinct route: `mgcv::gam(..., family = cox.ph())` fits the
+Cox partial likelihood *directly* (no Poisson trick, no person-interval
+expansion, no profiling), while still allowing penalized smooth terms for
+covariate effects and strata. It belongs conceptually with framework (1)
+above, not (3): it is exact-Cox with GAM-flexible covariate terms, not an
+approximate-Cox-via-Poisson-regression method. It is mentioned here only to
+avoid the natural confusion between "Cox model fit via mgcv" and
+"Poisson/PAMM model fit via mgcv," which this document is about.
+
+---
+
+## Side-by-side comparison
+
+| | Cox (`coxph`) | Piecewise exponential (`glm`, Poisson) | mgcv-Poisson / PAMM (`gam`, Poisson) |
+|---|---|---|---|
+| Data structure | One row per subject | One row per subject per interval at risk | One row per subject per interval at risk |
+| Single-event risk-set contribution | $\eta_{i^\*} - \log\sum_{j\in R(t_i)} e^{\eta_j}$ | $\alpha_k + \eta_{i^\*} + \log o_{i^\*k} - e^{\alpha_k}\sum_{j\in R_k} o_{jk}e^{\eta_j}$ | identical Poisson form; $\alpha_k$ replaced by penalized $f(t_k)$ |
+| Baseline hazard | Left unspecified; profiled out exactly | $K$-parameter step function, free (unpenalized) | Penalized smooth, effective df chosen by REML |
+| Relation to Cox | — | $\to$ Cox exactly as $K \to \infty$ (Whitehead 1980) | $\to$ PEM as penalty $\to 0$; $\to$ single constant hazard as penalty $\to \infty$ |
+| Tie handling | Breslow/Efron approximation | Natural — ties in an interval just add to that interval's event count | Same as PEM |
+| Time-varying covariates | Native (counting-process `Surv(start, stop, event)`) | Native — just another split axis | Native |
+| Smooth/nonlinear covariate effects | Requires `rms::cph()` + splines, or `mgcv::gam(family=cox.ph())` | Requires manual spline basis in the `glm()` formula | Native — any `s()`/`te()` term, including time-varying smooth coefficients `s(t, by = x)` |
+| Direct output: smooth hazard curve | No (step-function Breslow estimator, or manual smoothing) | No (step function by construction) | Yes — smooth $\hat\lambda_0(t)$ with pointwise CIs, no post-hoc smoothing needed |
+| Computational cost | $O(n \log n)$ per iteration (risk-set sums via sorted times) | $O(nK)$ rows, cheap `glm()` | $O(nK)$ rows, plus smoothing-parameter selection (more expensive per fit, but scales the same way in $n$) |
+| Natural extensions | Frailty (`coxph(frailty())`), stratification | Random effects via `lme4`/`glmer` on the same person-interval data | Random effects (`s(id, bs="re")`), competing risks (multinomial/multi-state extensions), smooth time-varying effects |
+
+---
+
+## A runnable numeric demonstration
+
+The simulation below generates Weibull-proportional-hazards data by the
+method of Bender, Augustin & Blettner (2005): draw
+$U \sim \text{Unif}(0,1)$ and invert the cumulative hazard
+$H(t \mid x) = (t/\text{scale})^{\text{shape}} \exp(x^\top\beta)$ to get
+
+$$
+T = \text{scale} \cdot \bigl(-\log(U) \cdot \exp(-x^\top\beta)\bigr)^{1/\text{shape}}
+$$
+
+```{r simulate-data}
+set.seed(20260809)
+
+n <- 3000
+x1 <- rnorm(n)
+x2 <- rbinom(n, 1, 0.5)
+
+beta_true  <- c(x1 = 0.5, x2 = -0.7)
+shape_true <- 1.6
+scale_true <- 8
+
+lp      <- beta_true["x1"] * x1 + beta_true["x2"] * x2
+u       <- runif(n)
+t_event <- scale_true * (-log(u) * exp(-lp))^(1 / shape_true)
+t_cens  <- runif(n, 0, 15)
+
+dat <- data.frame(
+  time   = pmin(t_event, t_cens),
+  status = as.integer(t_event <= t_cens),
+  x1     = x1,
+  x2     = x2
+)
+
+mean(dat$status)  # observed event rate
+```
+
+```{r fit-cox}
+library(survival)
+
+fit_cox <- coxph(Surv(time, status) ~ x1 + x2, data = dat)
+summary(fit_cox)
+```
+
+```{r fit-pem}
+# Person-interval expansion at a moderately fine grid
+cutpoints <- seq(0.5, 15, by = 0.5)
+
+long <- survSplit(
+  Surv(time, status) ~ ., data = dat,
+  cut     = cutpoints,
+  start   = "tstart",
+  end     = "tstop",
+  event   = "event_split",
+  episode = "interval"
+)
+long$exposure <- long$tstop - long$tstart
+
+fit_pem <- glm(
+  event_split ~ factor(interval) + x1 + x2,
+  family = poisson(),
+  offset = log(exposure),
+  data   = long
+)
+
+# Compare only the x1/x2 coefficients to the Cox fit — factor(interval)
+# terms are the nuisance step-function baseline hazard
+coef(fit_pem)[c("x1", "x2")]
+coef(fit_cox)
+```
+
+```{r fit-mgcv}
+library(mgcv)
+
+long$tmid <- (long$tstart + long$tstop) / 2
+
+fit_gam <- gam(
+  event_split ~ s(tmid, bs = "ps", k = 15) + x1 + x2,
+  family = poisson(),
+  offset = log(exposure),
+  data   = long,
+  method = "REML"
+)
+
+coef(fit_gam)[c("x1", "x2")]
+summary(fit_gam)$edf   # effective df spent on the smooth baseline hazard
+```
+
+### Convergence of PEM toward Cox as $K \to \infty$
+
+```{r convergence-check}
+widths <- c(4, 2, 1, 0.5, 0.25, 0.1)
+
+convergence <- do.call(rbind, lapply(widths, function(w) {
+  cuts <- seq(w, 15, by = w)
+  ll <- survSplit(
+    Surv(time, status) ~ ., data = dat,
+    cut = cuts, start = "tstart", end = "tstop",
+    event = "event_split", episode = "interval"
+  )
+  ll$exposure <- ll$tstop - ll$tstart
+  f <- glm(event_split ~ factor(interval) + x1 + x2,
+           family = poisson(), offset = log(exposure), data = ll)
+  b <- coef(f)[c("x1", "x2")]
+  data.frame(
+    interval_width = w,
+    n_intervals     = length(cuts),
+    x1_pem = b["x1"], x2_pem = b["x2"],
+    x1_abs_diff = abs(b["x1"] - coef(fit_cox)["x1"]),
+    x2_abs_diff = abs(b["x2"] - coef(fit_cox)["x2"])
+  )
+}))
+
+convergence
+```
+
+**Expected pattern**: `x1_abs_diff` and `x2_abs_diff` should shrink
+monotonically (not necessarily strictly) as `interval_width` decreases,
+approaching zero as $K \to \infty$, per the profile-likelihood equivalence
+derived above. The rate of convergence depends on how much within-interval
+exposure heterogeneity there is at each width (the approximation
+$o_{jk} \approx \Delta_k$ degrades for wide intervals with many
+entries/exits/events mid-interval).
+
+### Baseline cumulative hazard: three estimates, one true curve
+
+```{r baseline-hazard-plot}
+# True cumulative hazard from the simulation, at x = 0
+H0_true <- function(t) (t / scale_true)^shape_true
+
+# Cox: Breslow cumulative hazard (centered = FALSE -> at x = 0)
+bh_cox <- basehaz(fit_cox, centered = FALSE)
+
+# PEM: step-function cumulative hazard from the fitted interval intercepts.
+# factor(interval) uses treatment contrasts, so level 1's absolute
+# log-hazard is the intercept itself, and every other level's absolute
+# log-hazard is intercept + its dummy coefficient.
+cf         <- coef(fit_pem)
+fac_names  <- grep("^factor\\(interval\\)", names(cf), value = TRUE)
+alpha_hat  <- c(cf["(Intercept)"], cf["(Intercept)"] + cf[fac_names])
+lambda_pem <- exp(as.numeric(alpha_hat))
+widths_pem <- diff(c(0, cutpoints))
+H0_pem     <- cumsum(lambda_pem * widths_pem)
+
+# mgcv: integrate the fitted smooth hazard on a fine grid (x = 0).
+# Setting exposure = 1 in newdata zeros the offset (log(1) = 0), so the
+# "response"-scale prediction is the hazard rate itself, not a count.
+tgrid   <- seq(0.01, 15, length.out = 500)
+nd      <- data.frame(tmid = tgrid, x1 = 0, x2 = 0, exposure = 1)
+haz_gam <- predict(fit_gam, newdata = nd, type = "response")
+H0_gam  <- cumsum(haz_gam) * diff(tgrid)[1]
+
+plot(bh_cox$time, bh_cox$hazard, type = "s", col = "black", lwd = 2,
+     xlab = "Time", ylab = "Cumulative baseline hazard",
+     main = "Three estimates of the baseline cumulative hazard")
+lines(cutpoints, H0_pem, type = "s", col = "steelblue", lwd = 2)
+lines(tgrid, H0_gam, col = "firebrick", lwd = 2)
+curve(H0_true, add = TRUE, col = "grey40", lty = 2, lwd = 2)
+legend("topleft",
+       c("Cox (Breslow)", "PEM (step function)", "mgcv-Poisson (smooth)", "True"),
+       col = c("black", "steelblue", "firebrick", "grey40"),
+       lty = c(1, 1, 1, 2), lwd = 2)
+```
+
+**Expected pattern**: all three estimated curves should track the true
+dashed curve closely, with the PEM curve visibly "steppy" at the chosen
+interval width and the mgcv curve smooth by construction. The Cox
+(Breslow) and PEM curves should nearly coincide, consistent with the
+profile-likelihood equivalence above.
+
+---
+
+## Discussion
+
+The equivalence derived here explains why PEM has historically been
+attractive as "Cox regression using ordinary GLM software" (Whitehead
+1980) — before efficient partial-likelihood implementations were common,
+fitting a Poisson GLM on split data was a practical way to get
+approximately the same $\hat\beta$. That motivation has faded now that
+`coxph()` is fast and exact, but the person-interval data representation
+it introduced turned out to be the right substrate for a different set of
+extensions: once the baseline hazard is *any* parametric or penalized
+function of $(t, x)$ rather than a free step function, the Poisson-GLM
+machinery generalizes immediately to smooth time-varying effects, random
+effects, and multi-state/competing-risks outcomes via standard GAM and
+mixed-model software — which is precisely the PAMM research program (Bender
+et al. 2018) and, in a different direction (smooth covariate effects but
+exact Cox likelihood), `mgcv::gam(family = cox.ph())`.
+
+For an NHANES-style application — smooth biomarker effects, a mortality
+outcome, and finite sample sizes where an unpenalized step-function
+baseline hazard would need many intervals to look smooth — the mgcv-Poisson
+/ PAMM route offers a genuine alternative to `rms::cph()` + restricted
+cubic splines for cases where a smooth *baseline hazard curve* itself
+(not just smooth covariate effects) is of scientific interest, at the cost
+of losing the exact semiparametric guarantee that makes Cox regression
+attractive in the first place.
+
+### Current limitations of this document
+
+- The convergence and baseline-hazard chunks above have not been executed
+  in the environment where this document was written (no R installation
+  was available). The code has been checked carefully against `survival`
+  and `mgcv` APIs, but treat the first run on your machine as a validation
+  pass, not confirmation.
+- The equivalence derivation assumes no ties within an interval beyond the
+  single event used to define $R_k$; with `k`-tie intervals the argument
+  generalizes by replacing the single-event score equation with a sum over
+  the $k$ tied events, recovering the Poisson analogue of the
+  Breslow-tie-corrected Cox likelihood.
+- Survey-weighted extensions (relevant for NHANES analyses; see
+  `vignettes/survey-weighted-survival.Rmd`) are not addressed here. The
+  weighted Poisson-GLM literature (survey-weighted PEM) and a
+  design-consistent version of PAMM are both open extensions parallel to
+  the `svycph_fuse()` approach used elsewhere in this package.
+
+---
+
+## Session information
+
+```{r session-info}
+sessionInfo()
+```

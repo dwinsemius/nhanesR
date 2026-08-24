@@ -61,9 +61,9 @@
 #' # View current cache location (defaults to a subdirectory of tempdir())
 #' nhanes_cache_dir()
 #'
-#' # Change to a persistent location for this session only
+#' # Change to a custom session-local location (CRAN-safe)
 #' \donttest{
-#' nhanes_cache_dir("~/my_nhanes_cache")
+#' nhanes_cache_dir(file.path(tempdir(), "my_nhanes_cache"))
 #' }
 #'
 #' # Suppress download messages for this session

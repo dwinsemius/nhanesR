@@ -97,7 +97,7 @@ options(
 
 ```{r options-interactive}
 nhanes_cache_dir()                        # view current cache path (tempdir-based by default)
-nhanes_cache_dir("~/my_nhanes_cache")    # opt in to a persistent home-directory cache
+nhanes_cache_dir(file.path(tempdir(), "my_nhanes_cache"))  # custom session-local cache path
 options(nhanesR.verbose = FALSE)     # suppress messages for this session
 ```
 

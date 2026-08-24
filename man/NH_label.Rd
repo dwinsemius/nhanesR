@@ -39,8 +39,7 @@ tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 tc <- NH_label(tc)
 
 # CDC descriptions now appear in all Hmisc label-aware output
-Hmisc::describe(tc)
-Hmisc::html(Hmisc::describe(tc))
+invisible(Hmisc::describe(tc))
 }
 }
 \seealso{

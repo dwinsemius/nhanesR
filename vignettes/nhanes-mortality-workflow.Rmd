@@ -80,8 +80,8 @@ To check or change settings interactively during a session:
 # View current cache location
 nhanes_cache_dir()
 
-# Opt in to a persistent home-directory cache for this session
-nhanes_cache_dir("~/my_nhanes_cache")
+# Set a custom session-local cache path (CRAN-safe)
+nhanes_cache_dir(file.path(tempdir(), "my_nhanes_cache"))
 
 # Suppress download messages for this session
 options(nhanesR.verbose = FALSE)

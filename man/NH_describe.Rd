@@ -41,16 +41,16 @@ include them.
 \examples{
 \donttest{
 tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
-NH_describe(tc)
+invisible(NH_describe(tc))
 
 # Include replicate weights in the output
 demo_list <- nhanes_download("DEMO", nhanes_cycles()[1:10, "cycle"])
 demo <- nhanes_stack(demo_list)
-NH_describe(demo, all_weights = TRUE)
+invisible(NH_describe(demo, all_weights = TRUE))
 
 # Supply descriptions from a prior nhanes_search_variables() call
 vars <- nhanes_search_variables("cholesterol")
-NH_describe(tc, descriptions = vars)
+invisible(NH_describe(tc, descriptions = vars))
 }
 }
 \seealso{

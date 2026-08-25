@@ -135,6 +135,11 @@ sub_design <- subset(full_design,
   !is.na(GGT) & !is.na(LBXSAL) & !is.na(TC) &
   !is.na(BMI) & !is.na(INDFMPIR) & RIDAGEYR >= 20
 )
+
+# NOTE: this chunk uses raw WTMEC2YR directly for illustration.
+# For pooled-cycle workflows built via nhanes_survival_prep(weight_var = ...),
+# use the already-adjusted survey_weight column from that output instead of
+# applying additional manual cycle scaling.
 ```
 
 ```{r fit-models}

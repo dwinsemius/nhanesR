@@ -1,3 +1,34 @@
+# nhanesR 0.1.7
+
+## Bug fixes
+
+* `nhanes_survival_prep()` now automatically applies CDC-compliant pooled
+  multi-cycle weight scaling instead of only warning about it. If both
+  `1999-2000` and `2001-2002` are present and the matching 4-year weight
+  column exists (e.g. `WTMEC4YR`), those cycles are scaled as
+  `4-year weight * (2/n)`; all other cycles are scaled as
+  `2-year weight * (1/n)`. Falls back to `2-year weight * (1/n)` for all
+  cycles if the matching 4-year column is unavailable. The original
+  unscaled 2-year weight is preserved in a new `survey_weight_2yr_raw`
+  column. Warns if `WTMEC4YR` is supplied with more than two pooled cycles.
+
+## CRAN resubmission fixes
+
+* Removed the `~/my_nhanes_cache` example path that CRAN flagged as a
+  HOME-directory write during `example()`; examples/vignettes now use
+  `tempdir()`.
+* Removed `Hmisc::html(Hmisc::describe(...))` examples that triggered an
+  HTML viewer popup during checks.
+* Updated GitHub Actions `actions/checkout` and `actions/upload-artifact`
+  to v5 (Node.js 20 deprecation).
+
+## Documentation
+
+* `nhanes_survival_prep()` docs and the `nhanes-mortality-workflow.Rmd` /
+  `survey-weighted-survival.Rmd` vignettes updated to describe the new
+  automatic pooled-weight behavior and to stop demonstrating manual
+  `survey_weight / n_cycles` division (which would now double-scale).
+
 # nhanesR 0.1.4
 
 ## CRAN resubmission fixes

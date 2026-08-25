@@ -28,20 +28,7 @@ remotes::install_github("dwinsemius/nhanesR", build_vignettes = TRUE, force = TR
 
 ## Release checklist
 
-Do **all** of these before bumping the version and pushing:
-
-1. `devtools::check(run_dont_test = TRUE)` — 0 errors, 0 warnings
-2. Test on Windows via winbuilder (`devtools::check_win_devel()`) or R-hub
-3. Bump `Version:` in DESCRIPTION
-4. Add entry to `NEWS.md`
-5. `pkgdown::build_site()` — rebuild `docs/` so the live site reflects the new version
-6. Commit everything (DESCRIPTION, NEWS.md, R/, man/, docs/) in one commit
-7. Push, then confirm GitHub Pages deployment completes before alerting testers
-
-**Do not cancel a Pages deployment** that is stuck in `deployment_queued` — it is usually just congested and will succeed if left alone. Cancelling leaves a stale state that causes subsequent retries to fail immediately. If it times out, trigger a fresh build:
-```
-gh api repos/dwinsemius/nhanesR/pages/builds --method POST
-```
+See the `release` skill for the full pre-release checklist and CRAN submission steps.
 
 ---
 
@@ -85,4 +72,4 @@ After editing `data-raw/build_registries.R`, always `source()` it to regenerate 
 
 ## CRAN submission
 
-Submit at <https://cran.r-project.org/submit.html>. The confirmation email goes to `dwinsemius@comcast.net` (the address in `Authors@R`), not the gmail address.
+See the `release` skill.

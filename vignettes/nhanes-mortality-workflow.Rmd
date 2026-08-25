@@ -411,28 +411,31 @@ is the correct weight.
 
 ### Pooling across cycles
 
-When combining data from multiple two-year cycles, the 2-year weight must
-be adjusted. The simplest approach is to divide by the number of cycles
-pooled:
+When combining data from multiple two-year cycles, `nhanes_survival_prep()`
+now applies CDC-compliant pooled-weight scaling automatically when
+`weight_var` is a 2-year weight (`WTMEC2YR`, `WTINT2YR`, `WTSAF2YR`).
 
-```r
-surv_data$wt_pooled <- surv_data$survey_weight / n_cycles
-```
+- If both `1999-2000` and `2001-2002` are present and the matching 4-year
+  weight column exists, those early cycles use `4-year weight * (2/n)`.
+- All other cycles use `2-year weight * (1/n)`.
+- If the matching 4-year weight is unavailable, all cycles fall back to
+  `2-year weight * (1/n)`.
 
-Some NHANES files include pre-computed 4-year weights (`WTMEC4YR`,
-`WTSAF4YR`). Use these when available rather than dividing manually.
+`n` is the number of pooled cycles. The original unscaled 2-year weight is
+preserved in `survey_weight_2yr_raw`.
+
+**Important:** do not divide `survey_weight` again after
+`nhanes_survival_prep()` has already created it.
 
 ---
 
-**Weight adjustment for pooled cycles**: divide the two-year exam weight
-`WTMEC2YR` by the number of cycles pooled (here, 10).
+**Weight adjustment for pooled cycles** is already handled inside
+`nhanes_survival_prep()` when `weight_var` is provided.
 
 `nest = TRUE` is the correct specification for NHANES — PSU labels may
 repeat across strata.
 
 ```{r survey-design}
-surv_data$wt_pooled <- surv_data$survey_weight / 10
-
 # Scale continuous predictors to per-SD units for interpretable hazard ratios
 surv_data$TC_sd  <- scale(surv_data$TC_mgdl)[,  1]
 surv_data$HDL_sd <- scale(surv_data$HDL_mgdl)[, 1]
@@ -440,7 +443,7 @@ surv_data$HDL_sd <- scale(surv_data$HDL_mgdl)[, 1]
 design <- svydesign(
   id      = ~SDMVPSU,
   strata  = ~SDMVSTRA,
-  weights = ~wt_pooled,
+  weights = ~survey_weight,
   nest    = TRUE,
   data    = surv_data
 )

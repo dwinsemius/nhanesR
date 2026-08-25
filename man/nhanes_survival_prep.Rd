@@ -98,9 +98,25 @@ Fasting participants are a minority of all MEC attendees; using \code{WTMEC2YR}
 for fasting analytes ignores this extra subsampling step and will give
 incorrect population estimates.
 
-For pooled multi-cycle analyses divide the 2-year weight by the number of
-cycles pooled, or use the pre-computed 4-year weight \code{WTMEC4YR} where
-available. See the NHANES analytic guidelines for details.
+For pooled multi-cycle analyses, this function applies CDC guidance
+automatically when a 2-year weight is supplied
+(\code{WTMEC2YR}, \code{WTINT2YR}, or \code{WTSAF2YR}):
+
+If both \code{1999-2000} and \code{2001-2002} are present and the matching
+4-year weight exists (e.g., \code{WTMEC4YR} for \code{WTMEC2YR}), those early
+cycles are scaled as \code{4-year weight * (2/n)}, where \code{n} is the
+number of pooled cycles. All later cycles are scaled as
+\code{2-year weight * (1/n)}.
+
+If the matching 4-year weight is unavailable, all cycles fall back to
+\code{2-year weight * (1/n)}.
+
+The original unscaled 2-year weight is preserved in
+\code{survey_weight_2yr_raw}.
+
+If \code{WTMEC4YR} is supplied with more than two pooled cycles, the function
+keeps the value but warns because \code{WTMEC4YR} is calibrated for 4-year
+(two-cycle) analyses only.
 }
 
 \section{Perturbed variables}{

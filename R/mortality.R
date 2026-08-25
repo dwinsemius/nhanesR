@@ -349,9 +349,19 @@ nhanes_mortality_link <- function(nhanes_data,
 #'   for fasting analytes ignores this extra subsampling step and will give
 #'   incorrect population estimates.
 #'
-#'   For pooled multi-cycle analyses divide the 2-year weight by the number of
-#'   cycles pooled, or use the pre-computed 4-year weight `WTMEC4YR` where
-#'   available. See the NHANES analytic guidelines for details.
+#'   For pooled multi-cycle analyses, CDC guidance scales weights by the number
+#'   of pooled cycles (`n`). This function applies that automatically when a
+#'   2-year weight is supplied:
+#'
+#'   - If both `1999-2000` and `2001-2002` are present and the corresponding
+#'     4-year weight column exists (e.g., `WTMEC4YR` for `WTMEC2YR`), those two
+#'     early cycles are scaled as `4-year weight * (2/n)`.
+#'   - All later cycles are scaled as `2-year weight * (1/n)`.
+#'   - If the early-pair 4-year weight column is unavailable, all cycles fall
+#'     back to `2-year weight * (1/n)`.
+#'
+#'   The original unscaled 2-year weight is preserved in
+#'   `survey_weight_2yr_raw`.
 #'
 #' @section Perturbed variables:
 #'   `PERMTH_INT`, `PERMTH_EXM`, and `UCOD_LEADING` contain synthetic values
@@ -542,19 +552,63 @@ nhanes_survival_prep <- function(data,
       ))
     }
 
-    # Warn if 2-year weight is used across multiple pooled cycles
+    # For pooled multi-cycle analyses, apply CDC guidance to 2-year weights.
     if (cycle_col %in% names(data)) {
-      n_cycles <- length(unique(data[[cycle_col]]))
+      cycles_present <- as.character(unique(stats::na.omit(data[[cycle_col]])))
+      n_cycles <- length(cycles_present)
       if (n_cycles > 1L &&
           weight_var %in% c("WTMEC2YR", "WTINT2YR", "WTSAF2YR")) {
-        cli::cli_warn(c(
-          "!" = "Using 2-year weight {.val {weight_var}} with \\
-                 {n_cycles} pooled cycles.",
-          "i" = "Divide 2-year weights by the number of cycles pooled, \\
-                 or use a pre-computed 4-year weight where available.",
-          "i" = "See NHANES analytic guidelines: \\
-                 {.url https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx}"
-        ))
+        early_cycles <- c("1999-2000", "2001-2002")
+        has_both_early <- all(early_cycles %in% cycles_present)
+        is_early <- as.character(data[[cycle_col]]) %in% early_cycles
+        weight4_var <- sub("2YR$", "4YR", weight_var)
+
+        data$survey_weight_2yr_raw <- data$survey_weight
+        data$survey_weight <- data$survey_weight / n_cycles
+
+        if (has_both_early && (weight4_var %in% names(data))) {
+          data$survey_weight[is_early] <- data[[weight4_var]][is_early] * (2 / n_cycles)
+          cli::cli_inform(c(
+            "i" = "Detected {.val {n_cycles}} pooled cycles with both early cycles \
+                   {.val 1999-2000} and {.val 2001-2002}.",
+            "i" = "Applied CDC pooled-weight scaling: early cycles use \
+                   {.val {weight4_var}} * (2/{n_cycles}); other cycles use \
+                   {.val {weight_var}} * (1/{n_cycles}).",
+            "i" = "Preserved the original 2-year weight in \
+                   {.val survey_weight_2yr_raw}."
+          ))
+        } else {
+          if (has_both_early && !(weight4_var %in% names(data))) {
+            cli::cli_warn(c(
+              "!" = "Both early cycles are present, but {.val {weight4_var}} \
+                     is not available.",
+              "i" = "Falling back to {.val {weight_var}} * (1/{n_cycles}) \
+                     for all cycles."
+            ))
+          }
+          cli::cli_inform(c(
+            "i" = "Detected {.val {n_cycles}} pooled cycles with 2-year \
+                   weight {.val {weight_var}}.",
+            "i" = "Applied CDC pooled-weight scaling: {.val {weight_var}} \
+                   * (1/{n_cycles}) for all cycles.",
+            "i" = "Preserved the original 2-year weight in \
+                   {.val survey_weight_2yr_raw}."
+          ))
+        }
+          }
+
+          # If a 4-year combined weight is used beyond two pooled cycles,
+          # keep it but warn because it is only calibrated for 4-year pooling.
+          if (n_cycles > 2L && weight_var == "WTMEC4YR") {
+       cli::cli_warn(c(
+         "!" = "Using {.val WTMEC4YR} with {.val {n_cycles}} pooled cycles.",
+         "i" = "{.val WTMEC4YR} is calibrated for 4-year (two-cycle) \
+           analyses.",
+         "i" = "For >2 pooled cycles, use the relevant 2-year weight and \
+           divide by the number of pooled cycles.",
+         "i" = "See NHANES weighting guidance: \
+           {.url https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx}"
+       ))
       }
     }
   }

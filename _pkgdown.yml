@@ -61,6 +61,14 @@ reference:
       - nhanes_mortality_parse
       - nhanes_lmf_cycles
 
+  - title: "NHIS mortality linkage"
+    desc: "Link NCHS Public-Use Linked Mortality Files onto NHIS data (nhanesR does not download NHIS survey data itself)"
+    contents:
+      - nhis_mortality_link
+      - nhis_mortality_download
+      - nhis_mortality_parse
+      - nhis_lmf_years
+
   - title: "Survival analysis"
     desc: "Prepare and summarise survival datasets"
     contents:

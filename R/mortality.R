@@ -743,7 +743,7 @@ nhanes_followup_summary <- function(data, cycle_col = "cycle") {
   bad   <- setdiff(cycles, valid)
   if (length(bad) > 0L) {
     cli::cli_abort(
-      "Cycle{?s} not available in the public-use LMF: {.val {bad}}.\\n
+      "{cli::qty(length(bad))}Cycle{?s} not available in the public-use LMF: {.val {bad}}.\\n
        Valid cycles: {.val {valid}}"
     )
   }

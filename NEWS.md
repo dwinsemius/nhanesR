@@ -1,5 +1,22 @@
 # nhanesR 0.1.7
 
+## New features
+
+* Added NHIS mortality-linkage support: `nhis_mortality_download()`,
+  `nhis_mortality_parse()`, `nhis_mortality_link()`, and `nhis_lmf_years()`
+  download, parse, and join NCHS's public-use NHIS Linked Mortality Files
+  (1986-2018, one file per survey year), mirroring the existing
+  `nhanes_mortality_*()` family. nhanesR does not download NHIS survey data
+  itself (a much larger undertaking than NHANES's stable catalog, out of
+  scope for now) -- these functions join onto NHIS data supplied from
+  elsewhere (e.g. IPUMS NHIS or NCHS's own NHIS microdata site). Unlike
+  NHANES's `SEQN`, NHIS's `PUBLICID` is not confirmed unique across survey
+  years, so `nhis_mortality_link()` matches on `(PUBLICID, year)` rather
+  than the ID alone. There is no `nhis_survival_prep()`: the NHIS LMF has no
+  `PERMTH_INT`/`PERMTH_EXM`-equivalent person-months variable, only
+  `DODQTR`/`DODYEAR`, so follow-up time construction requires the NHIS
+  interview date from the survey data itself.
+
 ## Bug fixes
 
 * `nhanes_survival_prep()` now automatically applies CDC-compliant pooled

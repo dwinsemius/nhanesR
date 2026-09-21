@@ -130,6 +130,89 @@
   stringsAsFactors = FALSE
 )
 
+# ── NHIS LMF file registry ─────────────────────────────────────────────────────
+# Maps each NHIS survey year to its exact FTP filename. Unlike NHANES (one file
+# per 2-year cycle), NCHS distributes one public-use LMF per NHIS survey YEAR.
+# Follow-up is through December 31, 2019 for all public-use files.
+#
+# Verified 2026-09-21: all 33 URLs below return HTTP 200 (curl -sI), and the
+# file list matches the FTP directory listing at
+# https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/
+# exactly (33 NHIS_<year>_MORT_2019_PUBLIC.dat files, 1986-2018, no gaps).
+
+.nhis_lmf_years_available <- as.character(1986:2018)
+
+.nhis_lmf_registry <- data.frame(
+  year     = .nhis_lmf_years_available,
+  filename = paste0("NHIS_", .nhis_lmf_years_available, "_MORT_2019_PUBLIC.dat"),
+  ftp_base = rep(
+    "https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/",
+    length(.nhis_lmf_years_available)
+  ),
+  vintage      = rep("2019", length(.nhis_lmf_years_available)),
+  censor_date  = rep("2019-12-31", length(.nhis_lmf_years_available)),
+  stringsAsFactors = FALSE
+)
+
+# ── NHIS LMF fixed-width column specification ─────────────────────────────────
+# Source: NCHS's own reference R read-in program, downloaded directly from the
+# same FTP directory as the .dat files:
+# https://ftp.cdc.gov/pub/Health_Statistics/NCHS/datalinkage/linked_mortality/R_ReadInProgramAllSurveys.R
+# (confirmed genuine NCHS output, not a third-party transcription) and
+# cross-checked against the companion codebook PDF's variable list:
+# https://www.cdc.gov/nchs/data/datalinkage/public-use-linked-mortality-files-data-dictionary.pdf
+#
+# NHIS's LMF layout differs from NHANES's in real ways, not just the ID column:
+# - PUBLICID (character, 14 wide) replaces SEQN as the join key.
+# - No PERMTH_INT/PERMTH_EXM -- those are documented as NHANES-only. NHIS
+#   provides DODQTR/DODYEAR (quarter/year of death) instead; constructing a
+#   person-time variable requires the survey interview date from the NHIS
+#   person/year file itself, which nhanesR does not download (see the "NHIS
+#   raw-data download" scoping note in nhis_mortality.R's roxygen docs) --
+#   nhis_mortality_link() surfaces the raw LMF fields only.
+# - WGT_NEW / SA_WGT_NEW (eligibility-adjusted survey weights) replace the
+#   NHANES weight variables, and are themselves partial: WGT_NEW is blank for
+#   1986 (NCHS recommends the public-use file's own WTFA that year) and
+#   SA_WGT_NEW only exists from 1997 (Sample Adult File redesign) onward.
+#
+# perturbed: UCOD_LEADING/DIABETES/HYPERTEN follow the same general NCHS
+# public-use-LMF perturbation practice already recorded for the NHANES
+# colspec above (same underlying LMF product line, same disclosure). DODQTR/
+# DODYEAR's perturbation status is not confirmed from either source document
+# read while building this registry -- left FALSE rather than guessed; revisit
+# against the full NDI-linkage methods PDF if this matters for an analysis.
+
+.nhis_lmf_colspec <- data.frame(
+  variable    = c("PUBLICID", "ELIGSTAT", "MORTSTAT", "UCOD_LEADING",
+                  "DIABETES", "HYPERTEN", "DODQTR", "DODYEAR",
+                  "WGT_NEW", "SA_WGT_NEW"),
+  col_start   = c(1,  15,  16,  17,  20,  21,  22,  23,  27,  35),
+  col_end     = c(14, 15,  16,  19,  20,  21,  22,  26,  34,  42),
+  col_type    = c("c", "i", "i", "c", "i", "i", "i", "i", "d", "d"),
+  label       = c(
+    "NHIS public-use ID",
+    "Eligibility status for mortality follow-up",
+    "Final mortality status",
+    "Underlying cause of death (ICD-10 recode)",
+    "Diabetes flag on death certificate",
+    "Hypertension flag on death certificate",
+    "Quarter of death",
+    "Year of death",
+    "Person-level sample weight, adjusted for linkage-ineligible respondents",
+    "Sample Adult sample weight, adjusted for linkage-ineligible respondents"
+  ),
+  eligstat_note = c(
+    NA, "1=eligible; 2=under 18; 3=insufficient identifying data",
+    "0=assumed alive; 1=assumed deceased; NA=ineligible",
+    "See ICD-10 recode table", NA, NA,
+    "1=Jan-Mar; 2=Apr-Jun; 3=Jul-Sep; 4=Oct-Dec",
+    "1986-2019", NA, NA
+  ),
+  perturbed   = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE,
+                  FALSE, FALSE),
+  stringsAsFactors = FALSE
+)
+
 # ── Cause-of-death leading cause recode ───────────────────────────────────────
 # ICD-10 recode used in the public-use LMF UCOD_LEADING variable
 # Source: CDC LMF documentation
@@ -280,6 +363,8 @@ usethis::use_data(
   .lmf_colspec,
   .ucod_labels,
   .early_biopro_catalog,
+  .nhis_lmf_registry,
+  .nhis_lmf_colspec,
   internal  = TRUE,
   overwrite = TRUE
 )

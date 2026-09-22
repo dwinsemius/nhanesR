@@ -100,6 +100,134 @@ nhis_data_years <- function(module = c("either", "household", "person")) {
   file.path(dir, paste0(module, "_", year, ".rds"))
 }
 
+# -- SAS INPUT-statement validation (overlapping/mistyped column ranges) --------
+#
+# SAScii::read.SAScii() -- and this package's own earlier position arithmetic
+# in data-raw/build_nhis_pre1997_crosswalk.R -- both assume a SAS INPUT
+# statement's declared columns are sequential and non-overlapping. Confirmed
+# directly (2026-09-22, chasing a 6-position label mismatch found while
+# extending the pre-1997 crosswalk) that this assumption is sometimes wrong
+# in NCHS's own source files:
+#
+#   1. PERSONSX_1994.sas declares BIRTH $ 34-39 (the combined MMYYYY string)
+#      AND its own sub-parts BIRTHMO $ 34-35 / BIRTHYR $ 36-39 as SEPARATE
+#      variables covering the SAME bytes -- a real, legitimate SAS authoring
+#      convention (declare a convenience combined field alongside its parts),
+#      but one that breaks any width-summing position reconstruction, and
+#      that SAScii::read.SAScii() itself gets wrong when actually READING
+#      data (verified against a live nhis_download("person","1994") call:
+#      BIRTHMO read 00-19 instead of 1-12, BIRTHYR read 0322-9322, HEIGHT/
+#      WEIGHT/everything downstream shifted by exactly 6 bytes).
+#   2. The SAME file separately has a plain typo: HEP12WP is declared
+#      LENGTH 6 but its INPUT-statement range is written as 327-355 (29
+#      bytes) instead of 327-332 -- confirmed against the real physical
+#      .DAT record length (336 bytes, matching the file's own declared
+#      LRECL=335) and the variable's own LENGTH declaration, not guessed.
+#
+# Both are real defects in NCHS's own source document, not in how nhanesR
+# reads it -- but nhanesR silently inheriting them (via SAScii) means
+# nhis_download() would return corrupted data for any affected year without
+# any indication something was wrong. The functions below extract the SAS
+# file's LITERAL declared positions directly (not via SAScii's width-based
+# intermediate, which is exactly what loses the information needed to catch
+# this), detect both defect patterns, and either correct them (subset
+# overlaps: drop the narrower contained variable(s); LENGTH mismatches:
+# trust the LENGTH declaration) or -- if the corrected layout still doesn't
+# match the file's own declared LRECL -- abort with a clear error rather
+# than silently return wrong data for a still-unrecognized defect pattern.
+#
+# Years with no defects (checked: 1986-1992) are completely unaffected --
+# the correction is a no-op and nhis_download() continues to use
+# SAScii::read.SAScii() exactly as before for them.
+
+#' @keywords internal
+.nhis_sas_literal_positions <- function(sas_path) {
+  lines <- readLines(sas_path, warn = FALSE)
+  start_idx <- which(trimws(lines) == "INPUT")
+  if (length(start_idx) == 0L) return(NULL)
+  start_idx <- start_idx[1]
+  rel_end <- which(grepl(";\\s*$", lines[(start_idx + 1):length(lines)]))[1]
+  if (is.na(rel_end)) return(NULL)
+  input_block <- paste(lines[start_idx:(start_idx + rel_end)], collapse = " ")
+
+  tok_re <- "([A-Za-z_][A-Za-z0-9_]*)\\s+(\\$)?\\s*([0-9]+)\\s*-\\s*([0-9]+)"
+  toks <- regmatches(input_block, gregexpr(tok_re, input_block, perl = TRUE))[[1]]
+  if (length(toks) == 0L) return(NULL)
+  m <- regmatches(toks, regexec(tok_re, toks, perl = TRUE))
+  do.call(rbind, lapply(m, function(x) {
+    data.frame(varname = x[2], char = nzchar(x[3]),
+               start = as.integer(x[4]), end = as.integer(x[5]),
+               stringsAsFactors = FALSE)
+  }))
+}
+
+#' @keywords internal
+.nhis_sas_lrecl <- function(sas_path) {
+  lines <- readLines(sas_path, warn = FALSE)
+  hit <- grep("LRECL", lines, value = TRUE)
+  if (length(hit) == 0L) return(NA_integer_)
+  as.integer(gsub(".*LRECL\\s*=\\s*([0-9]+).*", "\\1", hit[1]))
+}
+
+#' Validate (and where possible, correct) a pre-1997 NHIS SAS layout
+#'
+#' Returns `NULL` if the file's literal positions can't be extracted at all
+#' (falls back to plain `SAScii::read.SAScii()` unchanged), or a data frame
+#' of corrected (varname, start, end, char) if extraction succeeded --
+#' whether or not any correction was actually needed. Aborts with
+#' `cli::cli_abort()` if a defect is found that isn't one of the two known,
+#' handled patterns (subset overlap; LENGTH-statement width mismatch).
+#' @keywords internal
+.nhis_sas_validate_and_fix <- function(sas_path, year, module) {
+  spec <- .nhis_sas_literal_positions(sas_path)
+  if (is.null(spec)) return(NULL)
+
+  spec <- spec[order(spec$start, -spec$end), ]
+
+  # Pattern 1: a variable's range fully contained within an earlier,
+  # already-seen (wider-or-equal) variable's range -- drop the contained one.
+  container_end <- -Inf
+  spec$dropped <- FALSE
+  for (i in seq_len(nrow(spec))) {
+    if (spec$start[i] <= container_end && spec$end[i] <= container_end) {
+      spec$dropped[i] <- TRUE
+    } else {
+      container_end <- spec$end[i]
+    }
+  }
+  spec <- spec[!spec$dropped, setdiff(names(spec), "dropped")]
+
+  # NOTE on a rejected second correction: also tried cross-checking each
+  # variable's INPUT-declared width against its own LENGTH-statement width,
+  # trusting LENGTH when they disagreed (this is how the HEP12WP typo below
+  # was first found and "fixed"). Reverted -- confirmed by direct testing
+  # that this is unsound in general: SAS's LENGTH statement for a NUMERIC
+  # variable declares internal storage size (commonly a flat 3 or 8 bytes
+  # for every numeric variable in these files, e.g. "SEX 3  AGE 3"),
+  # completely unrelated to the INPUT statement's ASCII column width (SEX is
+  # 1 character wide, AGE is 2) -- they only need to agree for CHARACTER
+  # ($) variables. Applying this check to numeric variables corrupted
+  # several already-correct ones (HISPFLAG, HEIGHT, ...) by "fixing" them to
+  # match an unrelated internal storage size. Left as a documented dead end
+  # rather than silently dropped, since it's a plausible-looking approach
+  # someone might reach for again.
+
+  lrecl <- .nhis_sas_lrecl(sas_path)
+  final_end <- max(spec$end)
+  if (!is.na(lrecl) && final_end > lrecl) {
+    cli::cli_abort(
+      "NHIS {module} {year}: after correcting known overlap/typo patterns, \\
+       the SAS layout still extends to position {final_end}, past the \\
+       file's own declared LRECL={lrecl}. This is an unrecognized defect in \\
+       NCHS's source file, not something nhanesR can safely auto-correct -- \\
+       refusing to return possibly-corrupted data. Please report this at \\
+       {.url https://github.com/dwinsemius/nhanesR/issues}."
+    )
+  }
+
+  spec[order(spec$start), ]
+}
+
 # -- Pre-1997 placeholder-name labelling -----------------------------------------
 
 #' Attach descriptive labels to a pre-1997 Household/Person data frame
@@ -223,19 +351,47 @@ nhis_download <- function(module, years = NULL, refresh = FALSE) {
                             desc = paste("NHIS", module, yr, "SAS syntax"))
     }
 
+    # Validate the SAS layout before trusting SAScii to read it -- confirmed
+    # directly (2026-09-22) that some years' SAS syntax files contain real
+    # defects SAScii doesn't detect (overlapping column declarations,
+    # position typos) that silently produce corrupted data. See
+    # .nhis_sas_validate_and_fix()'s own header for the full story. Years
+    # with no defect (checked: 1986-1992) are unaffected -- this is a no-op
+    # and SAScii::read.SAScii() is used exactly as before.
+    raw_positions <- .nhis_sas_literal_positions(sas_dest)
+    validated <- .nhis_sas_validate_and_fix(sas_dest, yr, module)
+    needed_correction <- !is.null(validated) && !is.null(raw_positions) &&
+      nrow(validated) < nrow(raw_positions)
+
     if (getOption("nhanesR.verbose")) {
-      cli::cli_progress_step("Parsing NHIS {module} {yr} via SAScii")
+      cli::cli_progress_step("Parsing NHIS {module} {yr}")
     }
-    # SAScii::read.SAScii() cat()s per-1000-row and per-column progress with
-    # no quiet argument -- captured and discarded rather than left to spam
-    # the console; nhanesR emits its own progress message above instead.
-    # Also throws a benign, cosmetic warning per column ("invalid 'scipen'
-    # 1000000, used 9999", from its own internal options(scipen=) call
-    # exceeding R's cap) -- confirmed harmless by cross-checking actual
-    # parsed values (YEAR/QUARTER etc.) before suppressing it, not assumed.
-    invisible(utils::capture.output(
-      df <- suppressWarnings(SAScii::read.SAScii(dat_path, sas_dest, zipped = FALSE))
-    ))
+
+    if (needed_correction) {
+      # A fixable defect (e.g. an overlapping column declaration) was found
+      # and corrected -- SAScii would read this file incorrectly (it has no
+      # way to know about the overlap), so read directly from the corrected
+      # positions instead of going through SAScii at all for this file.
+      col_types <- paste(ifelse(validated$char, "c", "d"), collapse = "")
+      df <- as.data.frame(readr::read_fwf(
+        dat_path,
+        col_positions = readr::fwf_positions(validated$start, validated$end, validated$varname),
+        col_types = col_types,
+        na = c(".", " ", ""),
+        show_col_types = FALSE
+      ))
+    } else {
+      # SAScii::read.SAScii() cat()s per-1000-row and per-column progress
+      # with no quiet argument -- captured and discarded rather than left to
+      # spam the console. Also throws a benign, cosmetic warning per column
+      # ("invalid 'scipen' 1000000, used 9999", from its own internal
+      # options(scipen=) call exceeding R's cap) -- confirmed harmless by
+      # cross-checking actual parsed values (YEAR/QUARTER etc.) before
+      # suppressing it, not assumed.
+      invisible(utils::capture.output(
+        df <- suppressWarnings(SAScii::read.SAScii(dat_path, sas_dest, zipped = FALSE))
+      ))
+    }
 
     df <- .nhis_apply_pre1997_labels(df, yr, module)
 

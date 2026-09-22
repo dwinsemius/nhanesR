@@ -1,7 +1,7 @@
 # data-raw/build_nhis_pre1997_crosswalk.R
 #
 # Builds .nhis_pre1997_crosswalk: a placeholder-name -> descriptive-label
-# table for NHIS Household/Person variables, 1986-1991, sourced by
+# table for NHIS Household/Person variables, 1986-1992, sourced by
 # build_registries.R and baked into R/sysdata.rda alongside the other NHIS
 # registries. Consumed by nhis_download() to attach labels post-parse.
 #
@@ -22,22 +22,37 @@
 #      position scheme as the SAS INPUT statement's start position.
 #   3. Join the two by tape-location start position.
 #
-# SCOPE: 1986-1991 only, not the full 1986-1996 span originally discussed.
+# SCOPE: 1986-1992, not the full 1986-1996 span originally discussed.
 # Checked directly across all 11 years (not assumed uniform, despite the
 # source documentation's own claim that these files were "administered each
 # year (through 1996) without major modification" -- that claim does NOT
 # hold at the byte-layout level): field count grows almost every year
-# 1986-1994, 1992 abruptly shows a much larger source PDF (218 pages vs.
-# ~167-176 for neighboring years) that this parser can no longer fully
-# resolve (Household/Person match rates drop hard starting there), and
-# 1995-1996 switch to a genuinely different structure (HHID/WEEKCODE/...
-# replacing the HH_NN placeholder scheme entirely). 1986-1991 all matched
-# essentially completely (45-49 of 48-49 Household vars, 99-105 of 99-105
-# Person vars); 1992-1996 did not, AND -- checked directly, not assumed --
-# every one of 1993's unmatched variables already carries a real descriptive
-# SAS name (REGION, HEIGHT, WEIGHT, ...), not a placeholder, so the
-# unresolved years matter far less than the match-rate drop alone suggests.
-# Extending past 1991 is future work, not done here.
+# 1986-1994, and 1995-1996 switch to a genuinely different structure
+# (HHID/WEEKCODE/... replacing the HH_NN placeholder scheme entirely).
+# 1986-1991 all matched essentially completely (45-49 of 48-49 Household
+# vars, 99-105 of 99-105 Person vars) via NHISCORE.PDF alone.
+#
+# 1992 needed a second source: its NHISCORE.PDF is a much larger document
+# (218 pages vs. ~167-176 for neighboring years) whose Person section text
+# is genuinely corrupted in places (e.g. "RECOR D TYPE", a stray space
+# mid-word -- confirmed via systematic scan, isolated to that section, 0
+# occurrences in 1986/1990/1991). Fixed using a second source the user found
+# by browsing the 1992 documentation directory: NHIS "supplement" PDFs (e.g.
+# HEALTHIN.pdf) open with a complete, cleanly-typeset re-listing of the
+# entire shared Household+Person layout, tagged with the real variable name
+# in [BRACKETS] -- see parse_named_pdf()'s own header for the details. That
+# resolves 1992 Person to 103/108 (up from 95/108 via the corrupted
+# position-matched text). 1992 Household still comes from NHISCORE.PDF
+# directly (that section has no corruption, checked directly).
+#
+# 1993-1996 still not attempted here: checked directly (not assumed) that
+# every one of 1993's NHISCORE.PDF-unmatched variables already carries a
+# real descriptive SAS name (REGION, HEIGHT, WEIGHT, ...), not a
+# placeholder, so the practical need is much smaller there than the raw
+# match-rate drop alone suggests -- and per the user, 1993's own
+# HEALTHIN.pdf-equivalent looks structurally similar to 1992's (checked by
+# comparing the HEIGHT variable's location), suggesting the same fix could
+# extend further, not yet done.
 
 library(SAScii)
 library(pdftools)
@@ -147,6 +162,57 @@ parse_nhiscore_pages <- function(pdf_path, first_page, last_page) {
 
 loc_start <- function(loc) as.integer(sub("-.*", "", loc))
 
+# -- Alternate parser: name-tagged supplement PDFs ------------------------------
+# 1992's NHISCORE.pdf Person section is genuinely corrupted, not just
+# differently laid out -- checked directly (not assumed): the extracted text
+# reads "RECOR D TYPE" (a stray space mid-word), and the same page shows
+# "RANDOM   RECODE OF   PSU NUMBER" and "44 , 64" -- confirmed isolated to
+# that section (0 corrupted pages in the Household range 7-16, 1986/1990/1991
+# show zero occurrences of the same pattern at all) via a systematic scan, not
+# a single anecdote.
+#
+# Found (by the user, browsing the 1992 Dataset_Documentation directory) a
+# much better source for exactly the part that's broken: each NHIS
+# "supplement" PDF (e.g. HEALTHIN.pdf, the Health Insurance supplement) opens
+# with a COMPLETE re-listing of the entire shared Household+Person record
+# layout -- not just its own supplement-specific items -- and tags each row
+# with the real variable name in [BRACKETS] matching the SAS name directly
+# (e.g. "27-28  Person Column  [AGE]  AGE"). This means joining by NAME
+# instead of byte position, sidestepping both problems in the Person section
+# of NHISCORE.pdf at once (corrupted text AND the section-boundary miss that
+# was landing on Condition instead of Person). Verified clean: zero pages of
+# HEALTHIN.pdf's 46 show the same mid-word-corruption pattern, and it
+# resolves 102/108 PERSONSX_1992 variables by name (vs. 95/108 from the
+# position-matched, partly-corrupted NHISCORE.pdf Person section).
+#
+# The same pattern (per the user, comparing the Height variable's location)
+# also holds for 1993's HEALTHIN.pdf -- suggests this may generalize as a
+# general-purpose alternate/cross-check source beyond just fixing 1992, not
+# yet exploited further here.
+
+parse_named_pdf <- function(pdf_path, first_page = 1L, last_page = NULL) {
+  txt <- pdf_text(pdf_path)
+  if (is.null(last_page)) last_page <- length(txt)
+  full  <- paste(txt[first_page:last_page], collapse = "\n")
+  lines <- strsplit(full, "\n")[[1]]
+  lines <- gsub("\f", "", lines, fixed = TRUE)
+
+  loc_name_re <- "^\\s*([0-9]+(?:-[0-9]+)?)\\s+.*\\[([A-Za-z0-9_]+)\\]\\s*(.*)$"
+
+  rows <- vector("list", length(lines))
+  n <- 0L
+  for (line in lines) {
+    m <- regmatches(line, regexec(loc_name_re, line, perl = TRUE))[[1]]
+    if (length(m) == 0L) next
+    loc <- m[2]; varname <- m[3]; label <- trimws(m[4])
+    if (!nzchar(label)) next
+    n <- n + 1L
+    rows[[n]] <- data.frame(loc = loc, varname = varname, label = label,
+                             stringsAsFactors = FALSE)
+  }
+  do.call(rbind, rows[seq_len(n)])
+}
+
 # -- Step 3: locate Household/Person section page boundaries per year ----------
 # NOT taken from each year's table-of-contents index (checked directly and
 # rejected: TOC formatting is inconsistent enough across years -- only
@@ -246,17 +312,36 @@ build_year_crosswalk <- function(year, cache_dir = "/tmp/nhis_crosswalk_cache") 
 
   bounds <- find_section_pages(pdf_path)
   hh_pdf <- parse_nhiscore_pages(pdf_path, bounds$household_first, bounds$person_first - 1L)
-  px_pdf <- parse_nhiscore_pages(pdf_path, bounds$person_first, bounds$condition_first - 1L)
 
   hh_pdf$start <- loc_start(hh_pdf$loc)
-  px_pdf$start <- loc_start(px_pdf$loc)
   hh_pdf <- hh_pdf[!duplicated(hh_pdf$start), ]
-  px_pdf <- px_pdf[!duplicated(px_pdf$start), ]
-
   hh_crosswalk <- merge(hh_sas, hh_pdf[, c("start", "item_no", "label")],
                          by = "start", all.x = TRUE)
-  px_crosswalk <- merge(px_sas, px_pdf[, c("start", "item_no", "label")],
-                         by = "start", all.x = TRUE)
+
+  if (year == "1992") {
+    # NHISCORE.pdf's own Person section is corrupted for this year (see
+    # parse_named_pdf()'s header comment) -- use the Health Insurance
+    # supplement's clean, name-tagged full re-listing instead, joined by
+    # variable name rather than byte position.
+    hi_path <- file.path(cache_dir, "HEALTHIN_1992.pdf")
+    if (!file.exists(hi_path)) {
+      download.file(
+        "https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/NHIS/1992/HEALTHIN.pdf",
+        hi_path, quiet = TRUE
+      )
+    }
+    hi_named <- parse_named_pdf(hi_path)
+    hi_named <- hi_named[!duplicated(hi_named$varname), ]
+    px_crosswalk <- merge(px_sas, hi_named[, c("varname", "label")],
+                           by = "varname", all.x = TRUE)
+    px_crosswalk$item_no <- NA_character_
+  } else {
+    px_pdf <- parse_nhiscore_pages(pdf_path, bounds$person_first, bounds$condition_first - 1L)
+    px_pdf$start <- loc_start(px_pdf$loc)
+    px_pdf <- px_pdf[!duplicated(px_pdf$start), ]
+    px_crosswalk <- merge(px_sas, px_pdf[, c("start", "item_no", "label")],
+                           by = "start", all.x = TRUE)
+  }
 
   # Shared record-prefix, documented once under Household and not repeated
   # under Person -- filled in directly rather than left NA.
@@ -284,7 +369,7 @@ build_year_crosswalk <- function(year, cache_dir = "/tmp/nhis_crosswalk_cache") 
 
 # -- Run across 1986-1991 and report per-year match quality ---------------------
 
-.nhis_pre1997_years <- as.character(1986:1991)
+.nhis_pre1997_years <- as.character(1986:1992)
 .nhis_pre1997_results <- vector("list", length(.nhis_pre1997_years))
 names(.nhis_pre1997_results) <- .nhis_pre1997_years
 

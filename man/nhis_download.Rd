@@ -34,13 +34,23 @@ RDS files, same convention as \code{\link[=nhanes_download]{nhanes_download()}} 
 
 1997 onward uses NCHS's own descriptive variable names directly
 (\code{SRVY_YR}, \code{HHX}, \code{WTFA_HH}, ...), taken straight from that era's SAS
-syntax file -- no further relabeling needed. \strong{1986-1996 uses NCHS's
-original placeholder scheme} (e.g. \code{HH_22}, \code{PX_24}) because that's
-literally what the SAS syntax files for those years contain -- there is
-no \code{nhis_harmonize()}-equivalent yet to relabel these to their real
-meanings, which requires a separate crosswalk built from \code{NHISCORE.PDF}
-(not yet done; see this file's own development history for the scoping
-discussion).
+syntax file. \strong{1986-1996 uses NCHS's original placeholder scheme}
+instead (e.g. \code{HH_22}, \code{PX_24}) -- that's literally what those years' SAS
+syntax files contain. Column NAMES are never changed (a placeholder stays
+a placeholder), but for \strong{1986-1991} each placeholder column gets a
+\code{"label"} attribute (haven/labelled convention, same as every other
+labelled column in this package) with its real meaning, built from that
+year's own \code{NHISCORE.PDF} codebook (\code{data-raw/build_nhis_pre1997_crosswalk.R}).
+Check with \code{attr(df$HH_22, "label")}, or \code{\link[=NH_describe]{NH_describe()}} to see all of
+them at once. \strong{1992-1996 do not get labels} -- checked directly, not
+just left undone: the source PDF's own page layout changes enough
+starting in 1992 (its \code{NHISCORE.PDF} roughly triples in page count that
+year) that the crosswalk-building parser's match rate drops hard, and
+unlike 1986-1991, a meaningful share of what doesn't match already has a
+descriptive native variable name anyway (e.g. \code{REGION}, \code{HEIGHT},
+\code{WEIGHT} for 1993), so the gap matters less than the raw match-rate drop
+suggests. Extending the crosswalk past 1991 is possible future work, not
+done here.
 }
 
 \examples{

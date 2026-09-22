@@ -100,6 +100,34 @@ nhis_data_years <- function(module = c("either", "household", "person")) {
   file.path(dir, paste0(module, "_", year, ".rds"))
 }
 
+# -- Pre-1997 placeholder-name labelling -----------------------------------------
+
+#' Attach descriptive labels to a pre-1997 Household/Person data frame
+#'
+#' Looks up `.nhis_pre1997_crosswalk` (built by
+#' `data-raw/build_nhis_pre1997_crosswalk.R`, covering 1986-1991 only -- see
+#' that script's own header for why the scope stops there) and attaches a
+#' `"label"` attribute (haven/labelled convention, same as every other
+#' labelled column in this package) to each matching placeholder-named
+#' column. Years/modules with no crosswalk entry (1992 onward, and any
+#' column the crosswalk itself couldn't resolve to a label) are left
+#' untouched -- this never errors or warns for missing coverage, since most
+#' of nhis_download()'s callers will be asking for years this doesn't cover.
+#' @keywords internal
+.nhis_apply_pre1997_labels <- function(df, year, module) {
+  cw <- .nhis_pre1997_crosswalk
+  rows <- cw[cw$year == year & cw$module == module & !is.na(cw$label), ]
+  if (nrow(rows) == 0L) return(df)
+  for (i in seq_len(nrow(rows))) {
+    v <- rows$varname[i]
+    if (v %in% names(df)) {
+      attr(df[[v]], "label") <- rows$label[i]
+      if (!is.na(rows$item_no[i])) attr(df[[v]], "nhis_item_no") <- rows$item_no[i]
+    }
+  }
+  df
+}
+
 # -- Download + parse -----------------------------------------------------------------
 
 #' Download and parse an NHIS Household or Person file
@@ -114,13 +142,23 @@ nhis_data_years <- function(module = c("either", "household", "person")) {
 #' @section Column names differ by era:
 #' 1997 onward uses NCHS's own descriptive variable names directly
 #' (`SRVY_YR`, `HHX`, `WTFA_HH`, ...), taken straight from that era's SAS
-#' syntax file -- no further relabeling needed. **1986-1996 uses NCHS's
-#' original placeholder scheme** (e.g. `HH_22`, `PX_24`) because that's
-#' literally what the SAS syntax files for those years contain -- there is
-#' no `nhis_harmonize()`-equivalent yet to relabel these to their real
-#' meanings, which requires a separate crosswalk built from `NHISCORE.PDF`
-#' (not yet done; see this file's own development history for the scoping
-#' discussion).
+#' syntax file. **1986-1996 uses NCHS's original placeholder scheme**
+#' instead (e.g. `HH_22`, `PX_24`) -- that's literally what those years' SAS
+#' syntax files contain. Column NAMES are never changed (a placeholder stays
+#' a placeholder), but for **1986-1991** each placeholder column gets a
+#' `"label"` attribute (haven/labelled convention, same as every other
+#' labelled column in this package) with its real meaning, built from that
+#' year's own `NHISCORE.PDF` codebook (`data-raw/build_nhis_pre1997_crosswalk.R`).
+#' Check with `attr(df$HH_22, "label")`, or [NH_describe()] to see all of
+#' them at once. **1992-1996 do not get labels** -- checked directly, not
+#' just left undone: the source PDF's own page layout changes enough
+#' starting in 1992 (its `NHISCORE.PDF` roughly triples in page count that
+#' year) that the crosswalk-building parser's match rate drops hard, and
+#' unlike 1986-1991, a meaningful share of what doesn't match already has a
+#' descriptive native variable name anyway (e.g. `REGION`, `HEIGHT`,
+#' `WEIGHT` for 1993), so the gap matters less than the raw match-rate drop
+#' suggests. Extending the crosswalk past 1991 is possible future work, not
+#' done here.
 #'
 #' @param module Character. `"household"` or `"person"`.
 #' @param years Character or numeric vector of NHIS survey years. Defaults
@@ -198,6 +236,8 @@ nhis_download <- function(module, years = NULL, refresh = FALSE) {
     invisible(utils::capture.output(
       df <- suppressWarnings(SAScii::read.SAScii(dat_path, sas_dest, zipped = FALSE))
     ))
+
+    df <- .nhis_apply_pre1997_labels(df, yr, module)
 
     df$.nhis_data_year <- as.integer(yr)
     df$.nhis_module     <- module

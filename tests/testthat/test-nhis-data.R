@@ -61,3 +61,37 @@ test_that(".nhis_data_registry_row errors clearly on an unregistered year", {
 test_that("nhis_download validates its module argument", {
   expect_error(nhis_download("family"), regexp = "should be one of")
 })
+
+# ── Pre-1997 placeholder-name crosswalk (1986-1991) ─────────────────────────────
+
+test_that(".nhis_pre1997_crosswalk covers exactly 1986-1991, not the full span", {
+  cw <- nhanesR:::.nhis_pre1997_crosswalk
+  expect_setequal(unique(cw$year), as.character(1986:1991))
+  expect_true(all(cw$module %in% c("household", "person")))
+})
+
+test_that(".nhis_pre1997_crosswalk has known-correct 1986 labels", {
+  cw <- nhanesR:::.nhis_pre1997_crosswalk
+  row <- cw[cw$year == "1986" & cw$module == "household" & cw$varname == "HH_22", ]
+  expect_equal(nrow(row), 1L)
+  expect_equal(row$label, "TYPE OF LIVING QUARTERS:")
+
+  # Person's copy of a shared household-level prefix item (positions 22-24
+  # repeat on every person record) -- same label as the household version.
+  px_row <- cw[cw$year == "1986" & cw$module == "person" & cw$varname == "PX_22", ]
+  expect_equal(px_row$label, "TYPE OF LIVING QUARTERS:")
+})
+
+test_that(".nhis_apply_pre1997_labels attaches labels for a covered year/module", {
+  df <- data.frame(HH_22 = 1:3, HH_24 = 4:6, UNKNOWN_COL = 7:9)
+  out <- nhanesR:::.nhis_apply_pre1997_labels(df, "1986", "household")
+  expect_equal(attr(out$HH_22, "label"), "TYPE OF LIVING QUARTERS:")
+  expect_equal(attr(out$HH_24, "label"), "HAS TELEPHONE")
+  expect_null(attr(out$UNKNOWN_COL, "label"))
+})
+
+test_that(".nhis_apply_pre1997_labels is a no-op outside 1986-1991", {
+  df <- data.frame(HH_22 = 1:3)
+  out <- nhanesR:::.nhis_apply_pre1997_labels(df, "1993", "household")
+  expect_identical(df, out)
+})

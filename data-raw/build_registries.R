@@ -264,6 +264,15 @@
 .nhis_data_registry$available[.nhis_data_registry$year == "1989" &
                                  .nhis_data_registry$module == "household"] <- FALSE
 
+# ── NHIS pre-1997 Household/Person placeholder-name crosswalk ─────────────────
+# Produces .nhis_pre1997_crosswalk, 1986-1991 (see that script's own header
+# for why the scope stops there, and R/nhis_data.R for how nhis_download()
+# uses it). A separate file, not inlined here, because it carries its own
+# substantial parsing logic (SAS INPUT-statement position parsing, PDF
+# codebook page-boundary detection, label-block extraction) that earned its
+# own file the same way the registries above didn't need one.
+source("data-raw/build_nhis_pre1997_crosswalk.R")
+
 # ── Cause-of-death leading cause recode ───────────────────────────────────────
 # ICD-10 recode used in the public-use LMF UCOD_LEADING variable
 # Source: CDC LMF documentation
@@ -417,6 +426,7 @@ usethis::use_data(
   .nhis_lmf_registry,
   .nhis_lmf_colspec,
   .nhis_data_registry,
+  .nhis_pre1997_crosswalk,
   internal  = TRUE,
   overwrite = TRUE
 )

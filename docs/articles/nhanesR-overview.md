@@ -33,14 +33,7 @@ The package handles the main friction points in working with NHANES:
 
 ## Installation
 
-``` r
-
-# Install from GitHub (includes vignettes)
-remotes::install_github("dwinsemius/nhanesR",
-                        build_vignettes = TRUE,
-                        force           = TRUE)
-library(nhanesR)
-```
+`# Install from GitHub (includes vignettes)`` ``remotes``::`[`install_github`](https://remotes.r-lib.org/reference/install_github.html)`(``"dwinsemius/nhanesR"``,`` `` build_vignettes ``=`` ``TRUE``,`` `` force ``=`` ``TRUE``)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`nhanesR`](https://dwinsemius.github.io/nhanesR/)`)`
 
 ------------------------------------------------------------------------
 
@@ -74,23 +67,11 @@ hash sidecar on every subsequent load. Re-downloading is skipped unless
 Add any of these lines to `~/.Rprofile` to persist settings across
 sessions:
 
-``` r
-
-options(
-  nhanesR.cache_dir = "/data/nhanes_cache",  # e.g. a shared server path
-  nhanesR.verbose   = FALSE,                  # suppress progress messages
-  nhanesR.timeout   = 300L                    # 5-minute timeout
-)
-```
+[`options`](https://rdrr.io/r/base/options.html)`(`` `` nhanesR.cache_dir ``=`` ``"/data/nhanes_cache"``, ``# e.g. a shared server path`` `` nhanesR.verbose ``=`` ``FALSE``, ``# suppress progress messages`` `` nhanesR.timeout ``=`` ``300L`` ``# 5-minute timeout`` ``)`
 
 ### Checking and changing settings interactively
 
-``` r
-
-nhanes_cache_dir()                        # view current cache path (tempdir-based by default)
-nhanes_cache_dir("~/my_nhanes_cache")    # opt in to a persistent home-directory cache
-options(nhanesR.verbose = FALSE)     # suppress messages for this session
-```
+[`nhanes_cache_dir`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.md)`(``)`` ``# view current cache path (tempdir-based by default)`` `[`nhanes_cache_dir`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.md)`(`[`file.path`](https://rdrr.io/r/base/file.path.html)`(`[`tempdir`](https://rdrr.io/r/base/tempfile.html)`(``)``, ``"my_nhanes_cache"``)``)`` ``# custom session-local cache path`` `[`options`](https://rdrr.io/r/base/options.html)`(``nhanesR.verbose ``=`` ``FALSE``)`` ``# suppress messages for this session`
 
 ------------------------------------------------------------------------
 
@@ -107,17 +88,7 @@ typically calls or is called by.
 | [`nhanes_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md) | List all continuous NHANES cycles with metadata (years, weight variable names, LMF availability) | [`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md), [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md) |
 | [`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md) | List all data files available for a cycle and component; shows file codes, descriptions, and CDC URLs | [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md) |
 
-``` r
-
-# All cycles with metadata
-nhanes_cycles()
-
-# Extract cycle labels for use downstream
-cycles <- nhanes_cycles()[["cycle"]]
-
-# See what Laboratory files exist for a cycle
-nhanes_manifest("2015-2016", "Laboratory")
-```
+`# All cycles with metadata`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)`` `` ``# Extract cycle labels for use downstream`` ``cycles`` ``<-`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``[[``"cycle"``]``]`` `` ``# See what Laboratory files exist for a cycle`` `[`nhanes_manifest`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md)`(``"2015-2016"``, ``"Laboratory"``)`
 
 ------------------------------------------------------------------------
 
@@ -128,18 +99,7 @@ nhanes_manifest("2015-2016", "Laboratory")
 | [`nhanes_search_variables()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md) | Search the CDC variable catalog by keyword; returns one row per unique variable name (default) or one row per cycle | [`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md) |
 | [`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md) | Wraps [`nhanes_search_variables()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md) to produce a per-cycle lookup (`cycle`, `variable_name`, `file_name`) ready for download | [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md) |
 
-``` r
-
-# Summarized view — which variable codes match, and in how many cycles?
-nhanes_search_variables("total cholesterol", component = "Laboratory")
-
-# Per-cycle lookup — which file holds the analyte in each cycle?
-nhanes_variable_map("total cholesterol")
-
-# Use keep_vars to exclude false positives (e.g. urine vs. serum creatinine)
-nhanes_variable_map("creatinine",
-                    keep_vars = c("LBXSCR", "LBDSCR", "LB2SCR"))
-```
+`# Summarized view — which variable codes match, and in how many cycles?`` `[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"total cholesterol"``, component ``=`` ``"Laboratory"``)`` `` ``# Per-cycle lookup — which file holds the analyte in each cycle?`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"total cholesterol"``)`` `` ``# Use keep_vars to exclude false positives (e.g. urine vs. serum creatinine)`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"creatinine"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"LBXSCR"``, ``"LBDSCR"``, ``"LB2SCR"``)``)`
 
 ------------------------------------------------------------------------
 
@@ -150,23 +110,7 @@ nhanes_variable_map("creatinine",
 | [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md) | Download one or more files by exact CDC base code (e.g. `"DEMO"`, `"BPX"`). Use when file names are stable across cycles. | [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md), [`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md), [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md) |
 | [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md) | Download by analyte keyword; uses the variable catalog to resolve the correct CDC filename per cycle automatically. Use when file names changed across cycles. | [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md) |
 
-``` r
-
-cycles <- nhanes_cycles()[1:10, "cycle"]   # 1999-2018
-
-# Demographics — always "DEMO"; nhanes_download() works fine
-demo_list <- nhanes_download("DEMO", cycles)
-
-# Total cholesterol — file name changed in 1999-2004; use download_analyte()
-tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
-
-# Questionnaire variable with keep_vars to filter false positives
-mi_list <- nhanes_download_analyte(
-  "heart attack", cycles,
-  component = "Questionnaire",
-  keep_vars = c("MCQ160E", "MCQ160e")
-)
-```
+`cycles`` ``<-`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``[``1``:``10``, ``"cycle"``]`` ``# 1999-2018`` `` ``# Demographics — always "DEMO"; nhanes_download() works fine`` ``demo_list`` ``<-`` `[`nhanes_download`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)`(``"DEMO"``, ``cycles``)`` `` ``# Total cholesterol — file name changed in 1999-2004; use download_analyte()`` ``tchol_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"total cholesterol"``, ``cycles``)`` `` ``# Questionnaire variable with keep_vars to filter false positives`` ``mi_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"heart attack"``, ``cycles``,`` `` component ``=`` ``"Questionnaire"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"MCQ160E"``, ``"MCQ160e"``)`` ``)`
 
 **Invalid file codes:** if an unrecognized code is passed to
 [`nhanes_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md),
@@ -186,25 +130,7 @@ to confirm the correct name.
 | [`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md) | Row-bind a named list of per-cycle data frames, filling absent columns with `NA`. Called internally by [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md). | [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md), [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md) |
 | [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md) | Join two or more NHANES components by `SEQN` (and optionally `cycle`), with weight-variable guidance. | [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md) |
 
-``` r
-
-# Unit-based: finds the mg/dL column by its label attribute
-tc <- nhanes_harmonize(tchol_list,
-                       unit          = "mg/dL",
-                       name          = "TC_mgdl",
-                       label_pattern = "total cholesterol")
-
-# Mapping-based: explicit old-name → new-name translation
-mi <- nhanes_harmonize(mi_list,
-                       mapping = c(MCQ160E = "MI_history",
-                                   MCQ160e = "MI_history"))
-
-# Stack demographics (no renaming needed)
-demo <- nhanes_stack(demo_list)
-
-# Merge components
-analytic <- nhanes_merge(demo, tc, mi, by = c("SEQN", "cycle"))
-```
+`# Unit-based: finds the mg/dL column by its label attribute`` ``tc`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(``tchol_list``,`` `` unit ``=`` ``"mg/dL"``,`` `` name ``=`` ``"TC_mgdl"``,`` `` label_pattern ``=`` ``"total cholesterol"``)`` `` ``# Mapping-based: explicit old-name → new-name translation`` ``mi`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(``mi_list``,`` `` mapping ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``MCQ160E ``=`` ``"MI_history"``,`` `` MCQ160e ``=`` ``"MI_history"``)``)`` `` ``# Stack demographics (no renaming needed)`` ``demo`` ``<-`` `[`nhanes_stack`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)`(``demo_list``)`` `` ``# Merge components`` ``analytic`` ``<-`` `[`nhanes_merge`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md)`(``demo``, ``tc``, ``mi``, by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"SEQN"``, ``"cycle"``)``)`
 
 ------------------------------------------------------------------------
 
@@ -217,14 +143,7 @@ analytic <- nhanes_merge(demo, tc, mi, by = c("SEQN", "cycle"))
 | [`nhanes_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_parse.md) | Parse `.dat` files into a named list of data frames | [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md) |
 | [`nhanes_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md) | Left-join LMF columns onto an analytic dataset by SEQN; handles multiple cycles automatically | [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md) |
 
-``` r
-
-# Cycles with a public-use LMF (NHANES 1999-2018 + NHANES III)
-nhanes_lmf_cycles()
-
-# Append mortality variables — download happens automatically
-analytic_mort <- nhanes_mortality_link(analytic)
-```
+`# Cycles with a public-use LMF (NHANES 1999-2018 + NHANES III)`` `[`nhanes_lmf_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md)`(``)`` `` ``# Append mortality variables — download happens automatically`` ``analytic_mort`` ``<-`` `[`nhanes_mortality_link`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)`(``analytic``)`
 
 ------------------------------------------------------------------------
 
@@ -236,26 +155,7 @@ analytic_mort <- nhanes_mortality_link(analytic)
 | [`nhanes_followup_summary()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md) | Report median follow-up, event rate, and maximum follow-up by cycle — useful for assessing asymmetric censoring | (diagnostic) |
 | [`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md) | Lookup table of ICD-10 recode codes and labels accepted by the `cause` argument of [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md) | [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md) |
 
-``` r
-
-# All-cause mortality, time from exam visit
-surv_data <- nhanes_survival_prep(analytic_mort,
-                                  origin     = "exam",
-                                  time_unit  = "years",
-                                  weight_var = "WTMEC2YR")
-
-# Check follow-up by cycle (note shrinking window near 2017-2018)
-nhanes_followup_summary(surv_data)
-
-# Cause-specific: what cause codes are available?
-nhanes_ucod_labels()
-
-# Cardiovascular mortality (code "001")
-surv_cvd <- nhanes_survival_prep(analytic_mort,
-                                 origin = "exam",
-                                 cause  = "001",
-                                 weight_var = "WTMEC2YR")
-```
+`# All-cause mortality, time from exam visit`` ``surv_data`` ``<-`` `[`nhanes_survival_prep`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)`(``analytic_mort``,`` `` origin ``=`` ``"exam"``,`` `` time_unit ``=`` ``"years"``,`` `` weight_var ``=`` ``"WTMEC2YR"``)`` `` ``# Check follow-up by cycle (note shrinking window near 2017-2018)`` `[`nhanes_followup_summary`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)`(``surv_data``)`` `` ``# Cause-specific: what cause codes are available?`` `[`nhanes_ucod_labels`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)`(``)`` `` ``# Cardiovascular mortality (code "001")`` ``surv_cvd`` ``<-`` `[`nhanes_survival_prep`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)`(``analytic_mort``,`` `` origin ``=`` ``"exam"``,`` `` cause ``=`` ``"001"``,`` `` weight_var ``=`` ``"WTMEC2YR"``)`
 
 ------------------------------------------------------------------------
 

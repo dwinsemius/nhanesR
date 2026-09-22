@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nhanesR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/analyte-harmonization.html">Navigating Variable Name Changes and Analyte Gaps in NHANES</a></li>
     <li><a class="dropdown-item" href="../articles/uacr-bridging.html">Urinary Albumin-to-Creatinine Ratio Across NHANES Cycles</a></li>
     <li><a class="dropdown-item" href="../articles/survey-weighted-survival.html">Survey-Weighted Survival Analysis: Fusing svycoxph and rms</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-framework-comparison.html">Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -207,7 +208,12 @@ formula and compare structures.</p>
 <span>  <span class="va">ELIGSTAT</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">time</span> <span class="op">&gt;</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">statin</span> <span class="op">==</span> <span class="cn">FALSE</span> <span class="op">&amp;</span></span>
 <span>  <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">GGT</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">LBXSAL</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">TC</span><span class="op">)</span> <span class="op">&amp;</span></span>
 <span>  <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">BMI</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">INDFMPIR</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">RIDAGEYR</span> <span class="op">&gt;=</span> <span class="fl">20</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># NOTE: this chunk uses raw WTMEC2YR directly for illustration.</span></span>
+<span><span class="co"># For pooled-cycle workflows built via nhanes_survival_prep(weight_var = ...),</span></span>
+<span><span class="co"># use the already-adjusted survey_weight column from that output instead of</span></span>
+<span><span class="co"># applying additional manual cycle scaling.</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Shared formula: RCS(4 knots) on GGT and albumin; linear adjusters</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/rms/man/rms.trans.html" class="external-link">rcs</a></span><span class="op">(</span><span class="va">GGT</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/rms/man/rms.trans.html" class="external-link">rcs</a></span><span class="op">(</span><span class="va">LBXSAL</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
@@ -428,11 +434,11 @@ estimator; we implement the survey-weighted version following Lin
 <p>The weighted cumulative baseline hazard at event time
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>t</mi><mi>i</mi></msub><annotation encoding="application/x-tex">t_i</annotation></semantics></math>
 is:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>H</mi><mo accent="true">̂</mo></mover><mn>0</mn><mi>w</mi></msubsup><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><msub><mi>t</mi><mi>i</mi></msub><mo>≤</mo><mi>t</mi></mrow></munder><mfrac><msub><mi>w</mi><mi>i</mi></msub><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><mi>ℛ</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></munder><msub><mi>w</mi><mi>j</mi></msub><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msubsup><mi>𝐗</mi><mi>j</mi><mi>⊤</mi></msubsup><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\hat{H}_0^w(t) = \sum_{t_i \leq t} \frac{w_i}{\sum_{j \in \mathcal{R}(t_i)} w_j \exp(\mathbf{X}_j^\top \hat{\boldsymbol{\beta}})}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover><mi>H</mi><mo accent="true">̂</mo></mover><mn>0</mn><mi>w</mi></msubsup><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><msub><mi>t</mi><mi>i</mi></msub><mo>≤</mo><mi>t</mi></mrow></munder><mfrac><msub><mi>w</mi><mi>i</mi></msub><mrow><munder><mo>∑</mo><mrow><mi>j</mi><mo>∈</mo><mi mathvariant="script">ℛ</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow></munder><msub><mi>w</mi><mi>j</mi></msub><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msubsup><mi mathvariant="bold-italic">𝑿</mi><mi>j</mi><mi>⊤</mi></msubsup><mover><mi mathvariant="bold-italic">𝜷</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\hat{H}_0^w(t) = \sum_{t_i \leq t} \frac{w_i}{\sum_{j \in \mathcal{R}(t_i)} w_j \exp(\mathbf{X}_j^\top \hat{\boldsymbol{\beta}})}</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>w</mi><mi>i</mi></msub><annotation encoding="application/x-tex">w_i</annotation></semantics></math>
 is the survey weight and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\boldsymbol{\beta}}</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi mathvariant="bold-italic">𝜷</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\boldsymbol{\beta}}</annotation></semantics></math>
 comes from <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph()</a></code>.</p>
 <p>The <code><a href="../reference/weighted_basehaz.html">weighted_basehaz()</a></code> function computes both the
 weighted Breslow point estimate and its standard error. The
@@ -693,6 +699,17 @@ of interest, given the covariates in the model. When that condition
 holds, the weighted and unweighted coefficient estimates converge and
 the design correction provides little benefit for coefficient
 inference.</p>
+<p><em>Why</em> this differs so sharply from the mean/proportion case —
+where design weighting is essentially never optional — is a question of
+likelihood structure, not just an empirical regularity.
+<code>vignettes/survival-framework-comparison.Rmd</code> derives the
+weighted Cox/piecewise-exponential risk-set contribution term by term
+(via Binder 1992) and shows that only the risk-set-sum side of that
+contribution is a population aggregate needing weighted correction; the
+event’s own covariate value is observed exactly and needs none. That
+asymmetry — absent from mean estimation, where both sides of the
+estimating equation are aggregates — is the mechanism behind the
+ICC/DEFF pattern demonstrated empirically here.</p>
 <p>The Lin (2000) design variance for the baseline hazard illustrates
 this directly: it is negligibly small precisely <em>because</em> the
 model has absorbed the major sources of geographic clustering through
@@ -905,7 +922,7 @@ already present in <code>Hmisc</code>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

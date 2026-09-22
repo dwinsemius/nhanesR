@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nhanesR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><a class="dropdown-item" href="../articles/analyte-harmonization.html">Navigating Variable Name Changes and Analyte Gaps in NHANES</a></li>
     <li><a class="dropdown-item" href="../articles/uacr-bridging.html">Urinary Albumin-to-Creatinine Ratio Across NHANES Cycles</a></li>
     <li><a class="dropdown-item" href="../articles/survey-weighted-survival.html">Survey-Weighted Survival Analysis: Fusing svycoxph and rms</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-framework-comparison.html">Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -41,6 +42,30 @@
       <small>Source: <a href="https://github.com/dwinsemius/nhanesR/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.7" id="nhanesr-017">nhanesR 0.1.7<a class="anchor" aria-label="anchor" href="#nhanesr-017"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-1-7">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-7"></a></h3>
+<ul><li>Added NHIS Household/Person raw-data download: <code><a href="../reference/nhis_download.html">nhis_download()</a></code> and <code><a href="../reference/nhis_data_years.html">nhis_data_years()</a></code> download the fixed-width <code>.zip</code> for either file (1986-2018), download the matching SAS input-syntax file NCHS publishes alongside it, and parse both together via <code><a href="https://rdrr.io/pkg/SAScii/man/read.SAScii.html" class="external-link">SAScii::read.SAScii()</a></code> (<code>SAScii</code>, Suggests only, GPL-2|GPL-3 – confirmed compatible with this package’s MIT license; gated behind <code><a href="../reference/dot-nhanes_check_pkg.html">.nhanes_check_pkg()</a></code>, same pattern as the <code>foreign</code> fallback XPT parser) – reusing NCHS’s own column- position specification rather than a hand-built one, verified directly against the real 1986 and 1997 files before relying on it. Deliberately scoped to just these two “core” files, not the full NHIS catalog (dozens of supplemental modules with heavy year-to-year schema churn – out of scope). Column names for 1986-1996 are NCHS’s own placeholder scheme (<code>HH_22</code>, <code>PX_24</code>, …) as that’s what those years’ SAS syntax literally contains; no relabeling crosswalk yet (would need <code>NHISCORE.PDF</code>). One confirmed real data gap: 1989’s Household file is absent from the CDC server (404) despite that year’s own documentation listing it – Person is unaffected; see <code><a href="../reference/nhis_data_years.html">?nhis_data_years</a></code> for the full account.</li>
+<li>Added NHIS mortality-linkage support: <code><a href="../reference/nhis_mortality_download.html">nhis_mortality_download()</a></code>, <code><a href="../reference/nhis_mortality_parse.html">nhis_mortality_parse()</a></code>, <code><a href="../reference/nhis_mortality_link.html">nhis_mortality_link()</a></code>, and <code><a href="../reference/nhis_lmf_years.html">nhis_lmf_years()</a></code> download, parse, and join NCHS’s public-use NHIS Linked Mortality Files (1986-2018, one file per survey year), mirroring the existing <code>nhanes_mortality_*()</code> family. nhanesR does not download NHIS survey data itself (a much larger undertaking than NHANES’s stable catalog, out of scope for now) – these functions join onto NHIS data supplied from elsewhere (e.g. IPUMS NHIS or NCHS’s own NHIS microdata site). Unlike NHANES’s <code>SEQN</code>, NHIS’s <code>PUBLICID</code> is not confirmed unique across survey years, so <code><a href="../reference/nhis_mortality_link.html">nhis_mortality_link()</a></code> matches on <code>(PUBLICID, year)</code> rather than the ID alone. There is no <code>nhis_survival_prep()</code>: the NHIS LMF has no <code>PERMTH_INT</code>/<code>PERMTH_EXM</code>-equivalent person-months variable, only <code>DODQTR</code>/<code>DODYEAR</code>, so follow-up time construction requires the NHIS interview date from the survey data itself.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-7">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-7"></a></h3>
+<ul><li>
+<code><a href="../reference/nhanes_survival_prep.html">nhanes_survival_prep()</a></code> now automatically applies CDC-compliant pooled multi-cycle weight scaling instead of only warning about it. If both <code>1999-2000</code> and <code>2001-2002</code> are present and the matching 4-year weight column exists (e.g. <code>WTMEC4YR</code>), those cycles are scaled as <code>4-year weight * (2/n)</code>; all other cycles are scaled as <code>2-year weight * (1/n)</code>. Falls back to <code>2-year weight * (1/n)</code> for all cycles if the matching 4-year column is unavailable. The original unscaled 2-year weight is preserved in a new <code>survey_weight_2yr_raw</code> column. Warns if <code>WTMEC4YR</code> is supplied with more than two pooled cycles.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="cran-resubmission-fixes-0-1-7">CRAN resubmission fixes<a class="anchor" aria-label="anchor" href="#cran-resubmission-fixes-0-1-7"></a></h3>
+<ul><li>Removed the <code>~/my_nhanes_cache</code> example path that CRAN flagged as a HOME-directory write during <code><a href="https://rdrr.io/r/utils/example.html" class="external-link">example()</a></code>; examples/vignettes now use <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>.</li>
+<li>Removed <code>Hmisc::html(Hmisc::describe(...))</code> examples that triggered an HTML viewer popup during checks.</li>
+<li>Updated GitHub Actions <code>actions/checkout</code> and <code>actions/upload-artifact</code> to v5 (Node.js 20 deprecation).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-1-7">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-1-7"></a></h3>
+<ul><li>
+<code><a href="../reference/nhanes_survival_prep.html">nhanes_survival_prep()</a></code> docs and the <code>nhanes-mortality-workflow.Rmd</code> / <code>survey-weighted-survival.Rmd</code> vignettes updated to describe the new automatic pooled-weight behavior and to stop demonstrating manual <code>survey_weight / n_cycles</code> division (which would now double-scale).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.4" id="nhanesr-014">nhanesR 0.1.4<a class="anchor" aria-label="anchor" href="#nhanesr-014"></a></h2>
 <div class="section level3">
@@ -122,7 +147,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -15,7 +15,7 @@ functions, so labelling once makes descriptions available everywhere.'></head><b
 
     <a class="navbar-brand me-2" href="../index.html">nhanesR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,7 @@ functions, so labelling once makes descriptions available everywhere.'></head><b
     <li><a class="dropdown-item" href="../articles/analyte-harmonization.html">Navigating Variable Name Changes and Analyte Gaps in NHANES</a></li>
     <li><a class="dropdown-item" href="../articles/uacr-bridging.html">Urinary Albumin-to-Creatinine Ratio Across NHANES Cycles</a></li>
     <li><a class="dropdown-item" href="../articles/survey-weighted-survival.html">Survey-Weighted Survival Analysis: Fusing svycoxph and rms</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-framework-comparison.html">Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -108,42 +109,7 @@ returned unchanged.</p>
 <span class="r-in"><span><span class="va">tc</span> <span class="op">&lt;-</span> <span class="fu">NH_label</span><span class="op">(</span><span class="va">tc</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># CDC descriptions now appear in all Hmisc label-aware output</span></span></span>
-<span class="r-in"><span><span class="fu">Hmisc</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Hmisc/man/describe.html" class="external-link">describe</a></span><span class="op">(</span><span class="va">tc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> tc </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4  Variables      8021  Observations</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------------------------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SEQN : Respondent sequence number </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        n  missing distinct </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     8021        0     8021 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lowest : 83732 83733 83734 83735 83736, highest: 93697 93699 93700 93701 93702</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------------------------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> LBXTC : Total Cholesterol (mg/dL) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        n  missing distinct     Info     Mean  pMedian      Gmd      .05 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     7256      765      257        1    180.3      178    45.47      122 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      .10      .25      .50      .75      .90      .95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      132      150      176      204      234      254 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lowest :  77  80  81  84  85, highest: 393 415 433 540 545</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------------------------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> LBDTCSI : Total Cholesterol( mmol/L) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        n  missing distinct     Info     Mean  pMedian      Gmd      .05 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     7256      765      257        1    4.661      4.6    1.176     3.15 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      .10      .25      .50      .75      .90      .95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     3.41     3.88     4.55     5.28     6.05     6.57 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lowest : 1.99  2.07  2.09  2.17  2.2  , highest: 10.16 10.73 11.2  13.96 14.09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------------------------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> cycle </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         n   missing  distinct     value </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      8021         0         1 2015-2016 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Value      2015-2016</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Frequency       8021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Proportion         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------------------------------------------------------------------------------</span>
-<span class="r-in"><span><span class="fu">Hmisc</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Hmisc/man/html.html" class="external-link">html</a></span><span class="op">(</span><span class="fu">Hmisc</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Hmisc/man/describe.html" class="external-link">describe</a></span><span class="op">(</span><span class="va">tc</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu">Hmisc</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Hmisc/man/describe.html" class="external-link">describe</a></span><span class="op">(</span><span class="va">tc</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -156,7 +122,7 @@ returned unchanged.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

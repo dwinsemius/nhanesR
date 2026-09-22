@@ -108,70 +108,15 @@ available in a
 We fit both models on the nhanesR analytic dataset using the same
 formula and compare structures.
 
-``` r
+[`library`](https://rdrr.io/r/base/library.html)`(`[`nhanesR`](https://dwinsemius.github.io/nhanesR/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`rms`](https://hbiostat.org/R/rms/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survey`](http://r-survey.r-forge.r-project.org/survey/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survival`](https://github.com/therneau/survival)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`flextable`](https://ardata-fr.github.io/flextable-book/)`)`` `` ``dat`` ``<-`` `[`readRDS`](https://rdrr.io/r/base/readRDS.html)`(``"~/Documents/R.code/nhanesR/analytic_survival.rds"``)`` `` ``# Analysis population: non-statin users, adults >= 20, landmark > 2yr,`` ``# complete GGT / albumin / TC / BMI / PIR`` ``dat2`` ``<-`` `[`subset`](https://rdrr.io/r/base/subset.html)`(``dat``,`` `` ``ELIGSTAT`` ``==`` ``1`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``time``)`` ``&`` ``time`` ``>`` ``2`` ``&`` ``statin`` ``==`` ``FALSE`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``GGT``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``LBXSAL``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``TC``)`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``BMI``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``INDFMPIR``)`` ``&`` ``RIDAGEYR`` ``>=`` ``20`` ``)`` ``# N = 34,456 events = 3,975`
 
-library(nhanesR)
-library(rms)
-library(survey)
-library(survival)
-library(flextable)
+`# NHANES design: create on the FULL dataset, then subset the design object.`` ``# Creating the design on the already-subsetted data can leave some strata with`` ``# a single PSU, causing svycoxph() to fail at variance estimation.`` ``full_design`` ``<-`` `[`svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)`(`` `` ids ``=`` ``~``SDMVPSU``,`` `` strata ``=`` ``~``SDMVSTRA``,`` `` weights ``=`` ``~``WTMEC2YR``,`` `` nest ``=`` ``TRUE``,`` `` data ``=`` ``dat`` ``)`` ``sub_design`` ``<-`` `[`subset`](https://rdrr.io/r/base/subset.html)`(``full_design``,`` `` ``ELIGSTAT`` ``==`` ``1`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``time``)`` ``&`` ``time`` ``>`` ``2`` ``&`` ``statin`` ``==`` ``FALSE`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``GGT``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``LBXSAL``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``TC``)`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``BMI``)`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``INDFMPIR``)`` ``&`` ``RIDAGEYR`` ``>=`` ``20`` ``)`` `` ``# NOTE: this chunk uses raw WTMEC2YR directly for illustration.`` ``# For pooled-cycle workflows built via nhanes_survival_prep(weight_var = ...),`` ``# use the already-adjusted survey_weight column from that output instead of`` ``# applying additional manual cycle scaling.`
 
-dat <- readRDS("~/Documents/R.code/nhanesR/analytic_survival.rds")
+`# Shared formula: RCS(4 knots) on GGT and albumin; linear adjusters`` ``f`` ``<-`` `[`Surv`](https://rdrr.io/pkg/survival/man/Surv.html)`(``time``, ``event``)`` ``~`` `[`rcs`](https://rdrr.io/pkg/rms/man/rms.trans.html)`(``GGT``, ``4``)`` ``+`` `[`rcs`](https://rdrr.io/pkg/rms/man/rms.trans.html)`(``LBXSAL``, ``4``)`` ``+`` `` ``RIDAGEYR`` ``+`` ``RIAGENDR`` ``+`` ``RIDRETH1`` ``+`` `[`log`](https://rdrr.io/r/base/Log.html)`(``BMI``)`` `` ``# cph() fit — x=TRUE, y=TRUE, surv=TRUE needed for Predict() and survplot()`` ``# Inference from this fit is NOT survey-correct; used only for $Design structure`` ``dd`` ``<-`` `[`datadist`](https://rdrr.io/pkg/rms/man/datadist.html)`(``dat2``)`` `[`options`](https://rdrr.io/r/base/options.html)`(``datadist ``=`` ``"dd"``)`` ``fit_cph`` ``<-`` `[`cph`](https://rdrr.io/pkg/rms/man/cph.html)`(``f``, data ``=`` ``dat2``, x ``=`` ``TRUE``, y ``=`` ``TRUE``, surv ``=`` ``TRUE``)`` `` ``# svycoxph() fit — survey-correct coefficients and sandwich vcov`` ``fit_svy`` ``<-`` `[`svycoxph`](https://rdrr.io/pkg/survey/man/svycoxph.html)`(``f``, design ``=`` ``sub_design``)`
 
-# Analysis population: non-statin users, adults >= 20, landmark > 2yr,
-# complete GGT / albumin / TC / BMI / PIR
-dat2 <- subset(dat,
-  ELIGSTAT == 1 & !is.na(time) & time > 2 & statin == FALSE &
-  !is.na(GGT) & !is.na(LBXSAL) & !is.na(TC) &
-  !is.na(BMI) & !is.na(INDFMPIR) & RIDAGEYR >= 20
-)
-# N = 34,456  events = 3,975
-```
+[`names`](https://rdrr.io/r/base/names.html)`(``fit_cph``)`
 
-``` r
-
-# NHANES design: create on the FULL dataset, then subset the design object.
-# Creating the design on the already-subsetted data can leave some strata with
-# a single PSU, causing svycoxph() to fail at variance estimation.
-full_design <- svydesign(
-  ids     = ~SDMVPSU,
-  strata  = ~SDMVSTRA,
-  weights = ~WTMEC2YR,
-  nest    = TRUE,
-  data    = dat
-)
-sub_design <- subset(full_design,
-  ELIGSTAT == 1 & !is.na(time) & time > 2 & statin == FALSE &
-  !is.na(GGT) & !is.na(LBXSAL) & !is.na(TC) &
-  !is.na(BMI) & !is.na(INDFMPIR) & RIDAGEYR >= 20
-)
-```
-
-``` r
-
-# Shared formula: RCS(4 knots) on GGT and albumin; linear adjusters
-f <- Surv(time, event) ~ rcs(GGT, 4) + rcs(LBXSAL, 4) +
-       RIDAGEYR + RIAGENDR + RIDRETH1 + log(BMI)
-
-# cph() fit — x=TRUE, y=TRUE, surv=TRUE needed for Predict() and survplot()
-# Inference from this fit is NOT survey-correct; used only for $Design structure
-dd <- datadist(dat2)
-options(datadist = "dd")
-fit_cph <- cph(f, data = dat2, x = TRUE, y = TRUE, surv = TRUE)
-
-# svycoxph() fit — survey-correct coefficients and sandwich vcov
-fit_svy <- svycoxph(f, design = sub_design)
-```
-
-``` r
-
-names(fit_cph)
-```
-
-``` r
-
-names(fit_svy)
-```
+[`names`](https://rdrr.io/r/base/names.html)`(``fit_svy``)`
 
 ### Comparing weighted and unweighted estimates
 
@@ -184,34 +129,7 @@ ignoring the cluster design produces standard errors that are too small,
 with the largest design effect on race/ethnicity (`RIDRETH1` ratio =
 1.61), reflecting its strong geographic clustering.
 
-``` r
-
-tbl_coef <- data.frame(
-  Term    = names(coef(fit_cph)),
-  cph     = round(coef(fit_cph), 4),
-  svy     = round(coef(fit_svy), 4),
-  diff    = round(coef(fit_svy) - coef(fit_cph), 4),
-  SE_cph  = round(sqrt(diag(vcov(fit_cph))), 4),
-  SE_svy  = round(sqrt(diag(vcov(fit_svy))), 4),
-  SE_ratio = round(sqrt(diag(vcov(fit_svy))) / sqrt(diag(vcov(fit_cph))), 3),
-  row.names = NULL
-)
-
-flextable(tbl_coef) |>
-  set_header_labels(
-    Term     = "Term",
-    cph      = "β (cph)",
-    svy      = "β (svycoxph)",
-    diff     = "Δβ",
-    SE_cph   = "SE (cph)",
-    SE_svy   = "SE (svycoxph)",
-    SE_ratio = "SE ratio"
-  ) |>
-  colformat_double(digits = 4) |>
-  bold(j = "SE_ratio", bold = TRUE) |>
-  add_footer_lines("SE ratio > 1 indicates design effect from cluster sampling. Both β and SE differ materially, requiring substitution of both from svycoxph.") |>
-  autofit()
-```
+`tbl_coef`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` Term ``=`` `[`names`](https://rdrr.io/r/base/names.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_cph``)``)``,`` `` cph ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_cph``)``, ``4``)``,`` `` svy ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_svy``)``, ``4``)``,`` `` diff ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_svy``)`` ``-`` `[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_cph``)``, ``4``)``,`` `` SE_cph ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`diag`](https://rdrr.io/r/base/diag.html)`(`[`vcov`](https://rdrr.io/r/stats/vcov.html)`(``fit_cph``)``)``)``, ``4``)``,`` `` SE_svy ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`diag`](https://rdrr.io/r/base/diag.html)`(`[`vcov`](https://rdrr.io/r/stats/vcov.html)`(``fit_svy``)``)``)``, ``4``)``,`` `` SE_ratio ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`diag`](https://rdrr.io/r/base/diag.html)`(`[`vcov`](https://rdrr.io/r/stats/vcov.html)`(``fit_svy``)``)``)`` ``/`` `[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`diag`](https://rdrr.io/r/base/diag.html)`(`[`vcov`](https://rdrr.io/r/stats/vcov.html)`(``fit_cph``)``)``)``, ``3``)``,`` `` row.names ``=`` ``NULL`` ``)`` `` `[`flextable`](https://davidgohel.github.io/flextable/reference/flextable.html)`(``tbl_coef``)`` ``|>`` `` `[`set_header_labels`](https://davidgohel.github.io/flextable/reference/set_header_labels.html)`(`` `` Term ``=`` ``"Term"``,`` `` cph ``=`` ``"β (cph)"``,`` `` svy ``=`` ``"β (svycoxph)"``,`` `` diff ``=`` ``"Δβ"``,`` `` SE_cph ``=`` ``"SE (cph)"``,`` `` SE_svy ``=`` ``"SE (svycoxph)"``,`` `` SE_ratio ``=`` ``"SE ratio"`` `` ``)`` ``|>`` `` `[`colformat_double`](https://davidgohel.github.io/flextable/reference/colformat_double.html)`(``digits ``=`` ``4``)`` ``|>`` `` `[`bold`](https://davidgohel.github.io/flextable/reference/bold.html)`(``j ``=`` ``"SE_ratio"``, bold ``=`` ``TRUE``)`` ``|>`` `` `[`add_footer_lines`](https://davidgohel.github.io/flextable/reference/add_footer_lines.html)`(``"SE ratio > 1 indicates design effect from cluster sampling. Both β and SE differ materially, requiring substitution of both from svycoxph."``)`` ``|>`` `` `[`autofit`](https://davidgohel.github.io/flextable/reference/autofit.html)`(``)`
 
 ------------------------------------------------------------------------
 
@@ -254,18 +172,9 @@ formula), so
 [`svycph_fuse()`](https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.md)
 copies values by position and applies `cph` names.
 
-``` r
+[`str`](https://rdrr.io/r/utils/str.html)`(``fit_cph``$``Design``, max.level ``=`` ``2``)`
 
-str(fit_cph$Design, max.level = 2)
-```
-
-``` r
-
-# Confirm positional correspondence; names will differ
-length(coef(fit_cph)) == length(coef(fit_svy))  # TRUE
-names(coef(fit_cph))   # rms short names
-names(coef(fit_svy))   # full formula names
-```
+`# Confirm positional correspondence; names will differ`` `[`length`](https://rdrr.io/r/base/length.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_cph``)``)`` ``==`` `[`length`](https://rdrr.io/r/base/length.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_svy``)``)`` ``# TRUE`` `[`names`](https://rdrr.io/r/base/names.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_cph``)``)`` ``# rms short names`` `[`names`](https://rdrr.io/r/base/names.html)`(`[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit_svy``)``)`` ``# full formula names`
 
 ------------------------------------------------------------------------
 
@@ -277,16 +186,9 @@ function takes a fitted `cph` object and a fitted `svycoxph` object with
 the same formula, and returns a modified `cph`-class object with
 survey-correct coefficients and vcov.
 
-``` r
+`# Source the implementation (see R/svycph_fuse.R)`` ``# devtools::load_all("~/Documents/R.code/nhanesR")`
 
-# Source the implementation (see R/svycph_fuse.R)
-# devtools::load_all("~/Documents/R.code/nhanesR")
-```
-
-``` r
-
-fit_fused <- svycph_fuse(fit_cph, fit_svy)
-```
+`fit_fused`` ``<-`` `[`svycph_fuse`](https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.md)`(``fit_cph``, ``fit_svy``)`
 
 A note on coefficient naming: `rms` shortens `rcs(GGT, 4)GGT` to `GGT`
 and `log(BMI)` to `BMI`, while `svycoxph` preserves the full term names.
@@ -303,19 +205,9 @@ design effect for each predictor. Race/ethnicity (`RIDRETH1`) shows the
 largest discrepancy (chi-square 8.60 vs 34.59, ratio ~4×), consistent
 with its strong geographic clustering within NHANES PSUs.
 
-``` r
+[`anova`](https://rdrr.io/r/stats/anova.html)`(``fit_fused``)`` ``# survey-correct`` `[`anova`](https://rdrr.io/r/stats/anova.html)`(``fit_cph``)`` ``# naive — overstates significance`
 
-anova(fit_fused)   # survey-correct
-anova(fit_cph)     # naive — overstates significance
-```
-
-``` r
-
-# Predict() works: survey-correct CIs on the GGT smooth effect
-p <- Predict(fit_fused, GGT = seq(5, 150, by = 5), fun = exp)
-plot(p, ylab = "Hazard Ratio (vs median GGT)",
-     xlab = "GGT (U/L)")
-```
+`# Predict() works: survey-correct CIs on the GGT smooth effect`` ``p`` ``<-`` `[`Predict`](https://rdrr.io/pkg/rms/man/Predict.html)`(``fit_fused``, GGT ``=`` `[`seq`](https://rdrr.io/r/base/seq.html)`(``5``, ``150``, by ``=`` ``5``)``, fun ``=`` ``exp``)`` `[`plot`](https://rdrr.io/r/graphics/plot.default.html)`(``p``, ylab ``=`` ``"Hazard Ratio (vs median GGT)"``,`` `` xlab ``=`` ``"GGT (U/L)"``)`
 
 ------------------------------------------------------------------------
 
@@ -366,57 +258,15 @@ For visualization, `se_type = "greenwood"` produces the most
 interpretable confidence bands; `se_type = "lin"` is appropriate for
 formal design-based inference.
 
-``` r
+`# Lin design variance (default) — correct for population inference`` ``h0_lin`` ``<-`` `[`weighted_basehaz`](https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.md)`(``fit_svy``, design ``=`` ``sub_design``, se_type ``=`` ``"lin"``)`` `` ``# Greenwood-weighted — interpretable survplot() confidence bands`` ``h0_gw`` ``<-`` `[`weighted_basehaz`](https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.md)`(``fit_svy``, design ``=`` ``sub_design``, se_type ``=`` ``"greenwood"``)`` `` `[`head`](https://rdrr.io/r/utils/head.html)`(``h0_gw``)`
 
-# Lin design variance (default) — correct for population inference
-h0_lin <- weighted_basehaz(fit_svy, design = sub_design, se_type = "lin")
+`# SE scale comparison (log H0 scale, late follow-up):`` ``# cph unweighted std.err ~ 0.005 (sample-scale statistical precision)`` ``# Greenwood-weighted ~ 0.0002 (population-scale statistical precision)`` ``# Lin design ~ 1e-6 (PSU-selection uncertainty)`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` method ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"cph unweighted"``, ``"Greenwood-weighted"``, ``"Lin design"``)``,`` `` std.err ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(`` `` `[`mean`](https://rdrr.io/r/base/mean.html)`(`[`tail`](https://rdrr.io/r/utils/head.html)`(``fit_cph``$``std.err``, ``5``)``, na.rm ``=`` ``TRUE``)``,`` `` `[`mean`](https://rdrr.io/r/base/mean.html)`(`[`tail`](https://rdrr.io/r/utils/head.html)`(``h0_gw``$``std.err``, ``5``)``)``,`` `` `[`mean`](https://rdrr.io/r/base/mean.html)`(`[`tail`](https://rdrr.io/r/utils/head.html)`(``h0_lin``$``std.err``, ``5``)``)`` `` ``)`` ``)`
 
-# Greenwood-weighted — interpretable survplot() confidence bands
-h0_gw  <- weighted_basehaz(fit_svy, design = sub_design, se_type = "greenwood")
+`h0_naive`` ``<-`` `[`basehaz`](https://rdrr.io/pkg/survival/man/basehaz.html)`(``fit_cph``, centered ``=`` ``TRUE``)`` `` `[`plot`](https://rdrr.io/r/graphics/plot.default.html)`(``h0_naive``$``time``, ``h0_naive``$``hazard``, type ``=`` ``"s"``,`` `` xlab ``=`` ``"Time (years)"``, ylab ``=`` ``"Cumulative baseline hazard"``,`` `` main ``=`` ``"Weighted vs. unweighted baseline hazard"``)`` `[`lines`](https://rdrr.io/r/graphics/lines.html)`(``h0_gw``$``time``, ``h0_gw``$``hazard``, type ``=`` ``"s"``, col ``=`` ``"steelblue"``)`` `[`legend`](https://rdrr.io/r/graphics/legend.html)`(``"topleft"``, `[`c`](https://rdrr.io/r/base/c.html)`(``"Unweighted (cph)"``, ``"Weighted (svycoxph)"``)``,`` `` col ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"black"``, ``"steelblue"``)``, lty ``=`` ``1``)`
 
-head(h0_gw)
-```
+`# Substitute Greenwood-weighted hazard for survplot() with visible bands`` ``fit_fused`` ``<-`` `[`svycph_set_basehaz`](https://dwinsemius.github.io/nhanesR/reference/svycph_set_basehaz.md)`(``fit_fused``, ``h0_gw``)`
 
-``` r
-
-# SE scale comparison (log H0 scale, late follow-up):
-# cph unweighted std.err  ~ 0.005  (sample-scale statistical precision)
-# Greenwood-weighted      ~ 0.0002 (population-scale statistical precision)
-# Lin design              ~ 1e-6   (PSU-selection uncertainty)
-data.frame(
-  method    = c("cph unweighted", "Greenwood-weighted", "Lin design"),
-  std.err   = c(
-    mean(tail(fit_cph$std.err, 5), na.rm = TRUE),
-    mean(tail(h0_gw$std.err, 5)),
-    mean(tail(h0_lin$std.err, 5))
-  )
-)
-```
-
-``` r
-
-h0_naive <- basehaz(fit_cph, centered = TRUE)
-
-plot(h0_naive$time, h0_naive$hazard, type = "s",
-     xlab = "Time (years)", ylab = "Cumulative baseline hazard",
-     main = "Weighted vs. unweighted baseline hazard")
-lines(h0_gw$time, h0_gw$hazard, type = "s", col = "steelblue")
-legend("topleft", c("Unweighted (cph)", "Weighted (svycoxph)"),
-       col = c("black", "steelblue"), lty = 1)
-```
-
-``` r
-
-# Substitute Greenwood-weighted hazard for survplot() with visible bands
-fit_fused <- svycph_set_basehaz(fit_fused, h0_gw)
-```
-
-``` r
-
-survplot(fit_fused, GGT = c(20, 50, 100), conf = "bands",
-         xlab = "Follow-up (years)", ylab = "Survival",
-         label.curves = list(keys = "lines"))
-```
+[`survplot`](https://rdrr.io/pkg/rms/man/survplot.html)`(``fit_fused``, GGT ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``20``, ``50``, ``100``)``, conf ``=`` ``"bands"``,`` `` xlab ``=`` ``"Follow-up (years)"``, ylab ``=`` ``"Survival"``,`` `` label.curves ``=`` `[`list`](https://rdrr.io/r/base/list.html)`(``keys ``=`` ``"lines"``)``)`
 
 ------------------------------------------------------------------------
 
@@ -427,12 +277,7 @@ freedom. For proper survey inference, F-test df should be based on the
 number of PSUs minus the number of strata. This section documents the
 correction.
 
-``` r
-
-# svycoxph stores degf.resid = n_PSU - n_strata directly; no manual computation needed
-fit_svy$degf.resid   # e.g. 138 for the NHANES 1999-2018 analysis population
-fit_fused$svycph_vcov_df  # same value, copied into fused object by svycph_fuse()
-```
+`# svycoxph stores degf.resid = n_PSU - n_strata directly; no manual computation needed`` ``fit_svy``$``degf.resid`` ``# e.g. 138 for the NHANES 1999-2018 analysis population`` ``fit_fused``$``svycph_vcov_df`` ``# same value, copied into fused object by svycph_fuse()`
 
 `anova.rms()` reports chi-square statistics (df = rank of contrast
 matrix), not F-statistics. The survey df (138) therefore affects
@@ -442,12 +287,7 @@ chi-squares remain informative, but for borderline results
 should be used as a check, as it denominates using survey df and returns
 an F-statistic with correct finite- population correction.
 
-``` r
-
-# regTermTest() as a check on borderline spline nonlinearity results
-regTermTest(fit_svy, ~ rcs(GGT, 4))    # overall GGT association
-regTermTest(fit_svy, ~ rcs(LBXSAL, 4)) # overall albumin association
-```
+`# regTermTest() as a check on borderline spline nonlinearity results`` `[`regTermTest`](https://rdrr.io/pkg/survey/man/regTermTest.html)`(``fit_svy``, ``~`` `[`rcs`](https://rdrr.io/pkg/rms/man/rms.trans.html)`(``GGT``, ``4``)``)`` ``# overall GGT association`` `[`regTermTest`](https://rdrr.io/pkg/survey/man/regTermTest.html)`(``fit_svy``, ``~`` `[`rcs`](https://rdrr.io/pkg/rms/man/rms.trans.html)`(``LBXSAL``, ``4``)``)`` ``# overall albumin association`
 
 ------------------------------------------------------------------------
 
@@ -528,6 +368,18 @@ interest, given the covariates in the model. When that condition holds,
 the weighted and unweighted coefficient estimates converge and the
 design correction provides little benefit for coefficient inference.
 
+*Why* this differs so sharply from the mean/proportion case — where
+design weighting is essentially never optional — is a question of
+likelihood structure, not just an empirical regularity.
+`vignettes/survival-framework-comparison.Rmd` derives the weighted
+Cox/piecewise-exponential risk-set contribution term by term (via Binder
+1992) and shows that only the risk-set-sum side of that contribution is
+a population aggregate needing weighted correction; the event’s own
+covariate value is observed exactly and needs none. That asymmetry —
+absent from mean estimation, where both sides of the estimating equation
+are aggregates — is the mechanism behind the ICC/DEFF pattern
+demonstrated empirically here.
+
 The Lin (2000) design variance for the baseline hazard illustrates this
 directly: it is negligibly small precisely *because* the model has
 absorbed the major sources of geographic clustering through its
@@ -538,31 +390,9 @@ misspecification, not just a reason to weight.
 **Efficient screening.** Whether a given analyte warrants the full
 fusion machinery can be assessed cheaply before fitting the Cox model:
 
-``` r
+[`library`](https://rdrr.io/r/base/library.html)`(`[`lme4`](https://github.com/lme4/lme4/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`performance`](https://easystats.github.io/performance/)`)`` `` ``# ICC for each analyte across PSUs — low ICC suggests non-informative sampling`` ``analytes`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"GGT"``, ``"LBXSAL"``, ``"TC"``, ``"BMI"``, ``"RIDAGEYR"``)`` ``icc_tbl`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``analytes``, ``function``(``v``)`` ``{`` `` ``m`` ``<-`` ``lmer``(`[`as.formula`](https://rdrr.io/r/stats/formula.html)`(`[`paste`](https://rdrr.io/r/base/paste.html)`(``v``, ``"~ 1 + (1|SDMVPSU)"``)``)``, data ``=`` ``dat2``, REML ``=`` ``TRUE``)`` `` ``icc`` ``<-`` ``performance``::``icc``(``m``)``$``ICC_adjusted`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``analyte ``=`` ``v``, ICC ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(``icc``, ``4``)``)`` ``}``)`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, ``icc_tbl``)`
 
-library(lme4)
-library(performance)
-
-# ICC for each analyte across PSUs — low ICC suggests non-informative sampling
-analytes <- c("GGT", "LBXSAL", "TC", "BMI", "RIDAGEYR")
-icc_tbl  <- lapply(analytes, function(v) {
-  m   <- lmer(as.formula(paste(v, "~ 1 + (1|SDMVPSU)")), data = dat2, REML = TRUE)
-  icc <- performance::icc(m)$ICC_adjusted
-  data.frame(analyte = v, ICC = round(icc, 4))
-})
-do.call(rbind, icc_tbl)
-```
-
-``` r
-
-# DEFF from design: (design SE / naive SE)^2 for each analyte mean
-deff_tbl <- lapply(analytes, function(v) {
-  se_design <- SE(svymean(reformulate(v), sub_design))
-  se_naive  <- sd(dat2[[v]], na.rm = TRUE) / sqrt(sum(!is.na(dat2[[v]])))
-  data.frame(analyte = v, DEFF = round((se_design / se_naive)^2, 3))
-})
-do.call(rbind, deff_tbl)
-```
+`# DEFF from design: (design SE / naive SE)^2 for each analyte mean`` ``deff_tbl`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``analytes``, ``function``(``v``)`` ``{`` `` ``se_design`` ``<-`` `[`SE`](https://rdrr.io/pkg/survey/man/SE.html)`(`[`svymean`](https://rdrr.io/pkg/survey/man/surveysummary.html)`(`[`reformulate`](https://rdrr.io/r/stats/delete.response.html)`(``v``)``, ``sub_design``)``)`` `` ``se_naive`` ``<-`` `[`sd`](https://rdrr.io/r/stats/sd.html)`(``dat2``[[``v``]``]``, na.rm ``=`` ``TRUE``)`` ``/`` `[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`sum`](https://rdrr.io/r/base/sum.html)`(``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``dat2``[[``v``]``]``)``)``)`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``analyte ``=`` ``v``, DEFF ``=`` `[`round`](https://rdrr.io/r/base/Round.html)`(``(``se_design`` ``/`` ``se_naive``)``^``2``, ``3``)``)`` ``}``)`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, ``deff_tbl``)`
 
 Analytes with ICC \< 0.02 or DEFF \< 1.1 are unlikely to require survey
 weighting for coefficient inference. Those with ICC \> 0.05 or DEFF \>
@@ -745,7 +575,4 @@ present in `Hmisc`.
 
 ## Session information
 
-``` r
-
-sessionInfo()
-```
+[`sessionInfo`](https://rdrr.io/r/utils/sessionInfo.html)`(``)`

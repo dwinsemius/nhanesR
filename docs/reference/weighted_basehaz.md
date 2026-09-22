@@ -40,17 +40,17 @@ weighted_basehaz(
 
   `"lin"`
 
-  :   (default) Lin (2000) design-based linearization variance. Measures
-      sensitivity to PSU selection; appropriate for population-level
-      design inference. Produces very small SEs for large-population
-      surveys like NHANES.
+  : (default) Lin (2000) design-based linearization variance. Measures
+    sensitivity to PSU selection; appropriate for population-level
+    design inference. Produces very small SEs for large-population
+    surveys like NHANES.
 
   `"greenwood"`
 
-  :   Survey-weighted Greenwood formula: \\\sum\_{t_k \leq t} n^w(t_k) /
-      \[Y^w(t_k)\]^2\\. Measures statistical precision from the weighted
-      event count; gives confidence bands of interpretable width for
-      `survplot()`.
+  : Survey-weighted Greenwood formula: \\\sum\_{t_k \leq t} n^w(t_k) /
+    \[Y^w(t_k)\]^2\\. Measures statistical precision from the weighted
+    event count; gives confidence bands of interpretable width for
+    `survplot()`.
 
 ## Value
 

@@ -140,28 +140,7 @@ follow-up — the longest follow-up in the dataset.
 
 The workaround is to download the two early files directly:
 
-``` r
-
-library(haven)
-
-lab18 <- read_xpt(url(
-  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/1999/DataFiles/Lab18.xpt"))
-l40b  <- read_xpt(url(
-  "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2001/DataFiles/L40_B.xpt"))
-
-early_df <- rbind(
-  data.frame(SEQN = as.character(lab18$SEQN),
-             GGT  = lab18$LBXSGTSI,
-             ALT  = lab18$LBXSATSI,
-             AST  = lab18$LBXSASSI,
-             ALP  = lab18$LBXSAPSI),
-  data.frame(SEQN = as.character(l40b$SEQN),
-             GGT  = l40b$LBXSGTSI,
-             ALT  = l40b$LBXSATSI,
-             AST  = l40b$LBXSASSI,
-             ALP  = l40b$LBDSAPSI)   # prefix change: LBDS- not LBXS-
-)
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`haven`](https://haven.tidyverse.org)`)`` `` ``lab18`` ``<-`` `[`read_xpt`](https://haven.tidyverse.org/reference/read_xpt.html)`(`[`url`](https://rdrr.io/r/base/connections.html)`(`` `` ``"https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/1999/DataFiles/Lab18.xpt"``)``)`` ``l40b`` ``<-`` `[`read_xpt`](https://haven.tidyverse.org/reference/read_xpt.html)`(`[`url`](https://rdrr.io/r/base/connections.html)`(`` `` ``"https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2001/DataFiles/L40_B.xpt"``)``)`` `` ``early_df`` ``<-`` `[`rbind`](https://rdrr.io/r/base/cbind.html)`(`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``lab18``$``SEQN``)``,`` `` GGT ``=`` ``lab18``$``LBXSGTSI``,`` `` ALT ``=`` ``lab18``$``LBXSATSI``,`` `` AST ``=`` ``lab18``$``LBXSASSI``,`` `` ALP ``=`` ``lab18``$``LBXSAPSI``)``,`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``l40b``$``SEQN``)``,`` `` GGT ``=`` ``l40b``$``LBXSGTSI``,`` `` ALT ``=`` ``l40b``$``LBXSATSI``,`` `` AST ``=`` ``l40b``$``LBXSASSI``,`` `` ALP ``=`` ``l40b``$``LBDSAPSI``)`` ``# prefix change: LBDS- not LBXS-`` ``)`
 
 Note that L40_B already embeds the cycle suffix (`_B`) in its file name;
 the nhanesR URL builder would append `_B` a second time, producing
@@ -183,12 +162,7 @@ cycle in which it appears and the file that contains it.
 
 ### Example 1: A well-behaved analyte
 
-``` r
-
-library(nhanesR)
-
-nhanes_variable_map("LBXSGTSI")
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`nhanesR`](https://dwinsemius.github.io/nhanesR/)`)`` `` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"LBXSGTSI"``)`
 
 GGT (`LBXSGTSI`) appears in all eight cycles under the same name in the
 `BIOPRO` family of files. This is the easy case: a single call to
@@ -197,11 +171,7 @@ with `cycles = "all"` will retrieve it without any further bookkeeping.
 
 ### Example 2: A variable with a prefix change
 
-``` r
-
-nhanes_variable_map("LBXSAPSI")
-nhanes_variable_map("LBDSAPSI")
-```
+[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"LBXSAPSI"``)`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"LBDSAPSI"``)`
 
 Alkaline phosphatase (ALP) illustrates the prefix-change problem. The
 primary variable `LBXSAPSI` is present in some cycles; `LBDSAPSI`
@@ -213,10 +183,7 @@ any cycle where `LBDSAPSI` is the recorded name.
 resolves this by searching on the conceptual description rather than the
 exact variable name:
 
-``` r
-
-nhanes_search_variables("alkaline phosphatase", component = "Laboratory")
-```
+[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"alkaline phosphatase"``, component ``=`` ``"Laboratory"``)`
 
 This returns both `LBXSAPSI` and `LBDSAPSI` with their respective cycle
 coverage, making the naming transition visible before any data is
@@ -228,10 +195,7 @@ file uses.
 
 ### Example 3: An analyte missing from one cycle
 
-``` r
-
-nhanes_variable_map("LBXSASSI")
-```
+[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"LBXSASSI"``)`
 
 AST (`LBXSASSI`) is present in seven of the eight GGT-era cycles but
 absent from 2007–2008. The variable map makes the gap explicit: the
@@ -242,10 +206,7 @@ but only interpretable if the gap is known in advance.
 
 ### Example 4: An analyte confined to a few cycles
 
-``` r
-
-nhanes_variable_map("LBXPT21")
-```
+[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"LBXPT21"``)`
 
 Parathyroid hormone (`LBXPT21`) was measured in only two NHANES cycles:
 2003–2004 and 2005–2006. The variable map returns exactly two rows. Any
@@ -257,10 +218,7 @@ require manually checking both data dictionaries.
 
 ### Example 5: A questionnaire variable with a case change
 
-``` r
-
-nhanes_search_variables("liver condition", component = "Questionnaire")
-```
+[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"liver condition"``, component ``=`` ``"Questionnaire"``)`
 
 The self-reported liver disease question (`MCQ160L`: “Has a doctor ever
 told you that you had any kind of liver condition?”) changes case at the
@@ -284,20 +242,7 @@ containing `SEQN`, the cycle label, and the harmonised analyte column.
 
 ### Downloading ALP across all available cycles
 
-``` r
-
-alp_cycles <- c("1999-2000", "2001-2002", "2003-2004",
-                "2013-2014", "2015-2016", "2017-2018")
-
-alp_list <- nhanes_download_analyte(
-  "alkaline phosphatase",
-  cycles    = alp_cycles,
-  component = "Laboratory"
-)
-
-# Each element is a data frame for one cycle
-lapply(alp_list, head, 3)
-```
+`alp_cycles`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"1999-2000"``, ``"2001-2002"``, ``"2003-2004"``,`` `` ``"2013-2014"``, ``"2015-2016"``, ``"2017-2018"``)`` `` ``alp_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"alkaline phosphatase"``,`` `` cycles ``=`` ``alp_cycles``,`` `` component ``=`` ``"Laboratory"`` ``)`` `` ``# Each element is a data frame for one cycle`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``alp_list``, ``head``, ``3``)`
 
 Internally,
 [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)
@@ -307,20 +252,7 @@ canonical name was found first) regardless of which prefix the
 underlying file uses. The researcher never needs to know which prefix
 applies to which cycle.
 
-``` r
-
-alp_df <- do.call(rbind, lapply(alp_list, function(df) {
-  # Identify whichever column was returned — LBXSAPSI or LBDSAPSI
-  v <- intersect(c("LBXSAPSI", "LBDSAPSI"), names(df))
-  data.frame(
-    SEQN = as.character(df$SEQN),
-    ALP  = df[[v[1]]],
-    stringsAsFactors = FALSE
-  )
-}))
-
-cat("ALP rows:", nrow(alp_df), "  non-NA:", sum(!is.na(alp_df$ALP)), "\n")
-```
+`alp_df`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``alp_list``, ``function``(``df``)`` ``{`` `` ``# Identify whichever column was returned — LBXSAPSI or LBDSAPSI`` `` ``v`` ``<-`` `[`intersect`](https://rdrr.io/r/base/sets.html)`(`[`c`](https://rdrr.io/r/base/c.html)`(``"LBXSAPSI"``, ``"LBDSAPSI"``)``, `[`names`](https://rdrr.io/r/base/names.html)`(``df``)``)`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``df``$``SEQN``)``,`` `` ALP ``=`` ``df``[[``v``[``1``]``]``]``,`` `` stringsAsFactors ``=`` ``FALSE`` `` ``)`` ``}``)``)`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"ALP rows:"``, `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``alp_df``)``, ``" non-NA:"``, `[`sum`](https://rdrr.io/r/base/sum.html)`(``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``alp_df``$``ALP``)``)``, ``"\n"``)`
 
 ### Downloading ALT across all available cycles
 
@@ -328,24 +260,7 @@ ALT (`LBXSATSI`) is the cleanest case in this panel: a single variable
 name in the BIOPRO family of files across all eight GGT-era cycles
 (2003–2018), with no prefix change and no gaps.
 
-``` r
-
-alt_cycles <- c("2003-2004", "2005-2006", "2007-2008", "2009-2010",
-                "2011-2012", "2013-2014", "2015-2016", "2017-2018")
-
-alt_list <- nhanes_download_analyte(
-  "alanine",
-  cycles    = alt_cycles,
-  component = "Laboratory"
-)
-
-alt_df <- do.call(rbind, lapply(alt_list, function(df) {
-  data.frame(SEQN = as.character(df$SEQN), ALT = df$LBXSATSI,
-             stringsAsFactors = FALSE)
-}))
-
-cat("ALT rows:", nrow(alt_df), "  non-NA:", sum(!is.na(alt_df$ALT)), "\n")
-```
+`alt_cycles`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"2003-2004"``, ``"2005-2006"``, ``"2007-2008"``, ``"2009-2010"``,`` `` ``"2011-2012"``, ``"2013-2014"``, ``"2015-2016"``, ``"2017-2018"``)`` `` ``alt_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"alanine"``,`` `` cycles ``=`` ``alt_cycles``,`` `` component ``=`` ``"Laboratory"`` ``)`` `` ``alt_df`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``alt_list``, ``function``(``df``)`` ``{`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``df``$``SEQN``)``, ALT ``=`` ``df``$``LBXSATSI``,`` `` stringsAsFactors ``=`` ``FALSE``)`` ``}``)``)`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"ALT rows:"``, `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``alt_df``)``, ``" non-NA:"``, `[`sum`](https://rdrr.io/r/base/sum.html)`(``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``alt_df``$``ALT``)``)``, ``"\n"``)`
 
 Note that 1999–2002 participants lack ALT entirely (the BIOPRO-format
 comprehensive metabolic panel was not introduced until the 2003
@@ -354,24 +269,7 @@ correctly produce `NA` for those earlier rows.
 
 ### Downloading AST across its available cycles
 
-``` r
-
-# Explicitly exclude 2007-2008: nhanes_variable_map showed no coverage there
-ast_cycles <- c("2003-2004", "2005-2006", "2009-2010", "2011-2012",
-                "2013-2014", "2015-2016", "2017-2018")
-
-ast_list <- nhanes_download_analyte(
-  "aspartate",
-  cycles    = ast_cycles,
-  component = "Laboratory"
-)
-
-ast_df <- do.call(rbind, lapply(ast_list, function(df) {
-  v <- intersect(c("LBXSASSI", "LBDSASSI"), names(df))
-  data.frame(SEQN = as.character(df$SEQN), AST = df[[v[1]]],
-             stringsAsFactors = FALSE)
-}))
-```
+`# Explicitly exclude 2007-2008: nhanes_variable_map showed no coverage there`` ``ast_cycles`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"2003-2004"``, ``"2005-2006"``, ``"2009-2010"``, ``"2011-2012"``,`` `` ``"2013-2014"``, ``"2015-2016"``, ``"2017-2018"``)`` `` ``ast_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"aspartate"``,`` `` cycles ``=`` ``ast_cycles``,`` `` component ``=`` ``"Laboratory"`` ``)`` `` ``ast_df`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``ast_list``, ``function``(``df``)`` ``{`` `` ``v`` ``<-`` `[`intersect`](https://rdrr.io/r/base/sets.html)`(`[`c`](https://rdrr.io/r/base/c.html)`(``"LBXSASSI"``, ``"LBDSASSI"``)``, `[`names`](https://rdrr.io/r/base/names.html)`(``df``)``)`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``df``$``SEQN``)``, AST ``=`` ``df``[[``v``[``1``]``]``]``,`` `` stringsAsFactors ``=`` ``FALSE``)`` ``}``)``)`
 
 By passing only the seven cycles where AST is known to exist, the
 download skips 2007–2008 cleanly. Merging this `ast_df` into the
@@ -386,39 +284,7 @@ Because
 returns `MCQ160L` and `MCQ160l` as separate records, they must be
 downloaded separately and then combined:
 
-``` r
-
-# Early cycles: uppercase L
-mcq_early <- nhanes_download_analyte(
-  "MCQ160L",
-  cycles    = c("2003-2004", "2005-2006", "2007-2008", "2009-2010"),
-  component = "Questionnaire"
-)
-df_early <- do.call(rbind, lapply(mcq_early, function(df) {
-  data.frame(SEQN          = as.character(df$SEQN),
-             liver_ever    = df$MCQ160L,
-             liver_current = df$MCQ170L,
-             stringsAsFactors = FALSE)
-}))
-
-# Late cycles: lowercase l
-mcq_late <- nhanes_download_analyte(
-  "MCQ160l",
-  cycles    = c("2011-2012", "2013-2014", "2015-2016", "2017-2018"),
-  component = "Questionnaire"
-)
-df_late <- do.call(rbind, lapply(mcq_late, function(df) {
-  data.frame(SEQN          = as.character(df$SEQN),
-             liver_ever    = df$MCQ160l,
-             liver_current = df$MCQ170l,
-             stringsAsFactors = FALSE)
-}))
-
-mcq_df <- rbind(df_early, df_late)
-cat("Liver disease history rows:", nrow(mcq_df), "\n")
-cat("Ever reported (code 1):",
-    sum(mcq_df$liver_ever == 1, na.rm = TRUE), "\n")
-```
+`# Early cycles: uppercase L`` ``mcq_early`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"MCQ160L"``,`` `` cycles ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"2003-2004"``, ``"2005-2006"``, ``"2007-2008"``, ``"2009-2010"``)``,`` `` component ``=`` ``"Questionnaire"`` ``)`` ``df_early`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``mcq_early``, ``function``(``df``)`` ``{`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``df``$``SEQN``)``,`` `` liver_ever ``=`` ``df``$``MCQ160L``,`` `` liver_current ``=`` ``df``$``MCQ170L``,`` `` stringsAsFactors ``=`` ``FALSE``)`` ``}``)``)`` `` ``# Late cycles: lowercase l`` ``mcq_late`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"MCQ160l"``,`` `` cycles ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"2011-2012"``, ``"2013-2014"``, ``"2015-2016"``, ``"2017-2018"``)``,`` `` component ``=`` ``"Questionnaire"`` ``)`` ``df_late`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``mcq_late``, ``function``(``df``)`` ``{`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``SEQN ``=`` `[`as.character`](https://rdrr.io/r/base/character.html)`(``df``$``SEQN``)``,`` `` liver_ever ``=`` ``df``$``MCQ160l``,`` `` liver_current ``=`` ``df``$``MCQ170l``,`` `` stringsAsFactors ``=`` ``FALSE``)`` ``}``)``)`` `` ``mcq_df`` ``<-`` `[`rbind`](https://rdrr.io/r/base/cbind.html)`(``df_early``, ``df_late``)`` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"Liver disease history rows:"``, `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``mcq_df``)``, ``"\n"``)`` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"Ever reported (code 1):"``,`` `` `[`sum`](https://rdrr.io/r/base/sum.html)`(``mcq_df``$``liver_ever`` ``==`` ``1``, na.rm ``=`` ``TRUE``)``, ``"\n"``)`
 
 The stacking of `df_early` and `df_late` under a common `liver_ever`
 column name produces a single consistent variable spanning all eight
@@ -432,10 +298,7 @@ variables from conceptually different specimen types. Searching for
 “albumin” without specifying a component returns results from both the
 laboratory and examination files:
 
-``` r
-
-nhanes_search_variables("albumin")
-```
+[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"albumin"``)`
 
 The results include at minimum:
 
@@ -455,10 +318,7 @@ specimen types returned under the same generic search term.
 
 Specifying `component = "Laboratory"` narrows the results:
 
-``` r
-
-nhanes_search_variables("albumin", component = "Laboratory")
-```
+[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"albumin"``, component ``=`` ``"Laboratory"``)`
 
 This returns only `LBXSAL`, eliminating the urine variable from
 consideration. The component argument is therefore not merely a
@@ -472,31 +332,7 @@ merging the wrong albumin into a hepatic or renal endpoint analysis.
 With each analyte downloaded and harmonised, all are merged into the
 analytic base by `SEQN`:
 
-``` r
-
-base_full <- readRDS("~/Documents/R.code/nhanesR/analytic_survival.rds")
-
-# Standard eligibility filters
-base <- base_full[
-  !is.na(base_full$statin)   & !base_full$statin        &
-  !is.na(base_full$ELIGSTAT) & base_full$ELIGSTAT == 1  &
-  !is.na(base_full$time)     & base_full$time > 2, ]
-base$time_lm   <- base$time - 2
-base$WTMEC_adj <- base$WTMEC2YR / 8   # 8 post-Census-2000 cycles
-
-# Merge each analyte; all.x = TRUE preserves all base rows
-base <- merge(base, alt_df,  by = "SEQN", all.x = TRUE)
-base <- merge(base, ast_df,  by = "SEQN", all.x = TRUE)
-base <- merge(base, alp_df,  by = "SEQN", all.x = TRUE)
-base <- merge(base, mcq_df,  by = "SEQN", all.x = TRUE)
-
-# Verify availability by cycle
-cat("\nAST availability by cycle:\n")
-print(table(base$cycle, !is.na(base$AST)))
-
-cat("\nALP availability by cycle:\n")
-print(table(base$cycle, !is.na(base$ALP)))
-```
+`base_full`` ``<-`` `[`readRDS`](https://rdrr.io/r/base/readRDS.html)`(``"~/Documents/R.code/nhanesR/analytic_survival.rds"``)`` `` ``# Standard eligibility filters`` ``base`` ``<-`` ``base_full``[`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``base_full``$``statin``)`` ``&`` ``!``base_full``$``statin`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``base_full``$``ELIGSTAT``)`` ``&`` ``base_full``$``ELIGSTAT`` ``==`` ``1`` ``&`` `` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``base_full``$``time``)`` ``&`` ``base_full``$``time`` ``>`` ``2``, ``]`` ``base``$``time_lm`` ``<-`` ``base``$``time`` ``-`` ``2`` ``base``$``WTMEC_adj`` ``<-`` ``base``$``WTMEC2YR`` ``/`` ``8`` ``# 8 post-Census-2000 cycles`` `` ``# Merge each analyte; all.x = TRUE preserves all base rows`` ``base`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``base``, ``alt_df``, by ``=`` ``"SEQN"``, all.x ``=`` ``TRUE``)`` ``base`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``base``, ``ast_df``, by ``=`` ``"SEQN"``, all.x ``=`` ``TRUE``)`` ``base`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``base``, ``alp_df``, by ``=`` ``"SEQN"``, all.x ``=`` ``TRUE``)`` ``base`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``base``, ``mcq_df``, by ``=`` ``"SEQN"``, all.x ``=`` ``TRUE``)`` `` ``# Verify availability by cycle`` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"\nAST availability by cycle:\n"``)`` `[`print`](https://rdrr.io/r/base/print.html)`(`[`table`](https://rdrr.io/r/base/table.html)`(``base``$``cycle``, ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``base``$``AST``)``)``)`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"\nALP availability by cycle:\n"``)`` `[`print`](https://rdrr.io/r/base/print.html)`(`[`table`](https://rdrr.io/r/base/table.html)`(``base``$``cycle``, ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``base``$``ALP``)``)``)`
 
 The cycle-by-availability table makes the gap structure immediately
 visible: AST shows `FALSE` for all 2007–2008 rows; ALP shows `FALSE` for
@@ -510,26 +346,7 @@ documented absences — not merge failures.
 Once the base is assembled, derived variables can be computed in a
 single pass:
 
-``` r
-
-# De Ritis ratio (requires both AST and ALT)
-base$de_ritis <- base$AST / base$ALT
-
-# MELD-XI (no INR required; bilirubin and creatinine already in base)
-# Convention: floor both inputs at 1.0 before log-transform
-base$creat_meld <- pmin(pmax(base$creatinine, 1.0), 4.0)
-base$bili_meld  <- pmax(base$bilirubin, 1.0)
-base$MELD_XI <- 5.11 * log(base$bili_meld) +
-               11.76 * log(base$creat_meld) + 9.44
-
-cat("De Ritis ratio: median",
-    round(median(base$de_ritis, na.rm = TRUE), 2),
-    " IQR", paste(round(quantile(base$de_ritis, c(0.25, 0.75), na.rm = TRUE), 2),
-                  collapse = "–"), "\n")
-
-cat("MELD-XI: 90th percentile",
-    round(quantile(base$MELD_XI, .90, na.rm = TRUE), 1), "\n")
-```
+`# De Ritis ratio (requires both AST and ALT)`` ``base``$``de_ritis`` ``<-`` ``base``$``AST`` ``/`` ``base``$``ALT`` `` ``# MELD-XI (no INR required; bilirubin and creatinine already in base)`` ``# Convention: floor both inputs at 1.0 before log-transform`` ``base``$``creat_meld`` ``<-`` `[`pmin`](https://rdrr.io/r/base/Extremes.html)`(`[`pmax`](https://rdrr.io/r/base/Extremes.html)`(``base``$``creatinine``, ``1.0``)``, ``4.0``)`` ``base``$``bili_meld`` ``<-`` `[`pmax`](https://rdrr.io/r/base/Extremes.html)`(``base``$``bilirubin``, ``1.0``)`` ``base``$``MELD_XI`` ``<-`` ``5.11`` ``*`` `[`log`](https://rdrr.io/r/base/Log.html)`(``base``$``bili_meld``)`` ``+`` `` ``11.76`` ``*`` `[`log`](https://rdrr.io/r/base/Log.html)`(``base``$``creat_meld``)`` ``+`` ``9.44`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"De Ritis ratio: median"``,`` `` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`median`](https://rdrr.io/r/stats/median.html)`(``base``$``de_ritis``, na.rm ``=`` ``TRUE``)``, ``2``)``,`` `` ``" IQR"``, `[`paste`](https://rdrr.io/r/base/paste.html)`(`[`round`](https://rdrr.io/r/base/Round.html)`(`[`quantile`](https://rdrr.io/r/stats/quantile.html)`(``base``$``de_ritis``, `[`c`](https://rdrr.io/r/base/c.html)`(``0.25``, ``0.75``)``, na.rm ``=`` ``TRUE``)``, ``2``)``,`` `` collapse ``=`` ``"–"``)``, ``"\n"``)`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(``"MELD-XI: 90th percentile"``,`` `` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`quantile`](https://rdrr.io/r/stats/quantile.html)`(``base``$``MELD_XI``, ``.90``, na.rm ``=`` ``TRUE``)``, ``1``)``, ``"\n"``)`
 
 ------------------------------------------------------------------------
 
@@ -686,7 +503,4 @@ and clinical questions that motivated the analysis.
 
 ## Session information
 
-``` r
-
-sessionInfo()
-```
+[`sessionInfo`](https://rdrr.io/r/utils/sessionInfo.html)`(``)`

@@ -29,12 +29,7 @@ The workflow has nine steps:
 8.  Link mortality follow-up and prepare the survival dataset
 9.  Fit a survey-weighted Cox proportional hazards model
 
-``` r
-
-library(nhanesR)
-library(survival)
-library(survey)
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`nhanesR`](https://dwinsemius.github.io/nhanesR/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survival`](https://github.com/therneau/survival)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survey`](http://r-survey.r-forge.r-project.org/survey/)`)`
 
 ------------------------------------------------------------------------
 
@@ -58,28 +53,11 @@ a persistent cache, set `nhanesR.cache_dir` in your `~/.Rprofile`:
 
 To make changes permanent, add lines like these to your `~/.Rprofile`:
 
-``` r
-
-options(
-  nhanesR.cache_dir = "/data/nhanes_cache",  # e.g. a shared server path
-  nhanesR.verbose   = FALSE,
-  nhanesR.timeout   = 300L
-)
-```
+[`options`](https://rdrr.io/r/base/options.html)`(`` `` nhanesR.cache_dir ``=`` ``"/data/nhanes_cache"``, ``# e.g. a shared server path`` `` nhanesR.verbose ``=`` ``FALSE``,`` `` nhanesR.timeout ``=`` ``300L`` ``)`
 
 To check or change settings interactively during a session:
 
-``` r
-
-# View current cache location
-nhanes_cache_dir()
-
-# Opt in to a persistent home-directory cache for this session
-nhanes_cache_dir("~/my_nhanes_cache")
-
-# Suppress download messages for this session
-options(nhanesR.verbose = FALSE)
-```
+`# View current cache location`` `[`nhanes_cache_dir`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.md)`(``)`` `` ``# Set a custom session-local cache path (CRAN-safe)`` `[`nhanes_cache_dir`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.md)`(`[`file.path`](https://rdrr.io/r/base/file.path.html)`(`[`tempdir`](https://rdrr.io/r/base/tempfile.html)`(``)``, ``"my_nhanes_cache"``)``)`` `` ``# Suppress download messages for this session`` `[`options`](https://rdrr.io/r/base/options.html)`(``nhanesR.verbose ``=`` ``FALSE``)`
 
 ------------------------------------------------------------------------
 
@@ -105,24 +83,12 @@ within a cycle. SEQNs are not reused across cycles, so always include
 
 ## 1. What cycles and files are available?
 
-``` r
-
-# All continuous NHANES cycles known to nhanesR
-nhanes_cycles()
-
-# Just the cycle labels for the first ten continuous cycles (1999-2018)
-cycles <- nhanes_cycles()[1:10, "cycle"]
-cycles
-```
+`# All continuous NHANES cycles known to nhanesR`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)`` `` ``# Just the cycle labels for the first ten continuous cycles (1999-2018)`` ``cycles`` ``<-`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``[``1``:``10``, ``"cycle"``]`` ``cycles`
 
 To see what files are available for a specific cycle and component, use
 [`nhanes_manifest()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md):
 
-``` r
-
-nhanes_manifest("2015-2016", "Laboratory")
-nhanes_manifest("2013-2014", "Questionnaire")
-```
+[`nhanes_manifest`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md)`(``"2015-2016"``, ``"Laboratory"``)`` `[`nhanes_manifest`](https://dwinsemius.github.io/nhanesR/reference/nhanes_manifest.md)`(``"2013-2014"``, ``"Questionnaire"``)`
 
 ------------------------------------------------------------------------
 
@@ -136,28 +102,9 @@ searches the CDC variable catalog by keyword.
 returns a one-row-per-cycle lookup table showing the exact file name and
 variable name to use.
 
-``` r
+`# Find total cholesterol across all cycles (summarized by default)`` `[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"total cholesterol"``, component ``=`` ``"Laboratory"``)`` `` ``# Raw one-row-per-cycle output`` `[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"total cholesterol"``, component ``=`` ``"Laboratory"``,`` `` summarize ``=`` ``FALSE``)`
 
-# Find total cholesterol across all cycles (summarized by default)
-nhanes_search_variables("total cholesterol", component = "Laboratory")
-
-# Raw one-row-per-cycle output
-nhanes_search_variables("total cholesterol", component = "Laboratory",
-                         summarize = FALSE)
-```
-
-``` r
-
-# Per-cycle lookup: which file and variable name holds total cholesterol?
-nhanes_variable_map("total cholesterol")
-
-# HDL changed variable name three times across cycles
-nhanes_variable_map("HDL")
-
-# Questionnaire: history of MI (keep_vars filters out false positives)
-nhanes_variable_map("heart attack", component = "Questionnaire",
-                     keep_vars = c("MCQ160E", "MCQ160e"))
-```
+`# Per-cycle lookup: which file and variable name holds total cholesterol?`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"total cholesterol"``)`` `` ``# HDL changed variable name three times across cycles`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"HDL"``)`` `` ``# Questionnaire: history of MI (keep_vars filters out false positives)`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"heart attack"``, component ``=`` ``"Questionnaire"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"MCQ160E"``, ``"MCQ160e"``)``)`
 
 The
 [`nhanes_variable_map()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)
@@ -175,19 +122,7 @@ automatically — for example, total cholesterol was in `LAB13`
 (1999–2000), `L13_B` (2001–2002), `L13_C` (2003–2004), and `TCHOL_D`
 onward.
 
-``` r
-
-cycles <- nhanes_cycles()[1:10, "cycle"]  # 1999-2018
-
-# Demographics — file name has always been DEMO; nhanes_download() works fine
-demo_list <- nhanes_download("DEMO", cycles)
-
-# Total cholesterol — file renamed across early cycles; use download_analyte()
-tchol_list <- nhanes_download_analyte("total cholesterol", cycles)
-
-# HDL cholesterol
-hdl_list <- nhanes_download_analyte("HDL", cycles)
-```
+`cycles`` ``<-`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``[``1``:``10``, ``"cycle"``]`` ``# 1999-2018`` `` ``# Demographics — file name has always been DEMO; nhanes_download() works fine`` ``demo_list`` ``<-`` `[`nhanes_download`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download.md)`(``"DEMO"``, ``cycles``)`` `` ``# Total cholesterol — file renamed across early cycles; use download_analyte()`` ``tchol_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"total cholesterol"``, ``cycles``)`` `` ``# HDL cholesterol`` ``hdl_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"HDL"``, ``cycles``)`
 
 Files are downloaded in SAS transport (XPT) format, parsed, and cached
 locally. Subsequent calls load from cache.
@@ -201,25 +136,7 @@ The same
 function works for any component. Use `keep_vars` when a search term
 would otherwise match false positives.
 
-``` r
-
-# History of myocardial infarction (MCQ file)
-# MCQ160E (1999-2010) and MCQ160e (2011-2018) are the same question;
-# keep_vars filters out RXQ510 which also mentions "heart attack"
-mi_list <- nhanes_download_analyte(
-  "heart attack", cycles,
-  component = "Questionnaire",
-  keep_vars = c("MCQ160E", "MCQ160e")
-)
-
-# Cholesterol-lowering medication (BPQ file)
-# "Ever told to take prescribed medicine to lower blood cholesterol?"
-chol_med_list <- nhanes_download_analyte(
-  "cholesterol", cycles,
-  component = "Questionnaire",
-  keep_vars = c("BPQ090D", "BPQ101D")
-)
-```
+`# History of myocardial infarction (MCQ file)`` ``# MCQ160E (1999-2010) and MCQ160e (2011-2018) are the same question;`` ``# keep_vars filters out RXQ510 which also mentions "heart attack"`` ``mi_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"heart attack"``, ``cycles``,`` `` component ``=`` ``"Questionnaire"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"MCQ160E"``, ``"MCQ160e"``)`` ``)`` `` ``# Cholesterol-lowering medication (BPQ file)`` ``# "Ever told to take prescribed medicine to lower blood cholesterol?"`` ``chol_med_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(`` `` ``"cholesterol"``, ``cycles``,`` `` component ``=`` ``"Questionnaire"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"BPQ090D"``, ``"BPQ101D"``)`` ``)`
 
 ------------------------------------------------------------------------
 
@@ -235,48 +152,12 @@ its label attribute, no variable codes needed. `prefer_mgdl = TRUE`
 (default) drops mmol/L duplicates automatically. `trim = TRUE` (default)
 returns only `SEQN`, `cycle`, and the target column — ready for merging.
 
-``` r
-
-# Total cholesterol — LBXTC throughout, but label_pattern narrows the match
-# in 1999-2004 when TC and HDL were bundled in the same file
-TC <- nhanes_harmonize(
-  tchol_list,
-  unit          = "mg/dL",
-  name          = "TC_mgdl",
-  label_pattern = "total cholesterol"
-)
-
-# HDL — three different variable names across cycles; unit approach handles all
-HDL <- nhanes_harmonize(
-  hdl_list,
-  unit          = "mg/dL",
-  name          = "HDL_mgdl",
-  label_pattern = "HDL"
-)
-
-str(TC)   # SEQN (chr), cycle (chr), TC_mgdl (num)
-str(HDL)  # SEQN (chr), cycle (chr), HDL_mgdl (num)
-```
+`# Total cholesterol — LBXTC throughout, but label_pattern narrows the match`` ``# in 1999-2004 when TC and HDL were bundled in the same file`` ``TC`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(`` `` ``tchol_list``,`` `` unit ``=`` ``"mg/dL"``,`` `` name ``=`` ``"TC_mgdl"``,`` `` label_pattern ``=`` ``"total cholesterol"`` ``)`` `` ``# HDL — three different variable names across cycles; unit approach handles all`` ``HDL`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(`` `` ``hdl_list``,`` `` unit ``=`` ``"mg/dL"``,`` `` name ``=`` ``"HDL_mgdl"``,`` `` label_pattern ``=`` ``"HDL"`` ``)`` `` `[`str`](https://rdrr.io/r/utils/str.html)`(``TC``)`` ``# SEQN (chr), cycle (chr), TC_mgdl (num)`` `[`str`](https://rdrr.io/r/utils/str.html)`(``HDL``)`` ``# SEQN (chr), cycle (chr), HDL_mgdl (num)`
 
 **Mapping-based harmonization** (questionnaire data): use `mapping` when
 there is no unit to match. The same `trim = TRUE` default applies.
 
-``` r
-
-MI <- nhanes_harmonize(
-  mi_list,
-  mapping = c(MCQ160E = "MI_history", MCQ160e = "MI_history")
-)
-
-chol_med <- nhanes_harmonize(
-  chol_med_list,
-  mapping = c(BPQ090D = "chol_med", BPQ101D = "chol_med")
-)
-
-# Each result is a trim 3-column data frame ready for merging
-str(MI)        # SEQN, cycle, MI_history
-str(chol_med)  # SEQN, cycle, chol_med
-```
+`MI`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(`` `` ``mi_list``,`` `` mapping ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``MCQ160E ``=`` ``"MI_history"``, MCQ160e ``=`` ``"MI_history"``)`` ``)`` `` ``chol_med`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(`` `` ``chol_med_list``,`` `` mapping ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``BPQ090D ``=`` ``"chol_med"``, BPQ101D ``=`` ``"chol_med"``)`` ``)`` `` ``# Each result is a trim 3-column data frame ready for merging`` `[`str`](https://rdrr.io/r/utils/str.html)`(``MI``)`` ``# SEQN, cycle, MI_history`` `[`str`](https://rdrr.io/r/utils/str.html)`(``chol_med``)`` ``# SEQN, cycle, chol_med`
 
 ------------------------------------------------------------------------
 
@@ -293,22 +174,7 @@ NHANES questionnaire responses use a numeric coding convention:
 
 For analysis, recode to `0`/`1` and treat `7` and `9` as `NA`:
 
-``` r
-
-nhanes_recode_yn <- function(x) {
-  out        <- rep(NA_integer_, length(x))
-  out[x == 1] <- 1L
-  out[x == 2] <- 0L
-  out
-}
-
-MI$MI_history      <- nhanes_recode_yn(MI$MI_history)
-chol_med$chol_med  <- nhanes_recode_yn(chol_med$chol_med)
-
-# Verify: should see 0, 1, and NA only
-table(MI$MI_history,      useNA = "always")
-table(chol_med$chol_med,  useNA = "always")
-```
+`nhanes_recode_yn`` ``<-`` ``function``(``x``)`` ``{`` `` ``out`` ``<-`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``NA_integer_``, `[`length`](https://rdrr.io/r/base/length.html)`(``x``)``)`` `` ``out``[``x`` ``==`` ``1``]`` ``<-`` ``1L`` `` ``out``[``x`` ``==`` ``2``]`` ``<-`` ``0L`` `` ``out`` ``}`` `` ``MI``$``MI_history`` ``<-`` ``nhanes_recode_yn``(``MI``$``MI_history``)`` ``chol_med``$``chol_med`` ``<-`` ``nhanes_recode_yn``(``chol_med``$``chol_med``)`` `` ``# Verify: should see 0, 1, and NA only`` `[`table`](https://rdrr.io/r/base/table.html)`(``MI``$``MI_history``, useNA ``=`` ``"always"``)`` `[`table`](https://rdrr.io/r/base/table.html)`(``chol_med``$``chol_med``, useNA ``=`` ``"always"``)`
 
 ------------------------------------------------------------------------
 
@@ -318,28 +184,7 @@ Stack the per-cycle demographics list, then merge all components by
 `SEQN` and `cycle`. Use `all.x = TRUE` (left join) from the demographics
 outward so that participants without lab values are retained with `NA`.
 
-``` r
-
-demo <- nhanes_stack(demo_list)
-
-# Inner join lab data (keeps only participants who attended the exam)
-analytic <- Reduce(
-  function(a, b) merge(a, b, by = c("SEQN", "cycle")),
-  list(demo, TC, HDL)
-)
-
-# Left join questionnaire data (all interviewed participants have these)
-analytic <- merge(analytic, MI,       by = c("SEQN", "cycle"), all.x = TRUE)
-analytic <- merge(analytic, chol_med, by = c("SEQN", "cycle"), all.x = TRUE)
-
-nrow(analytic)
-names(analytic)
-
-# Check key variables arrived
-c("TC_mgdl", "HDL_mgdl", "MI_history", "chol_med",
-  "RIDAGEYR", "RIAGENDR", "WTMEC2YR", "SDMVPSU", "SDMVSTRA") %in%
-  names(analytic)
-```
+`demo`` ``<-`` `[`nhanes_stack`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)`(``demo_list``)`` `` ``# Inner join lab data (keeps only participants who attended the exam)`` ``analytic`` ``<-`` `[`Reduce`](https://rdrr.io/r/base/funprog.html)`(`` `` ``function``(``a``, ``b``)`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``a``, ``b``, by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"SEQN"``, ``"cycle"``)``)``,`` `` `[`list`](https://rdrr.io/r/base/list.html)`(``demo``, ``TC``, ``HDL``)`` ``)`` `` ``# Left join questionnaire data (all interviewed participants have these)`` ``analytic`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``analytic``, ``MI``, by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"SEQN"``, ``"cycle"``)``, all.x ``=`` ``TRUE``)`` ``analytic`` ``<-`` `[`merge`](https://rdrr.io/r/base/merge.html)`(``analytic``, ``chol_med``, by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"SEQN"``, ``"cycle"``)``, all.x ``=`` ``TRUE``)`` `` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``analytic``)`` `[`names`](https://rdrr.io/r/base/names.html)`(``analytic``)`` `` ``# Check key variables arrived`` `[`c`](https://rdrr.io/r/base/c.html)`(``"TC_mgdl"``, ``"HDL_mgdl"``, ``"MI_history"``, ``"chol_med"``,`` `` ``"RIDAGEYR"``, ``"RIAGENDR"``, ``"WTMEC2YR"``, ``"SDMVPSU"``, ``"SDMVSTRA"``)`` `[`%in%`](https://rdrr.io/r/base/match.html)` `` `[`names`](https://rdrr.io/r/base/names.html)`(``analytic``)`
 
 ------------------------------------------------------------------------
 
@@ -349,19 +194,7 @@ c("TC_mgdl", "HDL_mgdl", "MI_history", "chol_med",
 downloads the NCHS Public-Use Linked Mortality Files and left-joins them
 by SEQN. Follow-up runs through December 31, 2019.
 
-``` r
-
-analytic_mort <- nhanes_mortality_link(analytic)
-
-# Key variables added:
-#   ELIGSTAT     1=eligible, 2=under 18, 3=insufficient data for linkage
-#   MORTSTAT     0=assumed alive 31-Dec-2019, 1=assumed deceased
-#   UCOD_LEADING Underlying cause of death (11-category ICD-10 recode)
-#   PERMTH_EXM   Months from examination date to death or Dec 31 2019
-#   PERMTH_INT   Same, from interview date
-
-table(analytic_mort$MORTSTAT, useNA = "always")
-```
+`analytic_mort`` ``<-`` `[`nhanes_mortality_link`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)`(``analytic``)`` `` ``# Key variables added:`` ``# ELIGSTAT 1=eligible, 2=under 18, 3=insufficient data for linkage`` ``# MORTSTAT 0=assumed alive 31-Dec-2019, 1=assumed deceased`` ``# UCOD_LEADING Underlying cause of death (11-category ICD-10 recode)`` ``# PERMTH_EXM Months from examination date to death or Dec 31 2019`` ``# PERMTH_INT Same, from interview date`` `` `[`table`](https://rdrr.io/r/base/table.html)`(``analytic_mort``$``MORTSTAT``, useNA ``=`` ``"always"``)`
 
 [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
 removes ineligible participants, creates `time` and `event` columns, and
@@ -369,35 +202,11 @@ warns about asymmetric follow-up across cycles. Use `origin = "exam"`
 when laboratory measurements are the exposure — they were collected at
 the exam visit.
 
-``` r
-
-surv_data <- nhanes_survival_prep(
-  analytic_mort,
-  origin     = "exam",
-  time_unit  = "years",
-  weight_var = "WTMEC2YR"
-)
-
-# Follow-up by cycle — note shrinking maximum as cycles approach 2019
-nhanes_followup_summary(surv_data)
-```
+`surv_data`` ``<-`` `[`nhanes_survival_prep`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)`(`` `` ``analytic_mort``,`` `` origin ``=`` ``"exam"``,`` `` time_unit ``=`` ``"years"``,`` `` weight_var ``=`` ``"WTMEC2YR"`` ``)`` `` ``# Follow-up by cycle — note shrinking maximum as cycles approach 2019`` `[`nhanes_followup_summary`](https://dwinsemius.github.io/nhanesR/reference/nhanes_followup_summary.md)`(``surv_data``)`
 
 For cause-specific mortality:
 
-``` r
-
-nhanes_ucod_labels()   # see available cause-of-death codes
-
-surv_cvd <- nhanes_survival_prep(
-  analytic_mort,
-  origin     = "exam",
-  time_unit  = "years",
-  cause      = "001",   # Diseases of heart
-  weight_var = "WTMEC2YR"
-)
-
-table(event = surv_cvd$event, cvd_death = surv_cvd$event_cause)
-```
+[`nhanes_ucod_labels`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)`(``)`` ``# see available cause-of-death codes`` `` ``surv_cvd`` ``<-`` `[`nhanes_survival_prep`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)`(`` `` ``analytic_mort``,`` `` origin ``=`` ``"exam"``,`` `` time_unit ``=`` ``"years"``,`` `` cause ``=`` ``"001"``, ``# Diseases of heart`` `` weight_var ``=`` ``"WTMEC2YR"`` ``)`` `` `[`table`](https://rdrr.io/r/base/table.html)`(``event ``=`` ``surv_cvd``$``event``, cvd_death ``=`` ``surv_cvd``$``event_cause``)`
 
 ------------------------------------------------------------------------
 
@@ -430,57 +239,40 @@ For total cholesterol and HDL — which do not require fasting —
 
 ### Pooling across cycles
 
-When combining data from multiple two-year cycles, the 2-year weight
-must be adjusted. The simplest approach is to divide by the number of
-cycles pooled:
+When combining data from multiple two-year cycles,
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+now applies CDC-compliant pooled-weight scaling automatically when
+`weight_var` is a 2-year weight (`WTMEC2YR`, `WTINT2YR`, `WTSAF2YR`).
 
-``` r
+- If both `1999-2000` and `2001-2002` are present and the matching
+  4-year weight column exists, those early cycles use
+  `4-year weight * (2/n)`.
+- All other cycles use `2-year weight * (1/n)`.
+- If the matching 4-year weight is unavailable, all cycles fall back to
+  `2-year weight * (1/n)`.
 
-surv_data$wt_pooled <- surv_data$survey_weight / n_cycles
-```
+`n` is the number of pooled cycles. The original unscaled 2-year weight
+is preserved in `survey_weight_2yr_raw`.
 
-Some NHANES files include pre-computed 4-year weights (`WTMEC4YR`,
-`WTSAF4YR`). Use these when available rather than dividing manually.
+**Important:** do not divide `survey_weight` again after
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+has already created it.
 
 ------------------------------------------------------------------------
 
-**Weight adjustment for pooled cycles**: divide the two-year exam weight
-`WTMEC2YR` by the number of cycles pooled (here, 10).
+**Weight adjustment for pooled cycles** is already handled inside
+[`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+when `weight_var` is provided.
 
 `nest = TRUE` is the correct specification for NHANES — PSU labels may
 repeat across strata.
 
-``` r
-
-surv_data$wt_pooled <- surv_data$survey_weight / 10
-
-# Scale continuous predictors to per-SD units for interpretable hazard ratios
-surv_data$TC_sd  <- scale(surv_data$TC_mgdl)[,  1]
-surv_data$HDL_sd <- scale(surv_data$HDL_mgdl)[, 1]
-
-design <- svydesign(
-  id      = ~SDMVPSU,
-  strata  = ~SDMVSTRA,
-  weights = ~wt_pooled,
-  nest    = TRUE,
-  data    = surv_data
-)
-```
+`# Scale continuous predictors to per-SD units for interpretable hazard ratios`` ``surv_data``$``TC_sd`` ``<-`` `[`scale`](https://rdrr.io/r/base/scale.html)`(``surv_data``$``TC_mgdl``)``[``, ``1``]`` ``surv_data``$``HDL_sd`` ``<-`` `[`scale`](https://rdrr.io/r/base/scale.html)`(``surv_data``$``HDL_mgdl``)``[``, ``1``]`` `` ``design`` ``<-`` `[`svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)`(`` `` id ``=`` ``~``SDMVPSU``,`` `` strata ``=`` ``~``SDMVSTRA``,`` `` weights ``=`` ``~``survey_weight``,`` `` nest ``=`` ``TRUE``,`` `` data ``=`` ``surv_data`` ``)`
 
 Fit a Cox model for all-cause mortality adjusting for age, sex, HDL,
 prior MI, and cholesterol-lowering medication:
 
-``` r
-
-fit <- svycoxph(
-  Surv(time, event) ~ TC_sd + HDL_sd + RIDAGEYR + RIAGENDR +
-                      MI_history + chol_med,
-  design = design
-)
-
-summary(fit)
-round(exp(cbind(HR = coef(fit), confint(fit))), 3)
-```
+`fit`` ``<-`` `[`svycoxph`](https://rdrr.io/pkg/survey/man/svycoxph.html)`(`` `` `[`Surv`](https://rdrr.io/pkg/survival/man/Surv.html)`(``time``, ``event``)`` ``~`` ``TC_sd`` ``+`` ``HDL_sd`` ``+`` ``RIDAGEYR`` ``+`` ``RIAGENDR`` ``+`` `` ``MI_history`` ``+`` ``chol_med``,`` `` design ``=`` ``design`` ``)`` `` `[`summary`](https://rdrr.io/r/base/summary.html)`(``fit``)`` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`exp`](https://rdrr.io/r/base/Log.html)`(`[`cbind`](https://rdrr.io/r/base/cbind.html)`(``HR ``=`` `[`coef`](https://rdrr.io/r/stats/coef.html)`(``fit``)``, `[`confint`](https://rdrr.io/r/stats/confint.html)`(``fit``)``)``)``, ``3``)`
 
 **Interpreting the output:**
 
@@ -524,23 +316,7 @@ to get the per-cycle file names, and
 [`nhanes_harmonize()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)
 to download and rename consistently:
 
-``` r
-
-# General pattern for any analyte
-analyte_list <- nhanes_download_analyte("search term", cycles,
-                                         component = "Laboratory")
-analyte      <- nhanes_harmonize(analyte_list,
-                                  unit  = "mg/dL",
-                                  name  = "my_variable",
-                                  label_pattern = "search term")
-
-# For questionnaire variables (no unit to match), use mapping instead
-quest_list <- nhanes_download_analyte("keyword", cycles,
-               component = "Questionnaire",
-               keep_vars = c("VAR_OLD", "VAR_NEW"))
-quest <- nhanes_harmonize(quest_list,
-           mapping = c(VAR_OLD = "my_flag", VAR_NEW = "my_flag"))
-```
+`# General pattern for any analyte`` ``analyte_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"search term"``, ``cycles``,`` `` component ``=`` ``"Laboratory"``)`` ``analyte`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(``analyte_list``,`` `` unit ``=`` ``"mg/dL"``,`` `` name ``=`` ``"my_variable"``,`` `` label_pattern ``=`` ``"search term"``)`` `` ``# For questionnaire variables (no unit to match), use mapping instead`` ``quest_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"keyword"``, ``cycles``,`` `` component ``=`` ``"Questionnaire"``,`` `` keep_vars ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"VAR_OLD"``, ``"VAR_NEW"``)``)`` ``quest`` ``<-`` `[`nhanes_harmonize`](https://dwinsemius.github.io/nhanesR/reference/nhanes_harmonize.md)`(``quest_list``,`` `` mapping ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``VAR_OLD ``=`` ``"my_flag"``, VAR_NEW ``=`` ``"my_flag"``)``)`
 
 ### SEQN is a character identifier
 

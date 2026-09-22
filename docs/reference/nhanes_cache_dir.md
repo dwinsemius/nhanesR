@@ -79,12 +79,14 @@ whose caching behavior is controlled by the options described above.
 ``` r
 # View current cache location (defaults to a subdirectory of tempdir())
 nhanes_cache_dir()
-#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//Rtmp7zLR2U/nhanesR"
+#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//Rtmpu1Rx20/nhanesR"
 
-# Change to a persistent location for this session only
+# Change to a custom session-local location (CRAN-safe)
 # \donttest{
-nhanes_cache_dir("~/my_nhanes_cache")
-#> [1] "/Users/dwinsemius/my_nhanes_cache"
+nhanes_cache_dir(file.path(tempdir(), "my_nhanes_cache"))
+#> Created nhanesR cache directory:
+#> /var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//Rtmpu1Rx20/my_nhanes_cache
+#> [1] "/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//Rtmpu1Rx20/my_nhanes_cache"
 # }
 
 # Suppress download messages for this session

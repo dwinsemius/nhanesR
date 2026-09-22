@@ -37,6 +37,7 @@ which produces the required input.
 # \donttest{
 demo <- nhanes_download("DEMO", "2015-2016")
 linked <- nhanes_mortality_link(demo)
+#> Downloading LMF for 2015-2016
 surv_data <- nhanes_survival_prep(linked, origin = "exam")
 #> Warning: ! Removed 3997 ineligible participants (3979 under 18; 18 insufficient
 #>   identifying data).

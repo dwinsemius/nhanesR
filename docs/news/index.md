@@ -1,5 +1,87 @@
 # Changelog
 
+## nhanesR 0.1.7
+
+### New features
+
+- Added NHIS Household/Person raw-data download:
+  [`nhis_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_download.md)
+  and
+  [`nhis_data_years()`](https://dwinsemius.github.io/nhanesR/reference/nhis_data_years.md)
+  download the fixed-width `.zip` for either file (1986-2018), download
+  the matching SAS input-syntax file NCHS publishes alongside it, and
+  parse both together via
+  [`SAScii::read.SAScii()`](https://rdrr.io/pkg/SAScii/man/read.SAScii.html)
+  (`SAScii`, Suggests only, GPL-2\|GPL-3 – confirmed compatible with
+  this package’s MIT license; gated behind
+  [`.nhanes_check_pkg()`](https://dwinsemius.github.io/nhanesR/reference/dot-nhanes_check_pkg.md),
+  same pattern as the `foreign` fallback XPT parser) – reusing NCHS’s
+  own column- position specification rather than a hand-built one,
+  verified directly against the real 1986 and 1997 files before relying
+  on it. Deliberately scoped to just these two “core” files, not the
+  full NHIS catalog (dozens of supplemental modules with heavy
+  year-to-year schema churn – out of scope). Column names for 1986-1996
+  are NCHS’s own placeholder scheme (`HH_22`, `PX_24`, …) as that’s what
+  those years’ SAS syntax literally contains; no relabeling crosswalk
+  yet (would need `NHISCORE.PDF`). One confirmed real data gap: 1989’s
+  Household file is absent from the CDC server (404) despite that year’s
+  own documentation listing it – Person is unaffected; see
+  [`?nhis_data_years`](https://dwinsemius.github.io/nhanesR/reference/nhis_data_years.md)
+  for the full account.
+- Added NHIS mortality-linkage support:
+  [`nhis_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_download.md),
+  [`nhis_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_parse.md),
+  [`nhis_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_link.md),
+  and
+  [`nhis_lmf_years()`](https://dwinsemius.github.io/nhanesR/reference/nhis_lmf_years.md)
+  download, parse, and join NCHS’s public-use NHIS Linked Mortality
+  Files (1986-2018, one file per survey year), mirroring the existing
+  `nhanes_mortality_*()` family. nhanesR does not download NHIS survey
+  data itself (a much larger undertaking than NHANES’s stable catalog,
+  out of scope for now) – these functions join onto NHIS data supplied
+  from elsewhere (e.g. IPUMS NHIS or NCHS’s own NHIS microdata site).
+  Unlike NHANES’s `SEQN`, NHIS’s `PUBLICID` is not confirmed unique
+  across survey years, so
+  [`nhis_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_link.md)
+  matches on `(PUBLICID, year)` rather than the ID alone. There is no
+  `nhis_survival_prep()`: the NHIS LMF has no
+  `PERMTH_INT`/`PERMTH_EXM`-equivalent person-months variable, only
+  `DODQTR`/`DODYEAR`, so follow-up time construction requires the NHIS
+  interview date from the survey data itself.
+
+### Bug fixes
+
+- [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+  now automatically applies CDC-compliant pooled multi-cycle weight
+  scaling instead of only warning about it. If both `1999-2000` and
+  `2001-2002` are present and the matching 4-year weight column exists
+  (e.g. `WTMEC4YR`), those cycles are scaled as `4-year weight * (2/n)`;
+  all other cycles are scaled as `2-year weight * (1/n)`. Falls back to
+  `2-year weight * (1/n)` for all cycles if the matching 4-year column
+  is unavailable. The original unscaled 2-year weight is preserved in a
+  new `survey_weight_2yr_raw` column. Warns if `WTMEC4YR` is supplied
+  with more than two pooled cycles.
+
+### CRAN resubmission fixes
+
+- Removed the `~/my_nhanes_cache` example path that CRAN flagged as a
+  HOME-directory write during
+  [`example()`](https://rdrr.io/r/utils/example.html);
+  examples/vignettes now use
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html).
+- Removed `Hmisc::html(Hmisc::describe(...))` examples that triggered an
+  HTML viewer popup during checks.
+- Updated GitHub Actions `actions/checkout` and
+  `actions/upload-artifact` to v5 (Node.js 20 deprecation).
+
+### Documentation
+
+- [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+  docs and the `nhanes-mortality-workflow.Rmd` /
+  `survey-weighted-survival.Rmd` vignettes updated to describe the new
+  automatic pooled-weight behavior and to stop demonstrating manual
+  `survey_weight / n_cycles` division (which would now double-scale).
+
 ## nhanesR 0.1.4
 
 ### CRAN resubmission fixes

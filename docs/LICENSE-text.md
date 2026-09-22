@@ -1,4 +1,3 @@
 # License
 
-    YEAR: 2026
-    COPYRIGHT HOLDER: David Winsemius
+YEAR: 2026 COPYRIGHT HOLDER: David Winsemius

@@ -134,9 +134,21 @@ blood draw. Fasting participants are a minority of all MEC attendees;
 using `WTMEC2YR` for fasting analytes ignores this extra subsampling
 step and will give incorrect population estimates.
 
-For pooled multi-cycle analyses divide the 2-year weight by the number
-of cycles pooled, or use the pre-computed 4-year weight `WTMEC4YR` where
-available. See the NHANES analytic guidelines for details.
+For pooled multi-cycle analyses, CDC guidance scales weights by the
+number of pooled cycles (`n`). This function applies that automatically
+when a 2-year weight is supplied:
+
+- If both `1999-2000` and `2001-2002` are present and the corresponding
+  4-year weight column exists (e.g., `WTMEC4YR` for `WTMEC2YR`), those
+  two early cycles are scaled as `4-year weight * (2/n)`.
+
+- All later cycles are scaled as `2-year weight * (1/n)`.
+
+- If the early-pair 4-year weight column is unavailable, all cycles fall
+  back to `2-year weight * (1/n)`.
+
+The original unscaled 2-year weight is preserved in
+`survey_weight_2yr_raw`.
 
 ## Perturbed variables
 
@@ -183,11 +195,9 @@ surv_data <- nhanes_survival_prep(
 #> floored at 0.5 months.
 #> Warning: 441 records have non-missing MORTSTAT but missing PERMTH_EXM. These will
 #> produce NA in the "time" column.
-#> Warning: ! Using 2-year weight "WTMEC2YR" with 2 pooled cycles.
-#> ℹ Divide 2-year weights by the number of cycles pooled, or use a pre-computed
-#>   4-year weight where available.
-#> ℹ See NHANES analytic guidelines:
-#>   <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
+#> ℹ Detected 2 pooled cycles with 2-year weight "WTMEC2YR".
+#> ℹ Applied CDC pooled-weight scaling: "WTMEC2YR" * (1/2) for all cycles.
+#> ℹ Preserved the original 2-year weight in "survey_weight_2yr_raw".
 
 # Cause-specific: cardiovascular (code "001")
 surv_data_cvd <- nhanes_survival_prep(
@@ -212,11 +222,9 @@ surv_data_cvd <- nhanes_survival_prep(
 #> produce NA in the "time" column.
 #> Cause-specific event "event_cause": Diseases of heart (UCOD 001). 199 events
 #> among eligible participants.
-#> Warning: ! Using 2-year weight "WTMEC2YR" with 2 pooled cycles.
-#> ℹ Divide 2-year weights by the number of cycles pooled, or use a pre-computed
-#>   4-year weight where available.
-#> ℹ See NHANES analytic guidelines:
-#>   <https://wwwn.cdc.gov/nchs/nhanes/analyticguidelines.aspx>
+#> ℹ Detected 2 pooled cycles with 2-year weight "WTMEC2YR".
+#> ℹ Applied CDC pooled-weight scaling: "WTMEC2YR" * (1/2) for all cycles.
+#> ℹ Preserved the original 2-year weight in "survey_weight_2yr_raw".
 
 # Use with survival package
 library(survival)

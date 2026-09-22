@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nhanesR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><a class="dropdown-item" href="../articles/analyte-harmonization.html">Navigating Variable Name Changes and Analyte Gaps in NHANES</a></li>
     <li><a class="dropdown-item" href="../articles/uacr-bridging.html">Urinary Albumin-to-Creatinine Ratio Across NHANES Cycles</a></li>
     <li><a class="dropdown-item" href="../articles/survey-weighted-survival.html">Survey-Weighted Survival Analysis: Fusing svycoxph and rms</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-framework-comparison.html">Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -200,6 +201,66 @@
         </dt>
         <dd>List NHANES cycles with a public-use LMF</dd>
       </dl></div><div class="section level2">
+      <h2 id="nhis-data-download">NHIS data download<a class="anchor" aria-label="anchor" href="#nhis-data-download"></a></h2>
+
+      <div class="section-desc"><p>Download and parse NHIS Household/Person survey files (1986-2018)</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nhis_download.html">nhis_download()</a></code>
+
+        </dt>
+        <dd>Download and parse an NHIS Household or Person file</dd>
+
+        <dt>
+
+          <code><a href="nhis_data_years.html">nhis_data_years()</a></code>
+
+        </dt>
+        <dd>List NHIS survey years with Household/Person data available</dd>
+      </dl></div><div class="section level2">
+      <h2 id="nhis-mortality-linkage">NHIS mortality linkage<a class="anchor" aria-label="anchor" href="#nhis-mortality-linkage"></a></h2>
+
+      <div class="section-desc"><p>Link NCHS Public-Use Linked Mortality Files onto NHIS data</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nhis_mortality_link.html">nhis_mortality_link()</a></code>
+
+        </dt>
+        <dd>Link NHIS mortality data onto an NHIS analytic dataset</dd>
+
+        <dt>
+
+          <code><a href="nhis_mortality_download.html">nhis_mortality_download()</a></code>
+
+        </dt>
+        <dd>Download NHIS Public-Use Linked Mortality Files</dd>
+
+        <dt>
+
+          <code><a href="nhis_mortality_parse.html">nhis_mortality_parse()</a></code>
+
+        </dt>
+        <dd>Parse NHIS Linked Mortality Files into data frames</dd>
+
+        <dt>
+
+          <code><a href="nhis_lmf_years.html">nhis_lmf_years()</a></code>
+
+        </dt>
+        <dd>List NHIS survey years with a public-use LMF</dd>
+      </dl></div><div class="section level2">
       <h2 id="survival-analysis">Survival analysis<a class="anchor" aria-label="anchor" href="#survival-analysis"></a></h2>
 
       <div class="section-desc"><p>Prepare and summarise survival datasets</p></div>
@@ -285,7 +346,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

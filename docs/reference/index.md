@@ -62,6 +62,28 @@ Mortality Files
 - [`nhanes_lmf_cycles()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_lmf_cycles.md)
   : List NHANES cycles with a public-use LMF
 
+## NHIS data download
+
+Download and parse NHIS Household/Person survey files (1986-2018)
+
+- [`nhis_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_download.md)
+  : Download and parse an NHIS Household or Person file
+- [`nhis_data_years()`](https://dwinsemius.github.io/nhanesR/reference/nhis_data_years.md)
+  : List NHIS survey years with Household/Person data available
+
+## NHIS mortality linkage
+
+Link NCHS Public-Use Linked Mortality Files onto NHIS data
+
+- [`nhis_mortality_link()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_link.md)
+  : Link NHIS mortality data onto an NHIS analytic dataset
+- [`nhis_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_download.md)
+  : Download NHIS Public-Use Linked Mortality Files
+- [`nhis_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_parse.md)
+  : Parse NHIS Linked Mortality Files into data frames
+- [`nhis_lmf_years()`](https://dwinsemius.github.io/nhanesR/reference/nhis_lmf_years.md)
+  : List NHIS survey years with a public-use LMF
+
 ## Survival analysis
 
 Prepare and summarise survival datasets

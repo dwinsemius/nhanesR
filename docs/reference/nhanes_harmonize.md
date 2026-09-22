@@ -63,18 +63,17 @@ nhanes_harmonize(
 
   `"conventional"`
 
-  :   (default) Keep mg/dL, g/dL, U/L, etc.; drop SI duplicates.
-      Appropriate for US-centric analyses.
+  : (default) Keep mg/dL, g/dL, U/L, etc.; drop SI duplicates.
+    Appropriate for US-centric analyses.
 
   `"SI"`
 
-  :   Keep mmol/L, g/L, umol/L, etc.; drop conventional duplicates.
-      Appropriate for international use or journals that require SI
-      units.
+  : Keep mmol/L, g/L, umol/L, etc.; drop conventional duplicates.
+    Appropriate for international use or journals that require SI units.
 
   `"both"`
 
-  :   Retain all columns; no duplicates are removed.
+  : Retain all columns; no duplicates are removed.
 
   Detection uses label attributes rather than variable names because CDC
   naming is inconsistent (e.g. `LBXTC`/`LBDTCSI`). Applied before any

@@ -27,25 +27,9 @@ assembling UACR from NHANES:
 
 ## Step 1 — Locate the variables
 
-``` r
+[`library`](https://rdrr.io/r/base/library.html)`(`[`nhanesR`](https://dwinsemius.github.io/nhanesR/)`)`` `` ``# Confirm URXUMA is present across all ten cycles`` `[`nhanes_search_variables`](https://dwinsemius.github.io/nhanesR/reference/nhanes_search_variables.md)`(``"albumin"``, component ``=`` ``"Laboratory"``)`` `` ``# Variable map for urinary albumin: maps cleanly to ALB_CR_* files`` ``map_uma`` ``<-`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"URXUMA"``)`` ``map_uma`
 
-library(nhanesR)
-
-# Confirm URXUMA is present across all ten cycles
-nhanes_search_variables("albumin", component = "Laboratory")
-
-# Variable map for urinary albumin: maps cleanly to ALB_CR_* files
-map_uma <- nhanes_variable_map("URXUMA")
-map_uma
-```
-
-``` r
-
-# nhanes_variable_map("URXUCR") resolves to the wrong file in early cycles:
-# URXUCR appears in phthalates / heavy-metals files (e.g. PHPYPA 1999-2000)
-# as a dilution-adjustment variable, and the catalog finds those first.
-nhanes_variable_map("URXUCR")
-```
+`# nhanes_variable_map("URXUCR") resolves to the wrong file in early cycles:`` ``# URXUCR appears in phthalates / heavy-metals files (e.g. PHPYPA 1999-2000)`` ``# as a dilution-adjustment variable, and the catalog finds those first.`` `[`nhanes_variable_map`](https://dwinsemius.github.io/nhanesR/reference/nhanes_variable_map.md)`(``"URXUCR"``)`
 
 The early-cycle rows point to files such as `PHPYPA` (1999–2000) and
 `SSNO3P_B` (2001–2002). These are not the source we want.
@@ -61,17 +45,7 @@ via `URXUMA` gives us both variables in a single pass.
 
 ## Step 2 — Download and stack
 
-``` r
-
-# Restrict to cycles with public-use mortality linkage (1999-2018)
-cycles <- nhanes_cycles()[nhanes_cycles()$has_lmf_public, "cycle"]
-
-# nhanes_download_analyte resolves the changing file name automatically.
-# Each returned data frame contains the full ALB_CR file — including
-# URXUMA (urinary albumin) AND URXUCR (urinary creatinine).
-alb_cr_list <- nhanes_download_analyte("URXUMA", cycles)
-alb_cr      <- nhanes_stack(alb_cr_list)
-```
+`# Restrict to cycles with public-use mortality linkage (1999-2018)`` ``cycles`` ``<-`` `[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``[`[`nhanes_cycles`](https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.md)`(``)``$``has_lmf_public``, ``"cycle"``]`` `` ``# nhanes_download_analyte resolves the changing file name automatically.`` ``# Each returned data frame contains the full ALB_CR file — including`` ``# URXUMA (urinary albumin) AND URXUCR (urinary creatinine).`` ``alb_cr_list`` ``<-`` `[`nhanes_download_analyte`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)`(``"URXUMA"``, ``cycles``)`` ``alb_cr`` ``<-`` `[`nhanes_stack`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md)`(``alb_cr_list``)`
 
 ------------------------------------------------------------------------
 
@@ -90,20 +64,7 @@ The conversion to mg/g is:
 \text{UACR (mg/g)} = \frac{\text{URXUMA (mg/L)}}{\text{URXUCR (mg/dL)} \times 0.01 \text{ (g/dL per mg/dL)}} = \frac{100 \times \text{URXUMA}}{\text{URXUCR}}
 ```
 
-``` r
-
-alb_cr$UACR <- with(alb_cr, 100 * URXUMA / URXUCR)
-
-# Clinical thresholds (KDIGO 2012)
-alb_cr$UACR_cat <- cut(
-  alb_cr$UACR,
-  breaks = c(0, 30, 300, Inf),
-  labels = c("Normal-mildly increased (<30)",
-             "Moderately increased (30-300)",
-             "Severely increased (>300)"),
-  right  = FALSE
-)
-```
+`alb_cr``$``UACR`` ``<-`` `[`with`](https://rdrr.io/r/base/with.html)`(``alb_cr``, ``100`` ``*`` ``URXUMA`` ``/`` ``URXUCR``)`` `` ``# Clinical thresholds (KDIGO 2012)`` ``alb_cr``$``UACR_cat`` ``<-`` `[`cut`](https://rdrr.io/r/base/cut.html)`(`` `` ``alb_cr``$``UACR``,`` `` breaks ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``0``, ``30``, ``300``, ``Inf``)``,`` `` labels ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"Normal-mildly increased (<30)"``,`` `` ``"Moderately increased (30-300)"``,`` `` ``"Severely increased (>300)"``)``,`` `` right ``=`` ``FALSE`` ``)`
 
 ------------------------------------------------------------------------
 
@@ -117,17 +78,7 @@ this transition should check the NHANES laboratory methods documentation
 for each cycle and apply published bridging equations before pooling if
 values are not directly comparable.
 
-``` r
-
-# The NHANES laboratory methods document for each cycle is linked from the
-# online data browser.  For urinary albumin (ALB_CR files), look for entries
-# under "Albumin, Urine" describing the analyser make/model and reagent kit.
-# Key things to record for each cycle:
-#   - Analyser (e.g. Roche Hitachi 917, Beckman UniCel DxC 800, ...)
-#   - Reagent/method (immunoturbidimetric, immunonephelometric, ...)
-#   - Calibrator traceability (JCTLM-listed reference material?)
-#   - LOD (ug/mL) -- differs across cycles
-```
+`# The NHANES laboratory methods document for each cycle is linked from the`` ``# online data browser. For urinary albumin (ALB_CR files), look for entries`` ``# under "Albumin, Urine" describing the analyser make/model and reagent kit.`` ``# Key things to record for each cycle:`` ``# - Analyser (e.g. Roche Hitachi 917, Beckman UniCel DxC 800, ...)`` ``# - Reagent/method (immunoturbidimetric, immunonephelometric, ...)`` ``# - Calibrator traceability (JCTLM-listed reference material?)`` ``# - LOD (ug/mL) -- differs across cycles`
 
 ### Bridging equations for serum creatinine
 
@@ -149,33 +100,7 @@ changes are identified in the laboratory methods documents.
 Once UACR is assembled and any bridging applied, the workflow follows
 the standard nhanesR mortality linkage pipeline.
 
-``` r
-
-library(survival)
-library(survey)
-
-# Link mortality
-alb_cr_mort <- nhanes_mortality_link(alb_cr)
-alb_cr_surv <- nhanes_survival_prep(
-  alb_cr_mort,
-  origin     = "exam",
-  time_unit  = "years",
-  weight_var = "WTMEC2YR"
-)
-
-# Survey design
-options(survey.lonely.psu = "adjust")
-svy <- svydesign(
-  ids     = ~SDMVPSU,
-  strata  = ~SDMVSTRA,
-  weights = ~survey_weight,
-  nest    = TRUE,
-  data    = alb_cr_surv
-)
-
-# Unadjusted rate by UACR category
-svyby(~event, ~UACR_cat, svy, svymean, na.rm = TRUE)
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`survival`](https://github.com/therneau/survival)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survey`](http://r-survey.r-forge.r-project.org/survey/)`)`` `` ``# Link mortality`` ``alb_cr_mort`` ``<-`` `[`nhanes_mortality_link`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_link.md)`(``alb_cr``)`` ``alb_cr_surv`` ``<-`` `[`nhanes_survival_prep`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)`(`` `` ``alb_cr_mort``,`` `` origin ``=`` ``"exam"``,`` `` time_unit ``=`` ``"years"``,`` `` weight_var ``=`` ``"WTMEC2YR"`` ``)`` `` ``# Survey design`` `[`options`](https://rdrr.io/r/base/options.html)`(``survey.lonely.psu ``=`` ``"adjust"``)`` ``svy`` ``<-`` `[`svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)`(`` `` ids ``=`` ``~``SDMVPSU``,`` `` strata ``=`` ``~``SDMVSTRA``,`` `` weights ``=`` ``~``survey_weight``,`` `` nest ``=`` ``TRUE``,`` `` data ``=`` ``alb_cr_surv`` ``)`` `` ``# Unadjusted rate by UACR category`` `[`svyby`](https://rdrr.io/pkg/survey/man/svyby.html)`(``~``event``, ``~``UACR_cat``, ``svy``, ``svymean``, na.rm ``=`` ``TRUE``)`
 
 ------------------------------------------------------------------------
 

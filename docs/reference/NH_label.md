@@ -65,41 +65,6 @@ tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 tc <- NH_label(tc)
 
 # CDC descriptions now appear in all Hmisc label-aware output
-Hmisc::describe(tc)
-#> tc 
-#> 
-#>  4  Variables      8021  Observations
-#> --------------------------------------------------------------------------------
-#> SEQN : Respondent sequence number 
-#>        n  missing distinct 
-#>     8021        0     8021 
-#> 
-#> lowest : 83732 83733 83734 83735 83736, highest: 93697 93699 93700 93701 93702
-#> --------------------------------------------------------------------------------
-#> LBXTC : Total Cholesterol (mg/dL) 
-#>        n  missing distinct     Info     Mean  pMedian      Gmd      .05 
-#>     7256      765      257        1    180.3      178    45.47      122 
-#>      .10      .25      .50      .75      .90      .95 
-#>      132      150      176      204      234      254 
-#> 
-#> lowest :  77  80  81  84  85, highest: 393 415 433 540 545
-#> --------------------------------------------------------------------------------
-#> LBDTCSI : Total Cholesterol( mmol/L) 
-#>        n  missing distinct     Info     Mean  pMedian      Gmd      .05 
-#>     7256      765      257        1    4.661      4.6    1.176     3.15 
-#>      .10      .25      .50      .75      .90      .95 
-#>     3.41     3.88     4.55     5.28     6.05     6.57 
-#> 
-#> lowest : 1.99  2.07  2.09  2.17  2.2  , highest: 10.16 10.73 11.2  13.96 14.09
-#> --------------------------------------------------------------------------------
-#> cycle 
-#>         n   missing  distinct     value 
-#>      8021         0         1 2015-2016 
-#>                     
-#> Value      2015-2016
-#> Frequency       8021
-#> Proportion         1
-#> --------------------------------------------------------------------------------
-Hmisc::html(Hmisc::describe(tc))
+invisible(Hmisc::describe(tc))
 # }
 ```

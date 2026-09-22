@@ -1,13 +1,14 @@
-pandoc: 3.8.3
-pkgdown: 2.2.0
+pandoc: 3.10.1
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   analyte-harmonization: analyte-harmonization.html
   nhanes-mortality-workflow: nhanes-mortality-workflow.html
   nhanesR-overview: nhanesR-overview.html
   survey-weighted-survival: survey-weighted-survival.html
+  survival-framework-comparison: survival-framework-comparison.html
   uacr-bridging: uacr-bridging.html
-last_built: 2026-07-08T16:49Z
+last_built: 2026-09-22T02:06Z
 urls:
   reference: https://dwinsemius.github.io/nhanesR/reference
   article: https://dwinsemius.github.io/nhanesR/articles

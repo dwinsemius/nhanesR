@@ -12,3 +12,5 @@
   Cycles](https://dwinsemius.github.io/nhanesR/articles/uacr-bridging.md):
 - [Survey-Weighted Survival Analysis: Fusing svycoxph and
   rms](https://dwinsemius.github.io/nhanesR/articles/survey-weighted-survival.md):
+- [Comparing Survival Frameworks: Cox, Piecewise Exponential, and
+  mgcv-Poisson](https://dwinsemius.github.io/nhanesR/articles/survival-framework-comparison.md):

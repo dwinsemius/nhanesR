@@ -2,6 +2,23 @@
 
 ## New features
 
+* Added NHIS Household/Person raw-data download: `nhis_download()` and
+  `nhis_data_years()` download the fixed-width `.zip` for either file
+  (1986-2018), download the matching SAS input-syntax file NCHS publishes
+  alongside it, and parse both together via `SAScii::read.SAScii()`
+  (`SAScii`, Suggests only, GPL-2|GPL-3 -- confirmed compatible with this
+  package's MIT license; gated behind `.nhanes_check_pkg()`, same pattern
+  as the `foreign` fallback XPT parser) -- reusing NCHS's own column-
+  position specification rather than a hand-built one, verified directly
+  against the real 1986 and 1997 files before relying on it. Deliberately
+  scoped to just these two "core" files, not the full NHIS catalog (dozens
+  of supplemental modules with heavy year-to-year schema churn -- out of
+  scope). Column names for 1986-1996 are NCHS's own placeholder scheme
+  (`HH_22`, `PX_24`, ...) as that's what those years' SAS syntax literally
+  contains; no relabeling crosswalk yet (would need `NHISCORE.PDF`). One
+  confirmed real data gap: 1989's Household file is absent from the CDC
+  server (404) despite that year's own documentation listing it -- Person
+  is unaffected; see `?nhis_data_years` for the full account.
 * Added NHIS mortality-linkage support: `nhis_mortality_download()`,
   `nhis_mortality_parse()`, `nhis_mortality_link()`, and `nhis_lmf_years()`
   download, parse, and join NCHS's public-use NHIS Linked Mortality Files

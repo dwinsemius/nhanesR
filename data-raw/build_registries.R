@@ -213,6 +213,57 @@
   stringsAsFactors = FALSE
 )
 
+# ── NHIS Household/Person raw-data file registry ──────────────────────────────
+# Two "core" NHIS survey files nhanesR downloads directly, per the user's
+# request (2026-09-21): Household and Person. Both distributed as one .zip
+# per year (unzips to a single fixed-width .DAT), 1986-2018, with a matching
+# SAS input-syntax file at a parallel Program_Code URL parsed at runtime by
+# the SAScii package (Suggests -- see R/nhis_data.R). SAScii verified
+# directly against real 1986 and 1997 files before relying on it: correctly
+# recovers skip/gap columns from the pre-1997 SAS (no explicit gap markers in
+# the source) and the implied-decimal convention (e.g. a SAS "46-51 .1"
+# column) in the post-1997 SAS, and round-tripped the actual 1986 HOUSEHLD.DAT
+# (24,698 records, matching the year's own documentation exactly).
+#
+# Verified 2026-09-21: HEAD-checked all 33 years x 2 files x 2 URL types
+# (zip + sas) = 132 URLs.
+#
+# Filename case is irrelevant to the actual requests -- confirmed directly by
+# requesting known files in the opposite case from what the directory listing
+# displayed (both directions) and getting HTTP 200 either way; the FTP host
+# is Microsoft-IIS, case-insensitive on the backing filesystem. The registry
+# below still records the case the listing shows, for clarity when reading
+# it, not because it's load-bearing.
+#
+# One confirmed REAL gap, not a URL-pattern miss: 1989's Household .zip
+# returns 404 -- despite 1989's own documentation (readme.txt) listing a
+# Household file in its own file table (48,054 recs, same 335-byte record
+# length as every other core file that year). The matching HOUSEHLD.SAS
+# syntax file is still present (200) -- only the data file itself is
+# missing from the current server. Checked every case/extension variant
+# (.EXE/.exe/.ZIP/.zip, upper/lower filename) before concluding this is a
+# genuine absence rather than a naming miss. Recorded as `available = FALSE`
+# rather than silently retried or omitted from the registry.
+#
+# 2004 alone nests both the data zip and the SAS syntax file one directory
+# deeper (.../2004/household/HOUSEHLD.zip, .../2004/household/HOUSEHLD.sas)
+# -- every other year 1986-2018 is flat directly under the year directory.
+
+.nhis_data_years <- as.character(1986:2018)
+
+.nhis_data_registry <- data.frame(
+  year      = rep(.nhis_data_years, each = 2),
+  module    = rep(c("household", "person"), times = length(.nhis_data_years)),
+  file_base = rep(c("HOUSEHLD", "PERSONSX"), times = length(.nhis_data_years)),
+  stringsAsFactors = FALSE
+)
+.nhis_data_registry$subdir <- ifelse(
+  .nhis_data_registry$year == "2004", .nhis_data_registry$module, NA_character_
+)
+.nhis_data_registry$available <- TRUE
+.nhis_data_registry$available[.nhis_data_registry$year == "1989" &
+                                 .nhis_data_registry$module == "household"] <- FALSE
+
 # ── Cause-of-death leading cause recode ───────────────────────────────────────
 # ICD-10 recode used in the public-use LMF UCOD_LEADING variable
 # Source: CDC LMF documentation
@@ -365,6 +416,7 @@ usethis::use_data(
   .early_biopro_catalog,
   .nhis_lmf_registry,
   .nhis_lmf_colspec,
+  .nhis_data_registry,
   internal  = TRUE,
   overwrite = TRUE
 )

@@ -27,6 +27,7 @@ Imports:
     tools
 Suggests:
     foreign,
+    SAScii,
     survey,
     survival,
     mgcv,

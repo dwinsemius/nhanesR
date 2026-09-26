@@ -73,6 +73,26 @@ surv_data <- nhanes_survival_prep(analytic_mort,
                                    weight_var = "WTMEC2YR")
 ```
 
+## Labels and modeling
+
+`NH_label()` attaches CDC descriptions as column `label` attributes for
+documentation and `Hmisc::describe()` output. Before model fitting or building
+`predict(newdata=)` grids, use `NH_unlabel()` when you need plain vectors:
+
+```r
+model_data <- NH_unlabel(analytic)
+
+ref_age <- NH_unlabel(median(analytic$RIDAGEYR, na.rm = TRUE))
+newdata <- data.frame(TC_mgdl = seq(120, 280, by = 10),
+                      RIDAGEYR = ref_age)
+```
+
+This avoids a base R recycling trap where a length-one scalar that still
+carries label/class attributes can fail inside `data.frame()`. The deepest
+behavior is in base R and label-preserving classes such as Hmisc's; `nhanesR`
+provides the practical unlabelling step because NHANES variable labels often
+enter the workflow here.
+
 ## Configuration
 
 Downloaded files are cached locally. Three options control behavior — set
@@ -114,7 +134,7 @@ vignette("nhanes-mortality-workflow", package = "nhanesR")
 | Variable search | `nhanes_search_variables()`, `nhanes_variable_map()` |
 | Download | `nhanes_download()`, `nhanes_download_analyte()` |
 | Harmonize / stack / merge | `nhanes_harmonize()`, `nhanes_stack()`, `nhanes_merge()` |
-| Variable labelling | `NH_label()`, `NH_describe()` |
+| Variable labelling | `NH_label()`, `NH_unlabel()`, `NH_describe()` |
 | Mortality linkage | `nhanes_mortality_link()`, `nhanes_mortality_download()`, `nhanes_mortality_parse()`, `nhanes_lmf_cycles()` |
 | Survival prep | `nhanes_survival_prep()`, `nhanes_followup_summary()`, `nhanes_ucod_labels()` |
 | Survey-weighted Cox | `svycph_fuse()`, `weighted_basehaz()`, `svycph_set_basehaz()` |

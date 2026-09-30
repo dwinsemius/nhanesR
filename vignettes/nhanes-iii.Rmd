@@ -1,0 +1,216 @@
+---
+title: "NHANES III (1988-1994): Fixed-Width Files, Cotinine, and Mortality"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NHANES III (1988-1994): Fixed-Width Files, Cotinine, and Mortality}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+## Overview
+
+NHANES III (1988-1994) predates the continuous survey. Its public-use data
+are not per-cycle XPT files but a few large fixed-width `.dat` files, each
+with a SAS program (`.sas`) giving the column positions. `nhanesR` handles the
+NHANES III **mortality** file directly (`nhanes_mortality_parse(cycles =
+"1988-1994")`); this vignette shows how to read the survey files themselves and
+link them.
+
+The example builds an adult analysis file with measured height, weight and
+waist, cigarette smoking status checked against serum cotinine, and mortality
+follow-up through 2019. NHANES III is worth the extra work for survival
+analysis: participants have a median of about 27 years of follow-up.
+
+**None of the code chunks run automatically.** The exam file alone is about
+195 MB.
+
+## 1. Download the files
+
+The main files are in `nhanes3/1a/`. Serum cotinine is in the *second*
+laboratory file, `nhanes3/2a/lab2.dat`. The main `lab.dat` has a `COP` column,
+but it is blank for every record.
+
+```{r download}
+raw <- file.path(tempdir(), "nhanes3")
+dir.create(raw, showWarnings = FALSE)
+options(timeout = 900)                  # default 60 s is too short
+
+base <- "https://wwwn.cdc.gov/nchs/data/nhanes3/"
+files <- c("1a/exam.dat",  "1a/exam.sas",
+           "1a/adult.dat", "1a/adult.sas",
+           "2a/lab2.dat",  "2a/lab2.sas")
+for (f in files) {
+  dest <- file.path(raw, basename(f))
+  if (!file.exists(dest)) download.file(paste0(base, f), dest, mode = "wb")
+}
+```
+
+Each data file has a codebook alongside it, named `<file>-acc.pdf`
+(for example `1a/exam-acc.pdf`). The codebooks list value labels and
+missing-value codes.
+
+## 2. Read column positions from the SAS program
+
+Each `.sas` file has an `INPUT` block of lines like `SEQN 1-5` or
+`HSSEX 15`. The helper below parses that block and checks it against the
+record length (`LRECL`, which counts 2 bytes for the line ending).
+`SAScii::parse.SAScii()` produces the same layout.
+
+```{r layout}
+sas_layout <- function(sas_file) {
+  s <- readLines(sas_file, warn = FALSE)
+  lrecl <- as.integer(sub(".*LRECL\\s*=\\s*([0-9]+).*", "\\1",
+                          grep("LRECL\\s*=", s, value = TRUE)[1]))
+  s <- s[(grep("^\\s*INPUT\\s*$", s)[1] + 1):length(s)]
+  s <- s[seq_len(grep("^\\s*;\\s*$", s)[1] - 1)]
+  m <- regmatches(s, regexec(
+    "^\\s*([A-Z][A-Z0-9_]*)\\s+\\$?\\s*([0-9]+)(-([0-9]+))?\\s*$", s))
+  m <- m[lengths(m) == 5]
+  L <- data.frame(var   = vapply(m, `[`, "", 2),
+                  start = as.integer(vapply(m, `[`, "", 3)))
+  end <- vapply(m, `[`, "", 5)
+  L$end <- ifelse(nzchar(end), as.integer(end), L$start)
+  stopifnot(max(L$end) == lrecl - 2)
+  L
+}
+```
+
+## 3. Read only the columns you need
+
+The exam file has more than 2,000 columns. Reading a handful by position is
+fast; reading all of them is not.
+
+```{r reader}
+read_nh3 <- function(stem, vars) {
+  L <- sas_layout(file.path(raw, paste0(stem, ".sas")))
+  stopifnot(all(vars %in% L$var))
+  L <- L[match(vars, L$var), ]
+  x <- readr::read_fwf(file.path(raw, paste0(stem, ".dat")),
+                       readr::fwf_positions(L$start, L$end, L$var),
+                       col_types = readr::cols(.default = "d"))
+  attr(x, "width") <- setNames(L$end - L$start + 1, L$var)
+  x
+}
+
+exam  <- read_nh3("exam",  c("SEQN", "HSSEX", "HSAGEIR", "DMARETHN",
+                             "BMPHT", "BMPWT", "BMPBMI", "BMPWAIST",
+                             "WTPFEX6", "SDPPSU6", "SDPSTRA6"))
+adult <- read_nh3("adult", c("SEQN", "HAR1", "HAR3", "HAR16", "HAR24", "HAR27"))
+lab2  <- read_nh3("lab2",  c("SEQN", "COP"))
+```
+
+Use the 6-year weights (`WTPFEX6`, `SDPPSU6`, `SDPSTRA6`) for the whole
+survey. The `*1` and `*2` versions cover phase 1 (1988-1991) or phase 2
+(1991-1994) alone.
+
+## 4. Missing-value codes
+
+NHANES III stores "blank but applicable" as all 8s and "don't know" as all
+9s, sized to the field: `8`/`9` for a one-character item, `88888` for a
+five-character measurement. Left in place they look like real values: an
+88888 cotinine code makes the mean serum cotinine about 10,000 ng/mL.
+
+```{r recode}
+recode_codes <- function(x, vars) {
+  w <- attr(x, "width")
+  for (v in vars) {
+    codes <- as.numeric(c(strrep("8", w[[v]]), strrep("9", w[[v]])))
+    x[[v]][x[[v]] %in% codes] <- NA
+  }
+  x
+}
+exam  <- recode_codes(exam,  c("BMPHT", "BMPWT", "BMPBMI", "BMPWAIST"))
+adult <- recode_codes(adult, c("HAR1", "HAR3", "HAR16", "HAR24", "HAR27"))
+lab2  <- recode_codes(lab2,  "COP")
+```
+
+Check each variable's codebook entry before applying this rule to it. Age
+(`HSAGEIR`) is top-coded at 90 and has no such codes.
+
+Missing serum cotinine is mostly missing *labs*, not a missing assay: children
+under 4 were not eligible, and most people coded 88888 have no serum results
+at all.
+
+## 5. Smoking status, checked against cotinine
+
+`HAR1` asks whether the person has smoked 100 or more cigarettes; only those
+who say yes are asked `HAR3` (smoke now). Other tobacco items are asked only of
+people who ever used that product, so a skipped item means "no".
+
+```{r smoking}
+d <- merge(exam, adult, by = "SEQN")            # adults 17+ with an exam
+d <- merge(d, lab2, by = "SEQN", all.x = TRUE)
+
+d$cig_status <- with(d, ifelse(HAR1 == 2, "Never",
+                        ifelse(HAR1 == 1 & HAR3 == 2, "Former",
+                        ifelse(HAR1 == 1 & HAR3 == 1, "Current", NA))))
+d$other_tob  <- with(d, HAR16 %in% 1 | HAR24 %in% 1 | HAR27 %in% 1)
+
+## serum cotinine > 10 ng/mL is the usual cutoff for active tobacco use
+aggregate(COP ~ cig_status, data = d,
+          FUN = function(v) round(c(median = median(v), pct_over10 = 100 * mean(v > 10)), 2))
+```
+
+About 6% of self-reported never-smokers have cotinine above 10 ng/mL, and
+about 13% of former smokers. A stricter never-smoker definition:
+
+```{r never}
+d$never_conf <- with(d, cig_status %in% "Never" & !other_tob &
+                        (is.na(COP) | COP <= 10))
+```
+
+## 6. Link mortality
+
+`nhanesR` downloads and parses the 2019 public-use Linked Mortality File for
+NHANES III like any other cycle.
+
+```{r mortality}
+library(nhanesR)
+mort <- nhanes_mortality_parse(cycles = "1988-1994")[["1988-1994"]]
+
+d <- merge(d, mort[, c("SEQN", "ELIGSTAT", "MORTSTAT", "UCOD_LEADING",
+                       "PERMTH_EXM", "PERMTH_INT")],
+           by = "SEQN", all.x = TRUE)
+table(d$ELIGSTAT, d$MORTSTAT, useNA = "ifany")
+
+d <- d[d$ELIGSTAT %in% 1 & !is.na(d$PERMTH_EXM), ]
+d$time  <- d$PERMTH_EXM                  # months from the exam
+d$event <- d$MORTSTAT                    # 1 = died by 2019-12-31
+```
+
+`ELIGSTAT` is 2 for people under 18 at the survey (not linked) and 3 when
+there was too little identifying information. About 450 linkable adults have
+no `PERMTH_EXM`: they were examined at home rather than in the mobile exam
+centre, and have a zero MEC exam weight. `PERMTH_INT` gives their follow-up
+from the interview if you need them.
+
+## 7. Survey-weighted Cox model
+
+```{r cox}
+library(survey)
+library(survival)
+d$Ht_m <- d$BMPHT / 100
+des <- svydesign(ids = ~SDPPSU6, strata = ~SDPSTRA6, weights = ~WTPFEX6,
+                 nest = TRUE, data = d[d$WTPFEX6 > 0, ])
+fit <- svycoxph(Surv(time, event) ~ HSAGEIR + factor(HSSEX) + BMPBMI + Ht_m,
+                design = subset(des, never_conf & !is.na(BMPBMI)))
+summary(fit)
+```
+
+## Notes
+
+- Public-use mortality files add small perturbations to some follow-up times
+  and causes of death for confidentiality. NCHS reports the effect on
+  relative-risk estimates is negligible.
+- `UCOD_LEADING` uses the same 10-category leading-cause recode as the
+  continuous-NHANES files; see `nhanes_ucod_labels()`.
+- NHANES III also has youth (`1a/youth.dat`) and first-laboratory
+  (`1a/lab.dat`) files; the same reader works for them.

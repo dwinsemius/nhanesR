@@ -44,9 +44,9 @@ dir.create(raw, showWarnings = FALSE)
 options(timeout = 900)                  # default 60 s is too short
 
 base <- "https://wwwn.cdc.gov/nchs/data/nhanes3/"
-files <- c("1a/exam.dat",  "1a/exam.sas",
-           "1a/adult.dat", "1a/adult.sas",
-           "2a/lab2.dat",  "2a/lab2.sas")
+files <- c("1a/exam.dat",  "1a/exam.sas",  "1a/exam-acc.pdf",
+           "1a/adult.dat", "1a/adult.sas", "1a/adult-acc.pdf",
+           "2a/lab2.dat",  "2a/lab2.sas",  "2a/lab2-acc.pdf")
 for (f in files) {
   dest <- file.path(raw, basename(f))
   if (!file.exists(dest)) download.file(paste0(base, f), dest, mode = "wb")
@@ -55,7 +55,7 @@ for (f in files) {
 
 Each data file has a codebook alongside it, named `<file>-acc.pdf`
 (for example `1a/exam-acc.pdf`). The codebooks list value labels and
-missing-value codes.
+missing-value codes; section 5 shows how to pull entries out of them.
 
 ## 2. Read column positions from the SAS program
 
@@ -132,14 +132,136 @@ adult <- recode_codes(adult, c("HAR1", "HAR3", "HAR16", "HAR24", "HAR27"))
 lab2  <- recode_codes(lab2,  "COP")
 ```
 
-Check each variable's codebook entry before applying this rule to it. Age
-(`HSAGEIR`) is top-coded at 90 and has no such codes.
+Check each variable's codebook entry before applying this rule to it (next
+section). Age (`HSAGEIR`) is top-coded at 90 and has no such codes.
 
 Missing serum cotinine is mostly missing *labs*, not a missing assay: children
 under 4 were not eligible, and most people coded 88888 have no serum results
 at all.
 
-## 5. Smoking status, checked against cotinine
+## 5. Look up variables in the codebook
+
+The all-8s/all-9s rule is not the whole story. Many items have their own
+special codes, and their width varies: cigarettes per day (`HAR4S`) uses
+666 for "varies" and 777 for "less than 1 per day"; cigars per day (`HAR25`)
+uses 77; cigarettes per day at the heaviest (`HAR7S`) uses 6666; age started
+smoking (`HAR2`) uses 000 for "never". Left in place, a 777 reads as 777
+cigarettes a day.
+
+The codebook PDFs are plain fixed-width text, one entry per variable:
+
+```
+          1336           Is your home drinking water bottled or
+  HFE4                   from the tap (faucet)?
+                  2443   1     Bottled (HFE7)
+                    88   8     Blank but applicable
+```
+
+The helpers below (they need the `pdftools` package) return each requested
+variable's file position, question text, interviewer notes, and a table of
+codes, labels and counts. Counts are for the whole file, so they also show how
+many records each special code affects.
+
+```{r codebook}
+if (!requireNamespace("pdftools", quietly = TRUE)) install.packages("pdftools")
+library(pdftools)
+
+nh3_codebook_lines <- function(pdf) {
+  unlist(lapply(pdftools::pdf_text(pdf), function(p) {
+    L <- strsplit(p, "\n", fixed = TRUE)[[1]]
+    h <- grep("^SAS name\\s+Counts", L)          # page header ends here
+    if (length(h)) L <- L[-seq_len(h[1] + 1)]
+    L
+  }), use.names = FALSE)
+}
+
+nh3_codebook <- function(pdf, vars, lines = nh3_codebook_lines(pdf)) {
+  blank  <- !nzchar(trimws(lines))
+  is_val <- function(x) grepl("^\\s*[0-9][0-9,]*\\s+\\S", x)
+  out <- lapply(vars, function(v) {
+    i <- grep(paste0("^\\s{0,8}", v, "(\\s|$)"), lines)[1]
+    if (is.na(i)) return(NULL)
+    ## The entry ends at the first blank line after the value rows start
+    ## (earlier blank lines separate the question from interviewer notes),
+    ## or just before the next entry's position + name lines.
+    end <- i; seen <- FALSE; k <- i + 1
+    while (k <= length(lines)) {
+      if (grepl("^\\s{0,8}[A-Z][A-Z0-9_]*(\\s|$)", lines[k]) && k > i + 1 &&
+          grepl("^\\s*[0-9]+(-[0-9]+)?\\s", lines[k - 1])) { end <- k - 2; break }
+      if (blank[k]) { if (seen) break } else { end <- k; if (is_val(lines[k])) seen <- TRUE }
+      k <- k + 1
+    }
+    body  <- if (end > i) lines[(i + 1):end] else character(0)
+    first <- which(is_val(body))[1]
+    pre   <- if (!is.na(first) && first > 1) trimws(body[seq_len(first - 1)]) else character(0)
+    gap   <- which(!nzchar(pre))[1]
+    if (is.na(gap)) gap <- length(pre) + 1
+    desc  <- c(sub("^\\s*[0-9]+(-[0-9]+)?\\s*", "", lines[i - 1]),
+               sub(paste0("^\\s*", v, "\\s*"), "", lines[i]), pre[seq_len(gap - 1)])
+    desc  <- sub("\\s{2,}See note\\s*$", "", trimws(desc))
+    notes <- pre[seq_along(pre) >= gap]
+    ## the name line can itself carry the first value row ("  HAG17A   418   1   Yes")
+    first_row <- sub(paste0("^\\s*", v), "", lines[i])
+    if (is_val(first_row)) { body <- c(first_row, body); desc <- desc[-2] }
+    m <- regmatches(body[is_val(body)],
+                    regexec("^\\s*([0-9][0-9,]*)\\s+(\\S+)\\s*(.*?)\\s*$", body[is_val(body)], perl = TRUE))
+    tab <- data.frame(count = as.integer(gsub(",", "", vapply(m, `[`, "", 2))),
+                      code  = vapply(m, `[`, "", 3),
+                      label = vapply(m, `[`, "", 4))
+    b <- tab$code == "Blank"; tab$label[b] <- "Blank"; tab$code[b] <- ""
+    list(var = v,
+         position    = sub("^\\s*([0-9]+(-[0-9]+)?).*$", "\\1", lines[i - 1]),
+         description = paste(desc[nzchar(desc)], collapse = " "),
+         notes       = paste(notes[nzchar(notes)], collapse = " "),
+         values      = tab)
+  })
+  names(out) <- vars
+  if (any(lost <- vapply(out, is.null, logical(1))))
+    warning("not found: ", paste(vars[lost], collapse = ", "))
+  out[!lost]
+}
+
+## Codes made of a repeated 6, 7, 8 or 9 (666, 77, 8888 ...) -- each needs a
+## decision before the variable is used as a number
+nh3_special_codes <- function(cb) {
+  out <- do.call(rbind, lapply(cb, function(e) {
+    t <- e$values[grepl("^(6+|7+|8+|9+)$", e$values$code), ]
+    if (nrow(t)) data.frame(var = e$var, t, row.names = NULL)
+  }))
+  rownames(out) <- NULL
+  out
+}
+```
+
+```{r codebook-use}
+cb <- nh3_codebook(file.path(raw, "adult-acc.pdf"),
+                   c("HAR1", "HAR3", "HAR4S", "HAR16", "HAR24", "HAR27"))
+cb$HAR4S$values
+#>   count    code                         label
+#> 1  4656 001-140
+#> 2    59     666              Varies or varied
+#> 3   237     777 Less than 1 cigarette per day
+#> 4    51     888          Blank but applicable
+#> 5     5     999                    Don't know
+#> 6 15042                                 Blank
+
+nh3_special_codes(cb)
+#>     var count code                         label
+#> 1  HAR1    16    8          Blank but applicable
+#> 2  HAR3    18    8          Blank but applicable
+#> 3 HAR4S    59  666              Varies or varied
+#> 4 HAR4S   237  777 Less than 1 cigarette per day
+#> 5 HAR4S    51  888          Blank but applicable
+#> 6 HAR4S     5  999                    Don't know
+#> ...
+```
+
+For yes/no items such as `HAR1` the table confirms the coding (1 = yes,
+2 = no, 8 = blank but applicable). A wrapped question line that starts with a
+number (`HAR23`: "...at least / 20 cigars in your entire life?") is misread as
+a value row, so glance at the full entry for anything unexpected.
+
+## 6. Smoking status, checked against cotinine
 
 `HAR1` asks whether the person has smoked 100 or more cigarettes; only those
 who say yes are asked `HAR3` (smoke now). Other tobacco items are asked only of
@@ -167,7 +289,7 @@ d$never_conf <- with(d, cig_status %in% "Never" & !other_tob &
                         (is.na(COP) | COP <= 10))
 ```
 
-## 6. Link mortality
+## 7. Link mortality
 
 `nhanesR` downloads and parses the 2019 public-use Linked Mortality File for
 NHANES III like any other cycle.
@@ -192,7 +314,7 @@ no `PERMTH_EXM`: they were examined at home rather than in the mobile exam
 centre, and have a zero MEC exam weight. `PERMTH_INT` gives their follow-up
 from the interview if you need them.
 
-## 7. Survey-weighted Cox model
+## 8. Survey-weighted Cox model
 
 ```{r cox}
 library(survey)

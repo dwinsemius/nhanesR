@@ -24,11 +24,11 @@ The main files are in `nhanes3/1a/`. Serum cotinine is in the *second*
 laboratory file, `nhanes3/2a/lab2.dat`. The main `lab.dat` has a `COP`
 column, but it is blank for every record.
 
-`raw`` ``<-`` `[`file.path`](https://rdrr.io/r/base/file.path.html)`(`[`tempdir`](https://rdrr.io/r/base/tempfile.html)`(``)``, ``"nhanes3"``)`` `[`dir.create`](https://rdrr.io/r/base/files2.html)`(``raw``, showWarnings ``=`` ``FALSE``)`` `[`options`](https://rdrr.io/r/base/options.html)`(``timeout ``=`` ``900``)`` ``# default 60 s is too short`` `` ``base`` ``<-`` ``"https://wwwn.cdc.gov/nchs/data/nhanes3/"`` ``files`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"1a/exam.dat"``, ``"1a/exam.sas"``,`` `` ``"1a/adult.dat"``, ``"1a/adult.sas"``,`` `` ``"2a/lab2.dat"``, ``"2a/lab2.sas"``)`` ``for`` ``(``f`` ``in`` ``files``)`` ``{`` `` ``dest`` ``<-`` `[`file.path`](https://rdrr.io/r/base/file.path.html)`(``raw``, `[`basename`](https://rdrr.io/r/base/basename.html)`(``f``)``)`` `` ``if`` ``(``!`[`file.exists`](https://rdrr.io/r/base/files.html)`(``dest``)``)`` `[`download.file`](https://rdrr.io/r/utils/download.file.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(``base``, ``f``)``, ``dest``, mode ``=`` ``"wb"``)`` ``}`
+`raw`` ``<-`` `[`file.path`](https://rdrr.io/r/base/file.path.html)`(`[`tempdir`](https://rdrr.io/r/base/tempfile.html)`(``)``, ``"nhanes3"``)`` `[`dir.create`](https://rdrr.io/r/base/files2.html)`(``raw``, showWarnings ``=`` ``FALSE``)`` `[`options`](https://rdrr.io/r/base/options.html)`(``timeout ``=`` ``900``)`` ``# default 60 s is too short`` `` ``base`` ``<-`` ``"https://wwwn.cdc.gov/nchs/data/nhanes3/"`` ``files`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"1a/exam.dat"``, ``"1a/exam.sas"``, ``"1a/exam-acc.pdf"``,`` `` ``"1a/adult.dat"``, ``"1a/adult.sas"``, ``"1a/adult-acc.pdf"``,`` `` ``"2a/lab2.dat"``, ``"2a/lab2.sas"``, ``"2a/lab2-acc.pdf"``)`` ``for`` ``(``f`` ``in`` ``files``)`` ``{`` `` ``dest`` ``<-`` `[`file.path`](https://rdrr.io/r/base/file.path.html)`(``raw``, `[`basename`](https://rdrr.io/r/base/basename.html)`(``f``)``)`` `` ``if`` ``(``!`[`file.exists`](https://rdrr.io/r/base/files.html)`(``dest``)``)`` `[`download.file`](https://rdrr.io/r/utils/download.file.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(``base``, ``f``)``, ``dest``, mode ``=`` ``"wb"``)`` ``}`
 
 Each data file has a codebook alongside it, named `<file>-acc.pdf` (for
 example `1a/exam-acc.pdf`). The codebooks list value labels and
-missing-value codes.
+missing-value codes; section 5 shows how to pull entries out of them.
 
 ## 2. Read column positions from the SAS program
 
@@ -61,14 +61,46 @@ values: an 88888 cotinine code makes the mean serum cotinine about
 
 `recode_codes`` ``<-`` ``function``(``x``, ``vars``)`` ``{`` `` ``w`` ``<-`` `[`attr`](https://rdrr.io/r/base/attr.html)`(``x``, ``"width"``)`` `` ``for`` ``(``v`` ``in`` ``vars``)`` ``{`` `` ``codes`` ``<-`` `[`as.numeric`](https://rdrr.io/r/base/numeric.html)`(`[`c`](https://rdrr.io/r/base/c.html)`(`[`strrep`](https://rdrr.io/r/base/strrep.html)`(``"8"``, ``w``[[``v``]``]``)``, `[`strrep`](https://rdrr.io/r/base/strrep.html)`(``"9"``, ``w``[[``v``]``]``)``)``)`` `` ``x``[[``v``]``]``[``x``[[``v``]``]`` `[`%in%`](https://rdrr.io/r/base/match.html)` ``codes``]`` ``<-`` ``NA`` `` ``}`` `` ``x`` ``}`` ``exam`` ``<-`` ``recode_codes``(``exam``, `[`c`](https://rdrr.io/r/base/c.html)`(``"BMPHT"``, ``"BMPWT"``, ``"BMPBMI"``, ``"BMPWAIST"``)``)`` ``adult`` ``<-`` ``recode_codes``(``adult``, `[`c`](https://rdrr.io/r/base/c.html)`(``"HAR1"``, ``"HAR3"``, ``"HAR16"``, ``"HAR24"``, ``"HAR27"``)``)`` ``lab2`` ``<-`` ``recode_codes``(``lab2``, ``"COP"``)`
 
-Check each variable’s codebook entry before applying this rule to it.
-Age (`HSAGEIR`) is top-coded at 90 and has no such codes.
+Check each variable’s codebook entry before applying this rule to it
+(next section). Age (`HSAGEIR`) is top-coded at 90 and has no such
+codes.
 
 Missing serum cotinine is mostly missing *labs*, not a missing assay:
 children under 4 were not eligible, and most people coded 88888 have no
 serum results at all.
 
-## 5. Smoking status, checked against cotinine
+## 5. Look up variables in the codebook
+
+The all-8s/all-9s rule is not the whole story. Many items have their own
+special codes, and their width varies: cigarettes per day (`HAR4S`) uses
+666 for “varies” and 777 for “less than 1 per day”; cigars per day
+(`HAR25`) uses 77; cigarettes per day at the heaviest (`HAR7S`) uses
+6666; age started smoking (`HAR2`) uses 000 for “never”. Left in place,
+a 777 reads as 777 cigarettes a day.
+
+The codebook PDFs are plain fixed-width text, one entry per variable:
+
+              1336           Is your home drinking water bottled or
+      HFE4                   from the tap (faucet)?
+                      2443   1     Bottled (HFE7)
+                        88   8     Blank but applicable
+
+The helpers below (they need the `pdftools` package) return each
+requested variable’s file position, question text, interviewer notes,
+and a table of codes, labels and counts. Counts are for the whole file,
+so they also show how many records each special code affects.
+
+`if`` ``(``!`[`requireNamespace`](https://rdrr.io/r/base/ns-load.html)`(``"pdftools"``, quietly ``=`` ``TRUE``)``)`` `[`install.packages`](https://rdrr.io/r/utils/install.packages.html)`(``"pdftools"``)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`pdftools`](https://ropensci.r-universe.dev/pdftools)`)`` `` ``nh3_codebook_lines`` ``<-`` ``function``(``pdf``)`` ``{`` `` `[`unlist`](https://rdrr.io/r/base/unlist.html)`(`[`lapply`](https://rdrr.io/r/base/lapply.html)`(``pdftools``::`[`pdf_text`](https://docs.ropensci.org/pdftools//reference/pdftools.html)`(``pdf``)``, ``function``(``p``)`` ``{`` `` ``L`` ``<-`` `[`strsplit`](https://rdrr.io/r/base/strsplit.html)`(``p``, ``"\n"``, fixed ``=`` ``TRUE``)``[[``1``]``]`` `` ``h`` ``<-`` `[`grep`](https://rdrr.io/r/base/grep.html)`(``"^SAS name\\s+Counts"``, ``L``)`` ``# page header ends here`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``h``)``)`` ``L`` ``<-`` ``L``[``-`[`seq_len`](https://rdrr.io/r/base/seq.html)`(``h``[``1``]`` ``+`` ``1``)``]`` `` ``L`` `` ``}``)``, use.names ``=`` ``FALSE``)`` ``}`` `` ``nh3_codebook`` ``<-`` ``function``(``pdf``, ``vars``, ``lines`` ``=`` ``nh3_codebook_lines``(``pdf``)``)`` ``{`` `` ``blank`` ``<-`` ``!`[`nzchar`](https://rdrr.io/r/base/nchar.html)`(`[`trimws`](https://rdrr.io/r/base/trimws.html)`(``lines``)``)`` `` ``is_val`` ``<-`` ``function``(``x``)`` `[`grepl`](https://rdrr.io/r/base/grep.html)`(``"^\\s*[0-9][0-9,]*\\s+\\S"``, ``x``)`` `` ``out`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``vars``, ``function``(``v``)`` ``{`` `` ``i`` ``<-`` `[`grep`](https://rdrr.io/r/base/grep.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(``"^\\s{0,8}"``, ``v``, ``"(\\s|$)"``)``, ``lines``)``[``1``]`` `` ``if`` ``(`[`is.na`](https://rdrr.io/r/base/NA.html)`(``i``)``)`` `[`return`](https://rdrr.io/r/base/function.html)`(``NULL``)`` `` ``## The entry ends at the first blank line after the value rows start`` `` ``## (earlier blank lines separate the question from interviewer notes),`` `` ``## or just before the next entry's position + name lines.`` `` ``end`` ``<-`` ``i``; ``seen`` ``<-`` ``FALSE``; ``k`` ``<-`` ``i`` ``+`` ``1`` `` ``while`` ``(``k`` ``<=`` `[`length`](https://rdrr.io/r/base/length.html)`(``lines``)``)`` ``{`` `` ``if`` ``(`[`grepl`](https://rdrr.io/r/base/grep.html)`(``"^\\s{0,8}[A-Z][A-Z0-9_]*(\\s|$)"``, ``lines``[``k``]``)`` ``&&`` ``k`` ``>`` ``i`` ``+`` ``1`` ``&&`` `` `[`grepl`](https://rdrr.io/r/base/grep.html)`(``"^\\s*[0-9]+(-[0-9]+)?\\s"``, ``lines``[``k`` ``-`` ``1``]``)``)`` ``{`` ``end`` ``<-`` ``k`` ``-`` ``2``; ``break`` ``}`` `` ``if`` ``(``blank``[``k``]``)`` ``{`` ``if`` ``(``seen``)`` ``break`` ``}`` ``else`` ``{`` ``end`` ``<-`` ``k``; ``if`` ``(``is_val``(``lines``[``k``]``)``)`` ``seen`` ``<-`` ``TRUE`` ``}`` `` ``k`` ``<-`` ``k`` ``+`` ``1`` `` ``}`` `` ``body`` ``<-`` ``if`` ``(``end`` ``>`` ``i``)`` ``lines``[``(``i`` ``+`` ``1``)``:``end``]`` ``else`` `[`character`](https://rdrr.io/r/base/character.html)`(``0``)`` `` ``first`` ``<-`` `[`which`](https://rdrr.io/r/base/which.html)`(``is_val``(``body``)``)``[``1``]`` `` ``pre`` ``<-`` ``if`` ``(``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``first``)`` ``&&`` ``first`` ``>`` ``1``)`` `[`trimws`](https://rdrr.io/r/base/trimws.html)`(``body``[`[`seq_len`](https://rdrr.io/r/base/seq.html)`(``first`` ``-`` ``1``)``]``)`` ``else`` `[`character`](https://rdrr.io/r/base/character.html)`(``0``)`` `` ``gap`` ``<-`` `[`which`](https://rdrr.io/r/base/which.html)`(``!`[`nzchar`](https://rdrr.io/r/base/nchar.html)`(``pre``)``)``[``1``]`` `` ``if`` ``(`[`is.na`](https://rdrr.io/r/base/NA.html)`(``gap``)``)`` ``gap`` ``<-`` `[`length`](https://rdrr.io/r/base/length.html)`(``pre``)`` ``+`` ``1`` `` ``desc`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(`[`sub`](https://rdrr.io/r/base/grep.html)`(``"^\\s*[0-9]+(-[0-9]+)?\\s*"``, ``""``, ``lines``[``i`` ``-`` ``1``]``)``,`` `` `[`sub`](https://rdrr.io/r/base/grep.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(``"^\\s*"``, ``v``, ``"\\s*"``)``, ``""``, ``lines``[``i``]``)``, ``pre``[`[`seq_len`](https://rdrr.io/r/base/seq.html)`(``gap`` ``-`` ``1``)``]``)`` `` ``desc`` ``<-`` `[`sub`](https://rdrr.io/r/base/grep.html)`(``"\\s{2,}See note\\s*$"``, ``""``, `[`trimws`](https://rdrr.io/r/base/trimws.html)`(``desc``)``)`` `` ``notes`` ``<-`` ``pre``[`[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pre``)`` ``>=`` ``gap``]`` `` ``## the name line can itself carry the first value row (" HAG17A 418 1 Yes")`` `` ``first_row`` ``<-`` `[`sub`](https://rdrr.io/r/base/grep.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(``"^\\s*"``, ``v``)``, ``""``, ``lines``[``i``]``)`` `` ``if`` ``(``is_val``(``first_row``)``)`` ``{`` ``body`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``first_row``, ``body``)``; ``desc`` ``<-`` ``desc``[``-``2``]`` ``}`` `` ``m`` ``<-`` `[`regmatches`](https://rdrr.io/r/base/regmatches.html)`(``body``[``is_val``(``body``)``]``,`` `` `[`regexec`](https://rdrr.io/r/base/grep.html)`(``"^\\s*([0-9][0-9,]*)\\s+(\\S+)\\s*(.*?)\\s*$"``, ``body``[``is_val``(``body``)``]``, perl ``=`` ``TRUE``)``)`` `` ``tab`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``count ``=`` `[`as.integer`](https://rdrr.io/r/base/integer.html)`(`[`gsub`](https://rdrr.io/r/base/grep.html)`(``","``, ``""``, `[`vapply`](https://rdrr.io/r/base/lapply.html)`(``m``, ``` `[` ```, ``""``, ``2``)``)``)``,`` `` code ``=`` `[`vapply`](https://rdrr.io/r/base/lapply.html)`(``m``, ``` `[` ```, ``""``, ``3``)``,`` `` label ``=`` `[`vapply`](https://rdrr.io/r/base/lapply.html)`(``m``, ``` `[` ```, ``""``, ``4``)``)`` `` ``b`` ``<-`` ``tab``$``code`` ``==`` ``"Blank"``; ``tab``$``label``[``b``]`` ``<-`` ``"Blank"``; ``tab``$``code``[``b``]`` ``<-`` ``""`` `` `[`list`](https://rdrr.io/r/base/list.html)`(``var ``=`` ``v``,`` `` position ``=`` `[`sub`](https://rdrr.io/r/base/grep.html)`(``"^\\s*([0-9]+(-[0-9]+)?).*$"``, ``"\\1"``, ``lines``[``i`` ``-`` ``1``]``)``,`` `` description ``=`` `[`paste`](https://rdrr.io/r/base/paste.html)`(``desc``[`[`nzchar`](https://rdrr.io/r/base/nchar.html)`(``desc``)``]``, collapse ``=`` ``" "``)``,`` `` notes ``=`` `[`paste`](https://rdrr.io/r/base/paste.html)`(``notes``[`[`nzchar`](https://rdrr.io/r/base/nchar.html)`(``notes``)``]``, collapse ``=`` ``" "``)``,`` `` values ``=`` ``tab``)`` `` ``}``)`` `` `[`names`](https://rdrr.io/r/base/names.html)`(``out``)`` ``<-`` ``vars`` `` ``if`` ``(`[`any`](https://rdrr.io/r/base/any.html)`(``lost`` ``<-`` `[`vapply`](https://rdrr.io/r/base/lapply.html)`(``out``, ``is.null``, `[`logical`](https://rdrr.io/r/base/logical.html)`(``1``)``)``)``)`` `` `[`warning`](https://rdrr.io/r/base/warning.html)`(``"not found: "``, `[`paste`](https://rdrr.io/r/base/paste.html)`(``vars``[``lost``]``, collapse ``=`` ``", "``)``)`` `` ``out``[``!``lost``]`` ``}`` `` ``## Codes made of a repeated 6, 7, 8 or 9 (666, 77, 8888 ...) -- each needs a`` ``## decision before the variable is used as a number`` ``nh3_special_codes`` ``<-`` ``function``(``cb``)`` ``{`` `` ``out`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``rbind``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``cb``, ``function``(``e``)`` ``{`` `` ``t`` ``<-`` ``e``$``values``[`[`grepl`](https://rdrr.io/r/base/grep.html)`(``"^(6+|7+|8+|9+)$"``, ``e``$``values``$``code``)``, ``]`` `` ``if`` ``(`[`nrow`](https://rdrr.io/r/base/nrow.html)`(``t``)``)`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``var ``=`` ``e``$``var``, ``t``, row.names ``=`` ``NULL``)`` `` ``}``)``)`` `` `[`rownames`](https://rdrr.io/r/base/colnames.html)`(``out``)`` ``<-`` ``NULL`` `` ``out`` ``}`
+
+`cb`` ``<-`` ``nh3_codebook``(`[`file.path`](https://rdrr.io/r/base/file.path.html)`(``raw``, ``"adult-acc.pdf"``)``,`` `` `[`c`](https://rdrr.io/r/base/c.html)`(``"HAR1"``, ``"HAR3"``, ``"HAR4S"``, ``"HAR16"``, ``"HAR24"``, ``"HAR27"``)``)`` ``cb``$``HAR4S``$``values`` ``#> count code label`` ``#> 1 4656 001-140`` ``#> 2 59 666 Varies or varied`` ``#> 3 237 777 Less than 1 cigarette per day`` ``#> 4 51 888 Blank but applicable`` ``#> 5 5 999 Don't know`` ``#> 6 15042 Blank`` `` ``nh3_special_codes``(``cb``)`` ``#> var count code label`` ``#> 1 HAR1 16 8 Blank but applicable`` ``#> 2 HAR3 18 8 Blank but applicable`` ``#> 3 HAR4S 59 666 Varies or varied`` ``#> 4 HAR4S 237 777 Less than 1 cigarette per day`` ``#> 5 HAR4S 51 888 Blank but applicable`` ``#> 6 HAR4S 5 999 Don't know`` ``#> ...`
+
+For yes/no items such as `HAR1` the table confirms the coding (1 = yes,
+2 = no, 8 = blank but applicable). A wrapped question line that starts
+with a number (`HAR23`: “…at least / 20 cigars in your entire life?”) is
+misread as a value row, so glance at the full entry for anything
+unexpected.
+
+## 6. Smoking status, checked against cotinine
 
 `HAR1` asks whether the person has smoked 100 or more cigarettes; only
 those who say yes are asked `HAR3` (smoke now). Other tobacco items are
@@ -82,7 +114,7 @@ and about 13% of former smokers. A stricter never-smoker definition:
 
 `d``$``never_conf`` ``<-`` `[`with`](https://rdrr.io/r/base/with.html)`(``d``, ``cig_status`` `[`%in%`](https://rdrr.io/r/base/match.html)` ``"Never"`` ``&`` ``!``other_tob`` ``&`` `` ``(`[`is.na`](https://rdrr.io/r/base/NA.html)`(``COP``)`` ``|`` ``COP`` ``<=`` ``10``)``)`
 
-## 6. Link mortality
+## 7. Link mortality
 
 `nhanesR` downloads and parses the 2019 public-use Linked Mortality File
 for NHANES III like any other cycle.
@@ -95,7 +127,7 @@ adults have no `PERMTH_EXM`: they were examined at home rather than in
 the mobile exam centre, and have a zero MEC exam weight. `PERMTH_INT`
 gives their follow-up from the interview if you need them.
 
-## 7. Survey-weighted Cox model
+## 8. Survey-weighted Cox model
 
 [`library`](https://rdrr.io/r/base/library.html)`(`[`survey`](http://r-survey.r-forge.r-project.org/survey/)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`survival`](https://github.com/therneau/survival)`)`` ``d``$``Ht_m`` ``<-`` ``d``$``BMPHT`` ``/`` ``100`` ``des`` ``<-`` `[`svydesign`](https://rdrr.io/pkg/survey/man/svydesign.html)`(``ids ``=`` ``~``SDPPSU6``, strata ``=`` ``~``SDPSTRA6``, weights ``=`` ``~``WTPFEX6``,`` `` nest ``=`` ``TRUE``, data ``=`` ``d``[``d``$``WTPFEX6`` ``>`` ``0``, ``]``)`` ``fit`` ``<-`` `[`svycoxph`](https://rdrr.io/pkg/survey/man/svycoxph.html)`(`[`Surv`](https://rdrr.io/pkg/survival/man/Surv.html)`(``time``, ``event``)`` ``~`` ``HSAGEIR`` ``+`` `[`factor`](https://rdrr.io/r/base/factor.html)`(``HSSEX``)`` ``+`` ``BMPBMI`` ``+`` ``Ht_m``,`` `` design ``=`` `[`subset`](https://rdrr.io/r/base/subset.html)`(``des``, ``never_conf`` ``&`` ``!`[`is.na`](https://rdrr.io/r/base/NA.html)`(``BMPBMI``)``)``)`` `[`summary`](https://rdrr.io/r/base/summary.html)`(``fit``)`
 

@@ -112,14 +112,14 @@ persistent use; <code><a href="https://rdrr.io/pkg/Hmisc/man/describe.html" clas
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">tc</span> <span class="op">&lt;-</span> <span class="fu"><a href="nhanes_download_analyte.html">nhanes_download_analyte</a></span><span class="op">(</span><span class="st">"total cholesterol"</span>, <span class="st">"2015-2016"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Created nhanesR cache directory:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmpaaSzBg/nhanesR</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">/var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmpDOFcqm/nhanesR</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Fetching variable catalog for Laboratory from CDC...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Found 6 unique variables matching <span style="color: #0000BB;">"total cholesterol"</span>.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Both <span style="color: #0000BB;">"2017-2018"</span> and <span style="color: #0000BB;">"2017-2020"</span> are present. The 2017-2018 participants are</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> included in the 2017-2020 pandemic-adjusted file -- use one or the other in</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> pooled analyses to avoid double-counting.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading TCHOL_I 2015-2016</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading TCHOL_I 2015-2016 <span style="color: #B2B2B2;">[274ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading TCHOL_I 2015-2016 <span style="color: #B2B2B2;">[284ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu">NH_describe</span><span class="op">(</span><span class="va">tc</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -127,43 +127,43 @@ persistent use; <code><a href="https://rdrr.io/pkg/Hmisc/man/describe.html" clas
 <span class="r-in"><span><span class="va">demo_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="nhanes_download.html">nhanes_download</a></span><span class="op">(</span><span class="st">"DEMO"</span>, <span class="fu"><a href="nhanes_cycles.html">nhanes_cycles</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="st">"cycle"</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 1999-2000</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 1999-2000</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 1999-2000 <span style="color: #B2B2B2;">[1.1s]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 1999-2000 <span style="color: #B2B2B2;">[1.5s]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2001-2002</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2001-2002</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2001-2002 <span style="color: #B2B2B2;">[949ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2001-2002 <span style="color: #B2B2B2;">[456ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2003-2004</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2003-2004</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2003-2004 <span style="color: #B2B2B2;">[936ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2003-2004 <span style="color: #B2B2B2;">[699ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2005-2006</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2005-2006</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2005-2006 <span style="color: #B2B2B2;">[709ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2005-2006 <span style="color: #B2B2B2;">[926ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2007-2008</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2007-2008</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2007-2008 <span style="color: #B2B2B2;">[775ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2007-2008 <span style="color: #B2B2B2;">[684ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2009-2010</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2009-2010</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2009-2010 <span style="color: #B2B2B2;">[1s]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2009-2010 <span style="color: #B2B2B2;">[556ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2011-2012</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2011-2012</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2011-2012 <span style="color: #B2B2B2;">[576ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2011-2012 <span style="color: #B2B2B2;">[486ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2013-2014</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2013-2014</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2013-2014 <span style="color: #B2B2B2;">[1.1s]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2013-2014 <span style="color: #B2B2B2;">[516ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2015-2016</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2015-2016</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2015-2016 <span style="color: #B2B2B2;">[984ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2015-2016 <span style="color: #B2B2B2;">[509ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Downloading DEMO for 2017-2018</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Downloading DEMO 2017-2018</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2017-2018 <span style="color: #B2B2B2;">[1.1s]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Downloading DEMO 2017-2018 <span style="color: #B2B2B2;">[430ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="fu"><a href="nhanes_stack.html">nhanes_stack</a></span><span class="op">(</span><span class="va">demo_list</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Stacked 101316 rows across 10 cycles: <span style="color: #0000BB;">"1999-2000"</span>, <span style="color: #0000BB;">"2001-2002"</span>, <span style="color: #0000BB;">"2003-2004"</span>,</span>

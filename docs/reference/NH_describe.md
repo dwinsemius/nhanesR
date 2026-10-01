@@ -64,14 +64,14 @@ underlying engine.
 # \donttest{
 tc <- nhanes_download_analyte("total cholesterol", "2015-2016")
 #> Created nhanesR cache directory:
-#> /var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmpaaSzBg/nhanesR
+#> /var/folders/68/vh2f8kzn09j8954r6q9100yh0000gn/T//RtmpDOFcqm/nhanesR
 #> Fetching variable catalog for Laboratory from CDC...
 #> Found 6 unique variables matching "total cholesterol".
 #> Warning: Both "2017-2018" and "2017-2020" are present. The 2017-2018 participants are
 #> included in the 2017-2020 pandemic-adjusted file -- use one or the other in
 #> pooled analyses to avoid double-counting.
 #> ℹ Downloading TCHOL_I 2015-2016
-#> ✔ Downloading TCHOL_I 2015-2016 [274ms]
+#> ✔ Downloading TCHOL_I 2015-2016 [284ms]
 #> 
 invisible(NH_describe(tc))
 
@@ -79,43 +79,43 @@ invisible(NH_describe(tc))
 demo_list <- nhanes_download("DEMO", nhanes_cycles()[1:10, "cycle"])
 #> Downloading DEMO for 1999-2000
 #> ℹ Downloading DEMO 1999-2000
-#> ✔ Downloading DEMO 1999-2000 [1.1s]
+#> ✔ Downloading DEMO 1999-2000 [1.5s]
 #> 
 #> Downloading DEMO for 2001-2002
 #> ℹ Downloading DEMO 2001-2002
-#> ✔ Downloading DEMO 2001-2002 [949ms]
+#> ✔ Downloading DEMO 2001-2002 [456ms]
 #> 
 #> Downloading DEMO for 2003-2004
 #> ℹ Downloading DEMO 2003-2004
-#> ✔ Downloading DEMO 2003-2004 [936ms]
+#> ✔ Downloading DEMO 2003-2004 [699ms]
 #> 
 #> Downloading DEMO for 2005-2006
 #> ℹ Downloading DEMO 2005-2006
-#> ✔ Downloading DEMO 2005-2006 [709ms]
+#> ✔ Downloading DEMO 2005-2006 [926ms]
 #> 
 #> Downloading DEMO for 2007-2008
 #> ℹ Downloading DEMO 2007-2008
-#> ✔ Downloading DEMO 2007-2008 [775ms]
+#> ✔ Downloading DEMO 2007-2008 [684ms]
 #> 
 #> Downloading DEMO for 2009-2010
 #> ℹ Downloading DEMO 2009-2010
-#> ✔ Downloading DEMO 2009-2010 [1s]
+#> ✔ Downloading DEMO 2009-2010 [556ms]
 #> 
 #> Downloading DEMO for 2011-2012
 #> ℹ Downloading DEMO 2011-2012
-#> ✔ Downloading DEMO 2011-2012 [576ms]
+#> ✔ Downloading DEMO 2011-2012 [486ms]
 #> 
 #> Downloading DEMO for 2013-2014
 #> ℹ Downloading DEMO 2013-2014
-#> ✔ Downloading DEMO 2013-2014 [1.1s]
+#> ✔ Downloading DEMO 2013-2014 [516ms]
 #> 
 #> Downloading DEMO for 2015-2016
 #> ℹ Downloading DEMO 2015-2016
-#> ✔ Downloading DEMO 2015-2016 [984ms]
+#> ✔ Downloading DEMO 2015-2016 [509ms]
 #> 
 #> Downloading DEMO for 2017-2018
 #> ℹ Downloading DEMO 2017-2018
-#> ✔ Downloading DEMO 2017-2018 [1.1s]
+#> ✔ Downloading DEMO 2017-2018 [430ms]
 #> 
 demo <- nhanes_stack(demo_list)
 #> Stacked 101316 rows across 10 cycles: "1999-2000", "2001-2002", "2003-2004",

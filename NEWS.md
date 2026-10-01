@@ -36,6 +36,11 @@
 
 ## Bug fixes
 
+* Added `NH_unlabel()` to remove NHANES/Hmisc/haven label metadata before
+  modeling. This provides a small package-level escape hatch for the base R
+  `data.frame()` recycling trap where an odd-length `median()` of an
+  Hmisc-style labelled vector can remain a labelled scalar and fail later in
+  `predict(newdata=)` construction.
 * `nhanes_survival_prep()` now automatically applies CDC-compliant pooled
   multi-cycle weight scaling instead of only warning about it. If both
   `1999-2000` and `2001-2002` are present and the matching 4-year weight

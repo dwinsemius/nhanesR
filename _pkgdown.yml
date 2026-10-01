@@ -51,6 +51,7 @@ reference:
     desc: "Attach CDC descriptions as Hmisc-style column labels"
     contents:
       - NH_label
+      - NH_unlabel
       - NH_describe
 
   - title: "Mortality linkage"

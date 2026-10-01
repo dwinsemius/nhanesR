@@ -32,6 +32,13 @@ data frame and stores it as an \code{"label"} attribute on the column.
 Hmisc reads these attributes automatically in \code{\link[Hmisc]{describe}},
 \code{Hmisc::summary()}, \code{Hmisc::html()}, and other label-aware
 functions, so labelling once makes descriptions available everywhere.
+
+Label attributes are useful for documentation, but labelled scalars can
+surprise base R recycling. In particular, an odd-length \code{median()} of an
+\code{Hmisc}-style labelled vector may retain its label/class and then fail when
+used as a length-one reference value in \code{data.frame()} /
+\code{predict(newdata=)} workflows. Use \code{\link{NH_unlabel}} on modeling
+data or reference values when plain vectors are needed.
 }
 \examples{
 \donttest{
@@ -44,6 +51,7 @@ invisible(Hmisc::describe(tc))
 }
 \seealso{
 \code{\link{NH_describe}} for a one-step labelled describe;
+\code{\link{NH_unlabel}} to remove labels before modeling;
 \code{\link{nhanes_search_variables}} to browse the variable catalog;
 \code{\link[Hmisc]{label}} for the Hmisc label convention.
 }

@@ -2,6 +2,7 @@
 
 export(NH_describe)
 export(NH_label)
+export(NH_unlabel)
 export(nhanes_cache_dir)
 export(nhanes_cycles)
 export(nhanes_download)

@@ -6,6 +6,13 @@
 #' \code{Hmisc::summary()}, \code{Hmisc::html()}, and other label-aware
 #' functions, so labelling once makes descriptions available everywhere.
 #'
+#' Label attributes are useful for documentation, but labelled scalars can
+#' surprise base R recycling. In particular, an odd-length `median()` of an
+#' `Hmisc`-style labelled vector may retain its label/class and then fail when
+#' used as a length-one reference value in `data.frame()` / `predict(newdata=)`
+#' workflows. Use [NH_unlabel()] on modeling data or reference values when plain
+#' vectors are needed.
+#'
 #' @param x A data frame of NHANES data, typically from
 #'   \code{\link{nhanes_download_analyte}}.
 #' @param descriptions Optional lookup for variable descriptions. May be:
@@ -24,6 +31,7 @@
 #'   returned unchanged.
 #'
 #' @seealso \code{\link{NH_describe}} for a one-step labelled describe;
+#'   \code{\link{NH_unlabel}} to remove labels before modeling;
 #'   \code{\link{nhanes_search_variables}} to browse the variable catalog;
 #'   \code{\link[Hmisc]{label}} for the Hmisc label convention.
 #' @export
@@ -47,6 +55,57 @@ NH_label <- function(x, descriptions = NULL) {
       }
     }
   }
+  x
+}
+
+#' Remove NHANES variable labels before modeling
+#'
+#' Removes column `label` attributes and labelled-vector classes from a vector
+#' or every column in a data frame. This is useful after using [NH_label()] or
+#' receiving data that already carries `Hmisc`/`haven` labels, once those labels
+#' have served their documentation purpose and the data are headed into model
+#' fitting or `predict(newdata=)` construction.
+#'
+#' The underlying recycling behavior is in base R, and the preservation of
+#' labels on some scalar summaries is a class-method behavior of packages such
+#' as `Hmisc`. `nhanesR` provides this helper because NHANES labels are commonly
+#' introduced at the package boundary before downstream modeling code sees them.
+#'
+#' @param x A vector or data frame.
+#'
+#' @return `x` with `label`/`labels` attributes removed. For vectors, labelled
+#'   classes (`"labelled"`, `"haven_labelled"`, and `"haven_labelled_spss"`) are
+#'   also removed; ordinary classes such as `"Date"` and factors are retained.
+#'
+#' @export
+#' @examples
+#' d <- data.frame(RIDAGEYR = 40:50)
+#' attr(d$RIDAGEYR, "label") <- "Age (years)"
+#'
+#' d_model <- NH_unlabel(d)
+#' attr(d_model$RIDAGEYR, "label")
+NH_unlabel <- function(x) {
+  if (is.data.frame(x)) {
+    x[] <- lapply(x, NH_unlabel)
+    attr(x, "label") <- NULL
+    return(x)
+  }
+
+  attr(x, "label") <- NULL
+  attr(x, "labels") <- NULL
+
+  cls <- class(x)
+  if (length(cls)) {
+    cls <- setdiff(cls, c("labelled", "haven_labelled", "haven_labelled_spss"))
+    cls <- setdiff(cls, .nhanes_implicit_atomic_class(x))
+
+    if (length(cls)) {
+      class(x) <- cls
+    } else {
+      attr(x, "class") <- NULL
+    }
+  }
+
   x
 }
 
@@ -168,4 +227,17 @@ NH_describe <- function(x, descriptions = NULL, all_weights = FALSE, ...) {
   # One description per variable name (consistent across cycles)
   catalog <- catalog[!duplicated(catalog$variable_name), , drop = FALSE]
   setNames(catalog$variable_desc, catalog$variable_name)
+}
+
+.nhanes_implicit_atomic_class <- function(x) {
+  switch(
+    typeof(x),
+    "logical" = "logical",
+    "integer" = "integer",
+    "double" = "numeric",
+    "complex" = "complex",
+    "character" = "character",
+    "raw" = "raw",
+    character()
+  )
 }

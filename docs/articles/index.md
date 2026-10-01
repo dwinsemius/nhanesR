@@ -14,3 +14,5 @@
   rms](https://dwinsemius.github.io/nhanesR/articles/survey-weighted-survival.md):
 - [Comparing Survival Frameworks: Cox, Piecewise Exponential, and
   mgcv-Poisson](https://dwinsemius.github.io/nhanesR/articles/survival-framework-comparison.md):
+- [NHANES III (1988-1994): Fixed-Width Files, Cotinine, and
+  Mortality](https://dwinsemius.github.io/nhanesR/articles/nhanes-iii.md):

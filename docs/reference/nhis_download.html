@@ -35,6 +35,7 @@ nhis_mortality_parse()."></head><body>
     <li><a class="dropdown-item" href="../articles/uacr-bridging.html">Urinary Albumin-to-Creatinine Ratio Across NHANES Cycles</a></li>
     <li><a class="dropdown-item" href="../articles/survey-weighted-survival.html">Survey-Weighted Survival Analysis: Fusing svycoxph and rms</a></li>
     <li><a class="dropdown-item" href="../articles/survival-framework-comparison.html">Comparing Survival Frameworks: Cox, Piecewise Exponential, and mgcv-Poisson</a></li>
+    <li><a class="dropdown-item" href="../articles/nhanes-iii.html">NHANES III (1988-1994): Fixed-Width Files, Cotinine, and Mortality</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -99,13 +100,23 @@ requested survey year, not to be confused with a native <code>YEAR</code>/
 
 <p>1997 onward uses NCHS's own descriptive variable names directly
 (<code>SRVY_YR</code>, <code>HHX</code>, <code>WTFA_HH</code>, ...), taken straight from that era's SAS
-syntax file – no further relabeling needed. <strong>1986-1996 uses NCHS's
-original placeholder scheme</strong> (e.g. <code>HH_22</code>, <code>PX_24</code>) because that's
-literally what the SAS syntax files for those years contain – there is
-no <code>nhis_harmonize()</code>-equivalent yet to relabel these to their real
-meanings, which requires a separate crosswalk built from <code>NHISCORE.PDF</code>
-(not yet done; see this file's own development history for the scoping
-discussion).</p>
+syntax file. <strong>1986-1996 uses NCHS's original placeholder scheme</strong>
+instead (e.g. <code>HH_22</code>, <code>PX_24</code>) – that's literally what those years' SAS
+syntax files contain. Column NAMES are never changed (a placeholder stays
+a placeholder), but for <strong>1986-1991</strong> each placeholder column gets a
+<code>"label"</code> attribute (haven/labelled convention, same as every other
+labelled column in this package) with its real meaning, built from that
+year's own <code>NHISCORE.PDF</code> codebook (<code>data-raw/build_nhis_pre1997_crosswalk.R</code>).
+Check with <code>attr(df$HH_22, "label")</code>, or <code><a href="NH_describe.html">NH_describe()</a></code> to see all of
+them at once. <strong>1992-1996 do not get labels</strong> – checked directly, not
+just left undone: the source PDF's own page layout changes enough
+starting in 1992 (its <code>NHISCORE.PDF</code> roughly triples in page count that
+year) that the crosswalk-building parser's match rate drops hard, and
+unlike 1986-1991, a meaningful share of what doesn't match already has a
+descriptive native variable name anyway (e.g. <code>REGION</code>, <code>HEIGHT</code>,
+<code>WEIGHT</code> for 1993), so the gap matters less than the raw match-rate drop
+suggests. Extending the crosswalk past 1991 is possible future work, not
+done here.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

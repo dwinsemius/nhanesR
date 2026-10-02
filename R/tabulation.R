@@ -173,6 +173,18 @@ mortality_tabulation <- function(data, time, event, by,
   tab
 }
 
+# Subsetting a data frame drops custom attributes; keep them (and the class) so a
+# subset still prints with its rate scale and `tabulation_grid()` still works.
+#' @export
+`[.mortality_tabulation` <- function(x, ...) {
+  r <- NextMethod()
+  if (is.data.frame(r)) {
+    for (a in c("by", "scale", "time_units", "weighted")) attr(r, a) <- attr(x, a)
+    class(r) <- class(x)
+  }
+  r
+}
+
 #' @export
 print.mortality_tabulation <- function(x, digits = 2, ...) {
   cat(sprintf("Mortality tabulation: deaths and person-years of all follow-up (decedents + censored); rate per %s person-years%s\n",

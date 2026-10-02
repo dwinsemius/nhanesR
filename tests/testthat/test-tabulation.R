@@ -118,3 +118,14 @@ test_that("print method reports the basis and the scale", {
   expect_match(out, "decedents \\+ censored")
   expect_match(out, "1,000 person-years")
 })
+
+test_that("subsetting keeps the class, the scale and the print header", {
+  d <- make_tab_data()
+  tab <- mortality_tabulation(d, "time", "event", by = c("sex", "grp"), scale = 100)
+  sub <- tab[tab$n_cov == 2, ]
+  expect_s3_class(sub, "mortality_tabulation")
+  expect_equal(attr(sub, "scale"), 100)
+  expect_match(paste(capture.output(print(sub)), collapse = "\n"), "100 person-years")
+  expect_true(is.matrix(tabulation_grid(tab[tab$n_cov <= 2, ], "grp", "sex")))
+  expect_true(is.numeric(tab[["rate"]]))            # extracting a column still returns a plain vector
+})

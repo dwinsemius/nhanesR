@@ -2,6 +2,13 @@
 
 ## New features
 
+* Added `inst/scripts/assemble_nhanes3_data.R`, a standalone example script
+  that downloads the NHANES III exam, adult and second-laboratory (serum
+  cotinine) files plus the 2019 linked mortality file, parses them with the
+  SAS layouts, recodes missing codes and writes `nhanes3_pooled.rds`. Locate
+  it with `system.file("scripts", package = "nhanesR")`; see the NHANES III
+  vignette.
+
 * Added NHIS Household/Person raw-data download: `nhis_download()` and
   `nhis_data_years()` download the fixed-width `.zip` for either file
   (1986-2018), download the matching SAS input-syntax file NCHS publishes

@@ -82,6 +82,12 @@ reference:
       - nhanes_followup_summary
       - nhanes_ucod_labels
 
+  - title: "Descriptive mortality rates"
+    desc: "Deaths, person-years and crude rates in cells, with all margins"
+    contents:
+      - mortality_tabulation
+      - tabulation_grid
+
   - title: "Survey-weighted Cox models"
     desc: "Fuse rms and survey Cox fits; compute weighted baseline hazard"
     contents:

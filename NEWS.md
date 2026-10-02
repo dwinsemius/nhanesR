@@ -2,6 +2,16 @@
 
 ## New features
 
+* Added `mortality_tabulation()` and `tabulation_grid()`: deaths, person-years
+  and crude mortality rates (per 1,000 person-years by default) in the cells of
+  one or more categorical covariates, with every marginal table and the grand
+  total in one long data frame. The exposure basis is the follow-up of everyone,
+  decedents and censored alike, so this is a rate tabulation and not a life
+  table. Exact Poisson intervals; optional survey weights (point estimates
+  only), per-person expected deaths for observed/expected ratios, numeric
+  covariate `breaks`, and attained-age bands via `survival::pyears()`.
+  `tabulation_grid()` pivots any two covariates into a matrix.
+
 * Added `inst/scripts/assemble_nhanes3_data.R`, a standalone example script
   that downloads the NHANES III exam, adult and second-laboratory (serum
   cotinine) files plus the 2019 linked mortality file, parses them with the

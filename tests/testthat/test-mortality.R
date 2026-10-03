@@ -129,6 +129,20 @@ test_that("a weight the user has already pooled is passed through unscaled", {
   expect_false("survey_weight_2yr_raw" %in% names(out))
 })
 
+test_that("a 4-year weight across more than two cycles warns and is left unscaled", {
+  dat <- make_linked_data(300)
+  dat$cycle <- rep(c("2011-2012", "2013-2014", "2015-2016"), each = 100)
+  dat$WTMEC4YR <- dat$WTMEC2YR * 0.5
+  msgs <- character(0)
+  out <- withCallingHandlers(
+    suppressMessages(nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC4YR")),
+    warning = function(w) { msgs <<- c(msgs, conditionMessage(w)); invokeRestart("muffleWarning") }
+  )
+  expect_true(any(grepl("WTMEC4YR.*3 pooled cycles|3 pooled cycles", msgs)))
+  elig <- dat[dat$ELIGSTAT == 1L, ]
+  expect_equal(out$survey_weight, elig$WTMEC4YR)       # warned about, not rescaled
+})
+
 test_that("invalid weight_var triggers error", {
   dat <- make_linked_data(200)
   expect_error(

@@ -595,20 +595,20 @@ nhanes_survival_prep <- function(data,
                    {.val survey_weight_2yr_raw}."
           ))
         }
-          }
+      }
 
-          # If a 4-year combined weight is used beyond two pooled cycles,
-          # keep it but warn because it is only calibrated for 4-year pooling.
-          if (n_cycles > 2L && weight_var == "WTMEC4YR") {
-       cli::cli_warn(c(
-         "!" = "Using {.val WTMEC4YR} with {.val {n_cycles}} pooled cycles.",
-         "i" = "{.val WTMEC4YR} is calibrated for 4-year (two-cycle) \
-           analyses.",
-         "i" = "For >2 pooled cycles, use the relevant 2-year weight and \
-           divide by the number of pooled cycles.",
-         "i" = "See NHANES weighting guidance: \
-           {.url https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx}"
-       ))
+      # If a 4-year combined weight is used beyond two pooled cycles,
+      # keep it but warn because it is only calibrated for 4-year pooling.
+      if (n_cycles > 2L && weight_var == "WTMEC4YR") {
+        cli::cli_warn(c(
+          "!" = "Using {.val WTMEC4YR} with {.val {n_cycles}} pooled cycles.",
+          "i" = "{.val WTMEC4YR} is calibrated for 4-year (two-cycle) \
+                 analyses.",
+          "i" = "For >2 pooled cycles, use the relevant 2-year weight and \
+                 divide by the number of pooled cycles.",
+          "i" = "See NHANES weighting guidance: \
+                 {.url https://wwwn.cdc.gov/nchs/nhanes/tutorials/weighting.aspx}"
+        ))
       }
     }
   }

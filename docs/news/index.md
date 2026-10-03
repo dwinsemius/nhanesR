@@ -4,6 +4,23 @@
 
 ### New features
 
+- Added NHANES III column selection:
+  [`nhanes3_files()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_files.md)
+  lists the files and their CDC addresses,
+  [`nhanes3_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_download.md)
+  caches a file’s `.sas` program, `.dat` data and codebook PDF,
+  [`nhanes3_layout()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.md)
+  returns every variable’s name, SAS label, column positions and type
+  (with an optional `pattern` that searches names and labels, and a
+  check of the layout against the record length), and
+  [`nhanes3_read()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.md)
+  reads only the columns you choose (by name, or from a list in an
+  interactive session), always adds `SEQN`, and can turn the all-8s and
+  all-9s “blank but applicable” and “don’t know” codes of named
+  variables into `NA`. The layout needs only the small `.sas` file, so
+  you can browse the exam file’s 2,000+ columns before downloading its
+  195 MB `.dat`.
+
 - Added
   [`mortality_tabulation()`](https://dwinsemius.github.io/nhanesR/reference/mortality_tabulation.md)
   and

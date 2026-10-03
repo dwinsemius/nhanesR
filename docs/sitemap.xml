@@ -37,6 +37,10 @@
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhis_sas_validate_and_fix.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/index.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/mortality_tabulation.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes3_download.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes3_files.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanesR-package.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.html</loc></url>

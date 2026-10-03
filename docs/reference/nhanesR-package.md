@@ -53,6 +53,14 @@ the source directory leaves them out.
   [`nhanes_stack()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_stack.md),
   [`nhanes_merge()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_merge.md).
 
+- NHANES III fixed-width files:
+  [`nhanes3_files()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_files.md),
+  [`nhanes3_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_download.md),
+  [`nhanes3_layout()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.md)
+  (browse variables and labels),
+  [`nhanes3_read()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.md)
+  (read chosen columns).
+
 - Mortality linkage:
   [`nhanes_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_download.md),
   [`nhanes_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_mortality_parse.md),

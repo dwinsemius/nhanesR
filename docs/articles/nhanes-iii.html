@@ -176,6 +176,29 @@ position is fast; reading all of them is not.</p>
 <code>SDPSTRA6</code>) for the whole survey. The <code>*1</code> and
 <code>*2</code> versions cover phase 1 (1988-1991) or phase 2
 (1991-1994) alone.</p>
+<div class="section level3">
+<h3 id="the-same-steps-with-the-package-functions">The same steps with the package functions<a class="anchor" aria-label="anchor" href="#the-same-steps-with-the-package-functions"></a>
+</h3>
+<p>The helper code above is what <code>nhanesR</code> provides as
+functions, with variable labels and a search added. You can stop after
+the layout, which needs only the small <code>.sas</code> program, and
+decide which columns to read before you download the large
+<code>.dat</code> file:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/nhanes3_files.html">nhanes3_files</a></span><span class="op">(</span><span class="op">)</span>                                         <span class="co"># the files and their CDC addresses</span></span>
+<span><span class="fu"><a href="../reference/nhanes3_layout.html">nhanes3_layout</a></span><span class="op">(</span><span class="st">"adult"</span>, pattern <span class="op">=</span> <span class="st">"tall|weigh"</span><span class="op">)</span>         <span class="co"># variables whose name or label matches</span></span>
+<span><span class="fu"><a href="../reference/nhanes3_layout.html">nhanes3_layout</a></span><span class="op">(</span><span class="st">"exam"</span>, pattern <span class="op">=</span> <span class="st">"^BMP"</span><span class="op">)</span>                <span class="co"># the body-measure variables, with labels</span></span>
+<span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nhanes3_read.html">nhanes3_read</a></span><span class="op">(</span><span class="st">"exam"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HSSEX"</span>, <span class="st">"HSAGEIR"</span>, <span class="st">"BMPHT"</span>, <span class="st">"BMPWT"</span>, <span class="st">"WTPFEX6"</span><span class="op">)</span>,</span>
+<span>                  recode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BMPHT"</span>, <span class="st">"BMPWT"</span><span class="op">)</span><span class="op">)</span>         <span class="co"># SEQN is always included</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"var_labels"</span><span class="op">)</span>                                   <span class="co"># the SAS labels travel with the data</span></span></code></pre></div>
+<p>In an interactive session, leave <code>vars</code> out and
+<code><a href="../reference/nhanes3_read.html">nhanes3_read()</a></code> offers the (optionally
+<code>pattern</code>-narrowed) list to pick from. <code>recode</code>
+applies only to the variables you name, because IDs, weights and age
+have no all-8s/all-9s codes and many items have special codes of their
+own (section 5).</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="missing-value-codes">4. Missing-value codes<a class="anchor" aria-label="anchor" href="#missing-value-codes"></a>
@@ -185,7 +208,7 @@ as all 9s, sized to the field: <code>8</code>/<code>9</code> for a
 one-character item, <code>88888</code> for a five-character measurement.
 Left in place they look like real values: an 88888 cotinine code makes
 the mean serum cotinine about 10,000 ng/mL.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recode_codes</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">vars</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"width"</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">v</span> <span class="kw">in</span> <span class="va">vars</span><span class="op">)</span> <span class="op">{</span></span>
@@ -225,7 +248,7 @@ return each requested variable’s file position, question text,
 interviewer notes, and a table of codes, labels and counts. Counts are
 for the whole file, so they also show how many records each special code
 affects.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"pdftools"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pdftools"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ropensci.r-universe.dev/pdftools" class="external-link">pdftools</a></span><span class="op">)</span></span>
 <span></span>
@@ -294,7 +317,7 @@ affects.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span>  <span class="va">out</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cb</span> <span class="op">&lt;-</span> <span class="fu">nh3_codebook</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">raw</span>, <span class="st">"adult-acc.pdf"</span><span class="op">)</span>,</span>
 <span>                   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HAR1"</span>, <span class="st">"HAR3"</span>, <span class="st">"HAR4S"</span>, <span class="st">"HAR16"</span>, <span class="st">"HAR24"</span>, <span class="st">"HAR27"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cb</span><span class="op">$</span><span class="va">HAR4S</span><span class="op">$</span><span class="va">values</span></span>
@@ -328,7 +351,7 @@ the full entry for anything unexpected.</p>
 cigarettes; only those who say yes are asked <code>HAR3</code> (smoke
 now). Other tobacco items are asked only of people who ever used that
 product, so a skipped item means “no”.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">exam</span>, <span class="va">adult</span>, by <span class="op">=</span> <span class="st">"SEQN"</span><span class="op">)</span>            <span class="co"># adults 17+ with an exam</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">lab2</span>, by <span class="op">=</span> <span class="st">"SEQN"</span>, all.x <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -342,7 +365,7 @@ product, so a skipped item means “no”.</p>
 <span>          FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>median <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span>, pct_over10 <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">v</span> <span class="op">&gt;</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>About 6% of self-reported never-smokers have cotinine above 10 ng/mL,
 and about 13% of former smokers. A stricter never-smoker definition:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span><span class="op">$</span><span class="va">never_conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">cig_status</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"Never"</span> <span class="op">&amp;</span> <span class="op">!</span><span class="va">other_tob</span> <span class="op">&amp;</span></span>
 <span>                        <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">COP</span><span class="op">)</span> <span class="op">|</span> <span class="va">COP</span> <span class="op">&lt;=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -351,7 +374,7 @@ and about 13% of former smokers. A stricter never-smoker definition:</p>
 </h2>
 <p><code>nhanesR</code> downloads and parses the 2019 public-use Linked
 Mortality File for NHANES III like any other cycle.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dwinsemius.github.io/nhanesR/">nhanesR</a></span><span class="op">)</span></span>
 <span><span class="va">mort</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nhanes_mortality_parse.html">nhanes_mortality_parse</a></span><span class="op">(</span>cycles <span class="op">=</span> <span class="st">"1988-1994"</span><span class="op">)</span><span class="op">[[</span><span class="st">"1988-1994"</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
@@ -373,7 +396,7 @@ if you need them.</p>
 <div class="section level2">
 <h2 id="survey-weighted-cox-model">8. Survey-weighted Cox model<a class="anchor" aria-label="anchor" href="#survey-weighted-cox-model"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://r-survey.r-forge.r-project.org/survey/" class="external-link">survey</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span><span class="va">d</span><span class="op">$</span><span class="va">Ht_m</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">BMPHT</span> <span class="op">/</span> <span class="fl">100</span></span>

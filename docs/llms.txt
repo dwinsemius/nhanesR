@@ -100,6 +100,20 @@ Download and cache NHANES XPT files
 - [`nhanes_download_analyte()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_download_analyte.md)
   : Download NHANES files for an analyte using the CDC variable catalog
 
+## NHANES III files
+
+Fixed-width files: list, browse variables, choose columns, read
+
+- [`nhanes3_files()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_files.md)
+  : List the NHANES III data files and their CDC addresses
+- [`nhanes3_download()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_download.md)
+  : Download NHANES III files into the nhanesR cache
+- [`nhanes3_layout()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.md)
+  : The variables in an NHANES III file: names, labels and column
+  positions
+- [`nhanes3_read()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.md)
+  : Read chosen columns of an NHANES III file
+
 ## Harmonize, stack, and merge
 
 Combine data across cycles and components

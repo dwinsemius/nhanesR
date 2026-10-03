@@ -57,6 +57,22 @@ Use the 6-year weights (`WTPFEX6`, `SDPPSU6`, `SDPSTRA6`) for the whole
 survey. The `*1` and `*2` versions cover phase 1 (1988-1991) or phase 2
 (1991-1994) alone.
 
+### The same steps with the package functions
+
+The helper code above is what `nhanesR` provides as functions, with
+variable labels and a search added. You can stop after the layout, which
+needs only the small `.sas` program, and decide which columns to read
+before you download the large `.dat` file:
+
+[`nhanes3_files`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_files.md)`(``)`` ``# the files and their CDC addresses`` `[`nhanes3_layout`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.md)`(``"adult"``, pattern ``=`` ``"tall|weigh"``)`` ``# variables whose name or label matches`` `[`nhanes3_layout`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_layout.md)`(``"exam"``, pattern ``=`` ``"^BMP"``)`` ``# the body-measure variables, with labels`` `` ``x`` ``<-`` `[`nhanes3_read`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.md)`(``"exam"``, `[`c`](https://rdrr.io/r/base/c.html)`(``"HSSEX"``, ``"HSAGEIR"``, ``"BMPHT"``, ``"BMPWT"``, ``"WTPFEX6"``)``,`` `` recode ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"BMPHT"``, ``"BMPWT"``)``)`` ``# SEQN is always included`` `[`attr`](https://rdrr.io/r/base/attr.html)`(``x``, ``"var_labels"``)`` ``# the SAS labels travel with the data`
+
+In an interactive session, leave `vars` out and
+[`nhanes3_read()`](https://dwinsemius.github.io/nhanesR/reference/nhanes3_read.md)
+offers the (optionally `pattern`-narrowed) list to pick from. `recode`
+applies only to the variables you name, because IDs, weights and age
+have no all-8s/all-9s codes and many items have special codes of their
+own (section 5).
+
 ## 4. Missing-value codes
 
 NHANES III stores “blank but applicable” as all 8s and “don’t know” as

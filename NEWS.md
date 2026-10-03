@@ -29,6 +29,11 @@
   warns and returns no files) and retries the download up to three times
   before stopping with a message that says what happened.
 
+* `nhanes_survival_prep()` tests now state the pooled-weight rule explicitly:
+  2-year weights (`WTMEC2YR`, `WTINT2YR`, `WTSAF2YR`) spanning several cycles are
+  divided by the number of cycles (4-year weights for 1999-2002), the original is
+  kept in `survey_weight_2yr_raw`, a single cycle is left alone, and a weight the
+  user has already pooled (any other column) passes through unchanged.
 
 * Added NHIS Household/Person raw-data download: `nhis_download()` and
   `nhis_data_years()` download the fixed-width `.zip` for either file

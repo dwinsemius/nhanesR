@@ -44,9 +44,14 @@ test_that("nhanes_survival_prep drops ineligible with warning", {
   dat <- make_linked_data(200)
   n_ineligible <- sum(dat$ELIGSTAT != 1L)
 
+  # two warnings are expected: the removal of ineligible participants and the
+  # multi-cycle follow-up caveat (the test data span two cycles)
   expect_warning(
-    out <- nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC2YR"),
-    regexp = "ineligible"
+    expect_warning(
+      out <- nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC2YR"),
+      regexp = "ineligible"
+    ),
+    regexp = "asym|censor|cycle", ignore.case = TRUE
   )
 
   expect_equal(nrow(out), 200L - n_ineligible)
@@ -91,14 +96,37 @@ test_that("origin = 'exam' uses PERMTH_EXM", {
   expect_equal(out$time, elig$PERMTH_EXM)
 })
 
-test_that("survey_weight column is created from weight_var", {
-  dat <- make_linked_data(200)
-  suppressWarnings({
+test_that("survey_weight is the pooled-cycle weight when 2-year weights span several cycles", {
+  dat <- make_linked_data(200)                    # two cycles: 2013-2014 and 2015-2016
+  suppressWarnings(suppressMessages({
     out <- nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC2YR")
-  })
+  }))
   expect_true("survey_weight" %in% names(out))
   elig <- dat[dat$ELIGSTAT == 1L, ]
+  expect_equal(out$survey_weight, elig$WTMEC2YR / 2)         # CDC guidance: each 2-year weight / number of cycles
+  expect_equal(out$survey_weight_2yr_raw, elig$WTMEC2YR)     # the original is preserved
+})
+
+test_that("survey_weight is unchanged for a single cycle", {
+  dat <- make_linked_data(200)
+  dat$cycle <- "2015-2016"
+  suppressWarnings(suppressMessages({
+    out <- nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC2YR")
+  }))
+  elig <- dat[dat$ELIGSTAT == 1L, ]
   expect_equal(out$survey_weight, elig$WTMEC2YR)
+  expect_false("survey_weight_2yr_raw" %in% names(out))
+})
+
+test_that("a weight the user has already pooled is passed through unscaled", {
+  dat <- make_linked_data(200)                    # several cycles, but the weight is not a *2YR column
+  dat$WTMEC_adj <- dat$WTMEC2YR / 10              # e.g. a hand-pooled weight as in a 10-cycle analysis
+  suppressWarnings(suppressMessages({
+    out <- nhanes_survival_prep(dat, origin = "exam", weight_var = "WTMEC_adj")
+  }))
+  elig <- dat[dat$ELIGSTAT == 1L, ]
+  expect_equal(out$survey_weight, elig$WTMEC_adj)            # no second round of pooling
+  expect_false("survey_weight_2yr_raw" %in% names(out))
 })
 
 test_that("invalid weight_var triggers error", {
@@ -135,9 +163,11 @@ test_that("invalid cause code triggers error", {
 test_that("multi-cycle asymmetric follow-up warning is emitted", {
   dat <- make_linked_data(200)
   expect_warning(
-    nhanes_survival_prep(dat, origin = "exam"),
-    regexp = "asym|censor|cycle",
-    ignore.case = TRUE
+    expect_warning(
+      nhanes_survival_prep(dat, origin = "exam"),
+      regexp = "asym|censor|cycle", ignore.case = TRUE
+    ),
+    regexp = "ineligible"                 # the removal of ineligible participants warns as well
   )
 })
 

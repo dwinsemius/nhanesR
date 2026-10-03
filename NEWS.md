@@ -18,6 +18,11 @@
   SAS layouts, recodes missing codes and writes `nhanes3_pooled.rds`. Locate
   it with `system.file("scripts", package = "nhanesR")`; see the NHANES III
   vignette.
+  It also reads the adult-interview self-reported height and weight (`HAM5S`,
+  `HAM6S`) and the examination's measurement-source flags (`BMPHTFLG`,
+  `BMPWTFLG`), and adds `sr_Ht_m`, `sr_BMXWT`, `measured_ht` and `measured_wt`,
+  so measured values that were substituted from the self-report can be
+  excluded when the two are compared.
 
 * Added NHIS Household/Person raw-data download: `nhis_download()` and
   `nhis_data_years()` download the fixed-width `.zip` for either file

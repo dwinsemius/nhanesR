@@ -81,12 +81,21 @@ recode_codes <- function(x, vars) {
 
 cat("exam\n")
 exam <- read_nh3("exam", c("SEQN", "HSSEX", "HSAGEIR", "DMARETHN", "SDPPHASE", "BMPHT", "BMPWT",
-                           "BMPBMI", "BMPWAIST", "WTPFEX6", "SDPPSU6", "SDPSTRA6"))
+                           "BMPBMI", "BMPWAIST", "WTPFEX6", "SDPPSU6", "SDPSTRA6",
+                           "BMPHTFLG", "BMPWTFLG"))
 exam <- recode_codes(exam, c("BMPHT", "BMPWT", "BMPBMI", "BMPWAIST"))
+## BMPHTFLG / BMPWTFLG are source flags, not 8/9-coded items: 0 = measured, no
+## substitution. BMPWTFLG 3/4 = modeled from / equal to the REPORTED weight, so those
+## rows are not independent measurements (matters for self-report calibration).
 
 cat("adult\n")
-adult <- read_nh3("adult", c("SEQN", "HAR1", "HAR3", "HAR4S", "HAR11R", "HAR16", "HAR24", "HAR27", "HFF1"))
-adult <- recode_codes(adult, c("HAR1", "HAR3", "HAR4S", "HAR11R", "HAR16", "HAR24", "HAR27", "HFF1"))
+adult <- read_nh3("adult", c("SEQN", "HAR1", "HAR3", "HAR4S", "HAR11R", "HAR16", "HAR24", "HAR27", "HFF1",
+                             "HAM5S", "HAM6S"))
+adult <- recode_codes(adult, c("HAR1", "HAR3", "HAR4S", "HAR11R", "HAR16", "HAR24", "HAR27", "HFF1",
+                               "HAM5S", "HAM6S"))
+## HAM5S = self-reported height w/o shoes (inches, 41-92); HAM6S = self-reported weight
+## w/o clothes (lb, 65-450; pre-pregnancy weight if currently pregnant). Their only
+## special codes are 888/999 (checked with nh3_codebook()), handled by recode_codes().
 ## HAR4S (cigarettes/day now) has item-specific codes besides 888/999 (checked
 ## with nh3_codebook(), nhanes3_codebook.R): 666 = varies, 777 = less than 1/day.
 ## Keep the code in HAR4S_special and set the numeric value to NA.
@@ -125,7 +134,12 @@ d <- d %>% mutate(
     ## any MEC-weighted, exam-origin analysis; permth_int is available if needed.
     time = if_else(eligstat == 1, as.numeric(permth_exm), NA_real_),
     event = if_else(eligstat == 1, as.numeric(mortstat), NA_real_),
-    survey_weight = WTPFEX6
+    survey_weight = WTPFEX6,
+    ## self-reported (adult interview) height/weight, same units as the measured columns
+    sr_ht_in = HAM5S, sr_wt_lb = HAM6S,
+    sr_Ht_m = HAM5S * 0.0254, sr_BMXWT = HAM6S / 2.20462,
+    ## measured values that are not substituted from the report (use for calibration)
+    measured_ht = BMPHTFLG %in% 0, measured_wt = BMPWTFLG %in% 0
 )
 
 cat("\nrows:", nrow(d), " (adults 17+ with exam and adult interview)\n")

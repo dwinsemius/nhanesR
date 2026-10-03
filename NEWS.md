@@ -2,6 +2,16 @@
 
 ## New features
 
+* Added NHANES III column selection: `nhanes3_files()` lists the files and their CDC addresses,
+  `nhanes3_download()` caches a file's `.sas` program, `.dat` data and codebook PDF,
+  `nhanes3_layout()` returns every variable's name, SAS label, column positions and type (with
+  an optional `pattern` that searches names and labels, and a check of the layout against the
+  record length), and `nhanes3_read()` reads only the columns you choose (by name, or from a
+  list in an interactive session), always adds `SEQN`, and can turn the all-8s and all-9s
+  "blank but applicable" and "don't know" codes of named variables into `NA`. The layout needs only
+  the small `.sas` file, so you can browse the exam file's 2,000+ columns before downloading its
+  195 MB `.dat`.
+
 * Added `mortality_tabulation()` and `tabulation_grid()`: deaths, person-years
   and crude mortality rates (per 1,000 person-years by default) in the cells of
   one or more categorical covariates, with every marginal table and the grand

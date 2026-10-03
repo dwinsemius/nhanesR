@@ -39,6 +39,8 @@ install straight from the source directory leaves them out.
 \code{\link[=nhanes_variable_map]{nhanes_variable_map()}}.
 \item Download, harmonize, stack and merge: \code{\link[=nhanes_download]{nhanes_download()}},
 \code{\link[=nhanes_download_analyte]{nhanes_download_analyte()}}, \code{\link[=nhanes_harmonize]{nhanes_harmonize()}}, \code{\link[=nhanes_stack]{nhanes_stack()}}, \code{\link[=nhanes_merge]{nhanes_merge()}}.
+\item NHANES III fixed-width files: \code{\link[=nhanes3_files]{nhanes3_files()}}, \code{\link[=nhanes3_download]{nhanes3_download()}},
+\code{\link[=nhanes3_layout]{nhanes3_layout()}} (browse variables and labels), \code{\link[=nhanes3_read]{nhanes3_read()}} (read chosen columns).
 \item Mortality linkage: \code{\link[=nhanes_mortality_download]{nhanes_mortality_download()}}, \code{\link[=nhanes_mortality_parse]{nhanes_mortality_parse()}},
 \code{\link[=nhanes_mortality_link]{nhanes_mortality_link()}}, and the NHIS counterparts \code{\link[=nhis_download]{nhis_download()}} and
 \code{\link[=nhis_mortality_link]{nhis_mortality_link()}}.

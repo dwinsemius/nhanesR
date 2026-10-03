@@ -40,6 +40,14 @@ reference:
       - nhanes_download
       - nhanes_download_analyte
 
+  - title: "NHANES III files"
+    desc: "Fixed-width files: list, browse variables, choose columns, read"
+    contents:
+      - nhanes3_files
+      - nhanes3_download
+      - nhanes3_layout
+      - nhanes3_read
+
   - title: "Harmonize, stack, and merge"
     desc: "Combine data across cycles and components"
     contents:

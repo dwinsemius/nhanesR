@@ -30,6 +30,8 @@
 #'     [nhanes_variable_map()].
 #'   \item Download, harmonize, stack and merge: [nhanes_download()],
 #'     [nhanes_download_analyte()], [nhanes_harmonize()], [nhanes_stack()], [nhanes_merge()].
+#'   \item NHANES III fixed-width files: [nhanes3_files()], [nhanes3_download()],
+#'     [nhanes3_layout()] (browse variables and labels), [nhanes3_read()] (read chosen columns).
 #'   \item Mortality linkage: [nhanes_mortality_download()], [nhanes_mortality_parse()],
 #'     [nhanes_mortality_link()], and the NHIS counterparts [nhis_download()] and
 #'     [nhis_mortality_link()].

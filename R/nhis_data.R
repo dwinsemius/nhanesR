@@ -330,16 +330,51 @@ nhis_download <- function(module, years = NULL, refresh = FALSE) {
 
     row <- .nhis_data_registry_row(yr, module)
 
+    # Truncated/incomplete downloads are a real, observed failure mode here
+    # (CDC's FTP server occasionally drops a large multi-file batch transfer
+    # partway through -- the same class of flakiness already documented for
+    # the LMF downloads elsewhere in this package). utils::unzip() doesn't
+    # error on a truncated zip, it *warns* ("error 1 in extracting from zip
+    # file") and returns an empty/partial file list -- confirmed directly
+    # (2026-09-22) by reproducing a real truncated download rather than
+    # assumed. Detected here by an empty extraction result and retried with
+    # a fresh download, rather than surfacing the previous confusing
+    # downstream error ("argument is of length zero" from indexing an empty
+    # dat_files vector).
     zip_dest <- file.path(.nhanes_cache_subdir("nhis_data", "zip"),
                           paste0(module, "_", yr, ".zip"))
-    if (refresh || !file.exists(zip_dest)) {
-      .nhanes_download_file(.nhis_data_zip_url(yr, module), zip_dest,
-                            desc = paste("NHIS", module, yr))
+    dat_dir  <- .nhanes_cache_subdir("nhis_data", "dat", paste0(module, "_", yr))
+
+    max_attempts <- 3L
+    dat_files <- character(0)
+    for (attempt in seq_len(max_attempts)) {
+      if (refresh || !file.exists(zip_dest) || attempt > 1L) {
+        .nhanes_download_file(.nhis_data_zip_url(yr, module), zip_dest,
+                              desc = paste("NHIS", module, yr))
+      }
+      dat_files <- suppressWarnings(
+        utils::unzip(zip_dest, exdir = dat_dir, overwrite = TRUE)
+      )
+      if (length(dat_files) > 0L) break
+      if (getOption("nhanesR.verbose")) {
+        cli::cli_inform(
+          "NHIS {module} {yr}: downloaded zip appears truncated/corrupted, \\
+           retrying download ({attempt}/{max_attempts})"
+        )
+      }
+      unlink(zip_dest)
+    }
+    if (length(dat_files) == 0L) {
+      cli::cli_abort(
+        "NHIS {module} {yr}: the .zip repeatedly failed to extract after \\
+         {max_attempts} download attempts (truncated/corrupted every time). \\
+         This looks like a transient CDC server issue rather than a \\
+         permanent one -- try again later, or download manually from \\
+         {.url {.nhis_data_zip_url(yr, module)}}."
+      )
     }
 
-    dat_dir   <- .nhanes_cache_subdir("nhis_data", "dat", paste0(module, "_", yr))
-    dat_files <- utils::unzip(zip_dest, exdir = dat_dir, overwrite = TRUE)
-    dat_path  <- dat_files[grepl("\\.dat$", dat_files, ignore.case = TRUE)][1L]
+    dat_path <- dat_files[grepl("\\.dat$", dat_files, ignore.case = TRUE)][1L]
     if (is.na(dat_path)) {
       cli::cli_abort("No .DAT file found inside {.path {zip_dest}}")
     }

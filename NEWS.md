@@ -24,6 +24,12 @@
   so measured values that were substituted from the self-report can be
   excluded when the two are compared.
 
+* `nhis_download()` now detects a truncated or corrupt `.zip` (the CDC server
+  occasionally drops part of a large batch transfer; `utils::unzip()` only
+  warns and returns no files) and retries the download up to three times
+  before stopping with a message that says what happened.
+
+
 * Added NHIS Household/Person raw-data download: `nhis_download()` and
   `nhis_data_years()` download the fixed-width `.zip` for either file
   (1986-2018), download the matching SAS input-syntax file NCHS publishes

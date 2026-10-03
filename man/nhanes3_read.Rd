@@ -58,7 +58,7 @@ codes, and many items have special codes of their own (666 for "varies", 777 for
 1 per day"), so check the codebook (\code{\link[=nhanes3_download]{nhanes3_download()}} with \code{what = "codebook"}) first.
 }
 \examples{
-\donttest{
+\dontrun{
 exam <- nhanes3_read("exam", c("HSSEX", "HSAGEIR", "BMPHT", "BMPWT", "WTPFEX6"),
                      recode = c("BMPHT", "BMPWT"))
 }

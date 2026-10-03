@@ -74,7 +74,7 @@ nhanes3_files <- function() {
 #' @return Invisibly, a named character vector of the local paths.
 #' @seealso [nhanes3_layout()], [nhanes3_read()]
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # the small SAS program only: enough to browse the variables
 #' nhanes3_download("adult", what = "sas")
 #' }
@@ -135,7 +135,7 @@ nhanes3_download <- function(file, what = c("sas", "dat", "codebook"), refresh =
 #'   is checked against the layout and stored in `attr(, "lrecl")`.
 #' @seealso [nhanes3_read()], [nhanes3_files()]
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' nhanes3_layout("adult", pattern = "tall|weigh")   # heights and weights people reported
 #' nhanes3_layout("exam", pattern = "^BMP")          # the body-measure variables
 #' }
@@ -245,7 +245,7 @@ print.nhanes3_layout <- function(x, n = 25L, ...) {
 #' @seealso [nhanes3_layout()], [nhanes3_files()], [nhanes_mortality_parse()] for the
 #'   NHANES III linked mortality file.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' exam <- nhanes3_read("exam", c("HSSEX", "HSAGEIR", "BMPHT", "BMPWT", "WTPFEX6"),
 #'                      recode = c("BMPHT", "BMPWT"))
 #' }

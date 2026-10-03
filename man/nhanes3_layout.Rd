@@ -45,7 +45,7 @@ each variable are in the codebook PDF, and a variable's own special codes (for e
 recode; check the codebook before recoding (see the \code{nhanes-iii} vignette).
 }
 \examples{
-\donttest{
+\dontrun{
 nhanes3_layout("adult", pattern = "tall|weigh")   # heights and weights people reported
 nhanes3_layout("exam", pattern = "^BMP")          # the body-measure variables
 }

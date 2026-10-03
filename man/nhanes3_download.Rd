@@ -29,7 +29,7 @@ The \code{.sas} file is small. It is enough for \code{\link[=nhanes3_layout]{nha
 through the variables before deciding to download the large \code{.dat}.
 }
 \examples{
-\donttest{
+\dontrun{
 # the small SAS program only: enough to browse the variables
 nhanes3_download("adult", what = "sas")
 }

@@ -4,6 +4,50 @@
 
 ### New features
 
+- Added
+  [`mortality_tabulation()`](https://dwinsemius.github.io/nhanesR/reference/mortality_tabulation.md)
+  and
+  [`tabulation_grid()`](https://dwinsemius.github.io/nhanesR/reference/tabulation_grid.md):
+  deaths, person-years and crude mortality rates (per 1,000 person-years
+  by default) in the cells of one or more categorical covariates, with
+  every marginal table and the grand total in one long data frame. The
+  exposure basis is the follow-up of everyone, decedents and censored
+  alike, so this is a rate tabulation and not a life table. Exact
+  Poisson intervals; optional survey weights (point estimates only),
+  per-person expected deaths for observed/expected ratios, numeric
+  covariate `breaks`, and attained-age bands via
+  [`survival::pyears()`](https://rdrr.io/pkg/survival/man/pyears.html).
+  [`tabulation_grid()`](https://dwinsemius.github.io/nhanesR/reference/tabulation_grid.md)
+  pivots any two covariates into a matrix.
+
+- Added `inst/scripts/assemble_nhanes3_data.R`, a standalone example
+  script that downloads the NHANES III exam, adult and second-laboratory
+  (serum cotinine) files plus the 2019 linked mortality file, parses
+  them with the SAS layouts, recodes missing codes and writes
+  `nhanes3_pooled.rds`. Locate it with
+  `system.file("scripts", package = "nhanesR")`; see the NHANES III
+  vignette. It also reads the adult-interview self-reported height and
+  weight (`HAM5S`, `HAM6S`) and the examination’s measurement-source
+  flags (`BMPHTFLG`, `BMPWTFLG`), and adds `sr_Ht_m`, `sr_BMXWT`,
+  `measured_ht` and `measured_wt`, so measured values that were
+  substituted from the self-report can be excluded when the two are
+  compared.
+
+- [`nhis_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_download.md)
+  now detects a truncated or corrupt `.zip` (the CDC server occasionally
+  drops part of a large batch transfer;
+  [`utils::unzip()`](https://rdrr.io/r/utils/unzip.html) only warns and
+  returns no files) and retries the download up to three times before
+  stopping with a message that says what happened.
+
+- [`nhanes_survival_prep()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_survival_prep.md)
+  tests now state the pooled-weight rule explicitly: 2-year weights
+  (`WTMEC2YR`, `WTINT2YR`, `WTSAF2YR`) spanning several cycles are
+  divided by the number of cycles (4-year weights for 1999-2002), the
+  original is kept in `survey_weight_2yr_raw`, a single cycle is left
+  alone, and a weight the user has already pooled (any other column)
+  passes through unchanged.
+
 - Added NHIS Household/Person raw-data download:
   [`nhis_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_download.md)
   and
@@ -28,6 +72,7 @@
   own documentation listing it – Person is unaffected; see
   [`?nhis_data_years`](https://dwinsemius.github.io/nhanesR/reference/nhis_data_years.md)
   for the full account.
+
 - Added NHIS mortality-linkage support:
   [`nhis_mortality_download()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_download.md),
   [`nhis_mortality_parse()`](https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_parse.md),

@@ -18,6 +18,12 @@ follow-up.
 **None of the code chunks run automatically.** The exam file alone is
 about 195 MB.
 
+A complete, runnable version of this workflow (download, parse, recode,
+link mortality, save an `.rds`) ships with the package:
+`system.file("scripts", "assemble_nhanes3_data.R", package = "nhanesR")`.
+Copy it to a working directory and run it there; it caches the raw files
+in `./nhanes3_raw/` and writes `nhanes3_pooled.rds`.
+
 ## 1. Download the files
 
 The main files are in `nhanes3/1a/`. Serum cotinine is in the *second*

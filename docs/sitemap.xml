@@ -36,6 +36,8 @@
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhis_parse_lmf_dat.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/dot-nhis_sas_validate_and_fix.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/index.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/mortality_tabulation.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanesR-package.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_cache_dir.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_cycles.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhanes_download.html</loc></url>
@@ -61,6 +63,7 @@
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/nhis_mortality_parse.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/svycph_fuse.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/svycph_set_basehaz.html</loc></url>
+<url><loc>https://dwinsemius.github.io/nhanesR/reference/tabulation_grid.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/reference/weighted_basehaz.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/session_transcript.html</loc></url>
 <url><loc>https://dwinsemius.github.io/nhanesR/vscode_cheatsheet.html</loc></url>

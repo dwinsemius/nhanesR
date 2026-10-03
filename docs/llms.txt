@@ -168,6 +168,15 @@ Prepare and summarise survival datasets
 - [`nhanes_ucod_labels()`](https://dwinsemius.github.io/nhanesR/reference/nhanes_ucod_labels.md)
   : Lookup table for UCOD_LEADING cause-of-death codes
 
+## Descriptive mortality rates
+
+Deaths, person-years and crude rates in cells, with all margins
+
+- [`mortality_tabulation()`](https://dwinsemius.github.io/nhanesR/reference/mortality_tabulation.md)
+  : Tabulate deaths, person-years and crude mortality rates
+- [`tabulation_grid()`](https://dwinsemius.github.io/nhanesR/reference/tabulation_grid.md)
+  : Pivot a mortality tabulation into a two-way grid
+
 ## Survey-weighted Cox models
 
 Fuse rms and survey Cox fits; compute weighted baseline hazard

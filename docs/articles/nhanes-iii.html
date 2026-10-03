@@ -90,6 +90,13 @@ extra work for survival analysis: participants have a median of about 27
 years of follow-up.</p>
 <p><strong>None of the code chunks run automatically.</strong> The exam
 file alone is about 195 MB.</p>
+<p>A complete, runnable version of this workflow (download, parse,
+recode, link mortality, save an <code>.rds</code>) ships with the
+package:
+<code>system.file("scripts", "assemble_nhanes3_data.R", package = "nhanesR")</code>.
+Copy it to a working directory and run it there; it caches the raw files
+in <code>./nhanes3_raw/</code> and writes
+<code>nhanes3_pooled.rds</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="download-the-files">1. Download the files<a class="anchor" aria-label="anchor" href="#download-the-files"></a>
